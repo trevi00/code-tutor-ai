@@ -331,6 +331,52 @@ async def analyze_code(
         })
 
 
+@router.post(
+    "/code/classify",
+    summary="Classify code quality (Transformer)",
+)
+async def classify_code(
+    code: str,
+    language: str = Query(default="python"),
+    current_user: Annotated[UserResponse, Depends(get_current_active_user)] = None,
+) -> dict[str, Any]:
+    """
+    Classify code quality using Transformer (CodeBERT Classifier).
+
+    Evaluates code across 4 dimensions:
+    - Correctness: 정확성
+    - Efficiency: 효율성
+    - Readability: 가독성
+    - Best Practices: 베스트 프랙티스
+
+    Returns:
+    - Overall score and grade
+    - Dimension-wise scores
+    - Improvement suggestions
+    """
+    try:
+        from code_tutor.ml import get_code_classifier
+        classifier = get_code_classifier()
+        result = classifier.classify(code, language)
+        suggestions = classifier.get_improvement_suggestions(result)
+        result["suggestions"] = suggestions
+        return success_response(result)
+    except Exception as e:
+        # Fallback response
+        return success_response({
+            "overall_score": 70,
+            "overall_grade": "C",
+            "dimensions": {
+                "correctness": {"label": "fair", "score": 70},
+                "efficiency": {"label": "fair", "score": 70},
+                "readability": {"label": "fair", "score": 70},
+                "best_practices": {"label": "fair", "score": 70}
+            },
+            "suggestions": [],
+            "error": str(e)
+        })
+
+
 @router.get(
     "/patterns",
     summary="List algorithm patterns",

@@ -34,11 +34,18 @@ def get_code_analyzer():
     return CodeAnalyzer()
 
 
+def get_code_classifier():
+    """Get Transformer-based code quality classifier singleton"""
+    from code_tutor.ml.analysis import CodeQualityClassifier
+    return CodeQualityClassifier()
+
+
 __all__ = [
     "MLConfig",
     "get_ml_config",
     "get_rag_engine",
     "get_recommender",
     "get_learning_predictor",
-    "get_code_analyzer"
+    "get_code_analyzer",
+    "get_code_classifier"
 ]
