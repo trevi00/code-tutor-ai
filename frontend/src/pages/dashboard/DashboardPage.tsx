@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { dashboardApi } from '@/api';
+import { ActivityHeatmap } from '@/components/dashboard/ActivityHeatmap';
+import { SkillPredictions } from '@/components/dashboard/SkillPredictions';
 import type { DashboardData, CategoryProgress, RecentSubmission } from '@/types';
 
 // Status badge styles
@@ -71,11 +73,18 @@ export default function DashboardPage() {
 
   if (!dashboard) return null;
 
-  const { stats, category_progress, recent_submissions } = dashboard;
+  const { stats, category_progress, recent_submissions, heatmap, skill_predictions } = dashboard;
 
   return (
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-3xl font-bold text-gray-800 mb-8">대시보드</h1>
+
+      {/* Activity Heatmap */}
+      {heatmap && heatmap.length > 0 && (
+        <div className="mb-8">
+          <ActivityHeatmap data={heatmap} months={6} />
+        </div>
+      )}
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
@@ -110,7 +119,7 @@ export default function DashboardPage() {
         </StatCard>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
         {/* Category Progress */}
         <div className="bg-white rounded-lg shadow p-6">
           <h2 className="text-xl font-semibold text-gray-800 mb-4">카테고리별 진행률</h2>
@@ -160,8 +169,15 @@ export default function DashboardPage() {
         </div>
       </div>
 
+      {/* Skill Predictions */}
+      {skill_predictions && skill_predictions.length > 0 && (
+        <div className="mb-8">
+          <SkillPredictions predictions={skill_predictions} />
+        </div>
+      )}
+
       {/* Quick Actions */}
-      <div className="mt-8 bg-white rounded-lg shadow p-6">
+      <div className="bg-white rounded-lg shadow p-6">
         <h2 className="text-xl font-semibold text-gray-800 mb-4">빠른 시작</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <Link

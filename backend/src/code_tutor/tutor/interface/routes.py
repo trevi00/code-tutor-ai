@@ -13,6 +13,8 @@ from code_tutor.shared.infrastructure.database import get_async_session
 from code_tutor.tutor.application.dto import (
     ChatRequest,
     ChatResponse,
+    CodeReviewRequest,
+    CodeReviewResponse,
     ConversationResponse,
     ConversationSummaryResponse,
 )
@@ -101,3 +103,23 @@ async def close_conversation(
         return await service.close_conversation(current_user.id, conversation_id)
     except AppException as e:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=e.message)
+
+
+@router.post(
+    "/review",
+    response_model=CodeReviewResponse,
+    summary="Get AI code review",
+)
+async def review_code(
+    request: CodeReviewRequest,
+    service: Annotated[TutorService, Depends(get_tutor_service)],
+    current_user: Annotated[UserResponse, Depends(get_current_active_user)],
+) -> CodeReviewResponse:
+    """
+    Get AI-powered code review with feedback on:
+    - Code quality and style
+    - Potential bugs and issues
+    - Performance suggestions
+    - Best practices
+    """
+    return await service.review_code(current_user.id, request)

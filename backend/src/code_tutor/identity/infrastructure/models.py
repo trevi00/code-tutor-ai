@@ -54,6 +54,10 @@ class UserModel(Base):
         DateTime,
         nullable=True,
     )
+    bio: Mapped[str | None] = mapped_column(
+        String(200),
+        nullable=True,
+    )
     created_at: Mapped[datetime] = mapped_column(
         DateTime,
         default=datetime.utcnow,

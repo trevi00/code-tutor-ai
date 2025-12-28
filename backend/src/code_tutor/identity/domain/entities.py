@@ -32,6 +32,7 @@ class User(AggregateRoot):
         is_active: bool = True,
         is_verified: bool = False,
         last_login_at: datetime | None = None,
+        bio: str | None = None,
     ) -> None:
         super().__init__(id)
         self._email = email
@@ -41,6 +42,7 @@ class User(AggregateRoot):
         self._is_active = is_active
         self._is_verified = is_verified
         self._last_login_at = last_login_at
+        self._bio = bio
 
     @classmethod
     def create(
@@ -111,6 +113,10 @@ class User(AggregateRoot):
     def last_login_at(self) -> datetime | None:
         return self._last_login_at
 
+    @property
+    def bio(self) -> str | None:
+        return self._bio
+
     # Behavior methods
     def verify_password(self, plain_password: str) -> bool:
         """Verify if the provided password matches"""
@@ -162,4 +168,16 @@ class User(AggregateRoot):
     def promote_to_admin(self) -> None:
         """Promote user to admin role"""
         self._role = UserRole.ADMIN
+        self._touch()
+
+    def update_profile(
+        self,
+        username: str | None = None,
+        bio: str | None = None,
+    ) -> None:
+        """Update user profile"""
+        if username is not None:
+            self._username = Username(username)
+        if bio is not None:
+            self._bio = bio
         self._touch()

@@ -33,6 +33,7 @@ class SQLAlchemyUserRepository(UserRepository):
             is_active=model.is_active,
             is_verified=model.is_verified,
             last_login_at=model.last_login_at,
+            bio=model.bio,
         )
         # Restore timestamps
         user._created_at = model.created_at
@@ -50,6 +51,7 @@ class SQLAlchemyUserRepository(UserRepository):
             is_active=entity.is_active,
             is_verified=entity.is_verified,
             last_login_at=entity.last_login_at,
+            bio=entity.bio,
             created_at=entity.created_at,
             updated_at=entity.updated_at,
         )

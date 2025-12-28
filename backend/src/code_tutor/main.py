@@ -7,6 +7,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from code_tutor.shared.config import get_settings
+from code_tutor.shared.middleware import RateLimitMiddleware
 from code_tutor.shared.exception_handlers import register_exception_handlers
 from code_tutor.shared.infrastructure.database import close_db, init_db
 from code_tutor.shared.infrastructure.logging import configure_logging, get_logger
@@ -73,6 +74,14 @@ def create_app() -> FastAPI:
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],
+    )
+
+    # Add rate limiting middleware
+    app.add_middleware(
+        RateLimitMiddleware,
+        requests_per_minute=60,
+        burst_size=20,
+        exclude_paths=["/api/health", "/docs", "/redoc", "/openapi.json", "/"],
     )
 
     # Register exception handlers (PRD-compliant response format)

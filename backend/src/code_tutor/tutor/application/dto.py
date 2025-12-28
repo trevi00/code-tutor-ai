@@ -80,3 +80,32 @@ class ChatResponse(BaseModel):
     conversation_id: UUID
     message: MessageResponse
     is_new_conversation: bool = False
+
+
+# Code Review DTOs
+class CodeReviewRequest(BaseModel):
+    """Code review request"""
+    code: str = Field(..., min_length=1)
+    language: str = Field(default="python")
+    problem_id: UUID | None = None
+    focus_areas: list[str] = Field(
+        default=[],
+        description="Areas to focus on: correctness, efficiency, style, readability",
+    )
+
+
+class CodeIssue(BaseModel):
+    """A single issue found in code review"""
+    severity: str  # error, warning, suggestion
+    line: int | None = None
+    message: str
+    suggestion: str | None = None
+
+
+class CodeReviewResponse(BaseModel):
+    """Code review response"""
+    overall_score: int = Field(..., ge=0, le=100, description="Overall code quality score")
+    summary: str
+    issues: list[CodeIssue]
+    strengths: list[str]
+    improvements: list[str]

@@ -9,7 +9,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from code_tutor.learning.application.dashboard_dto import (
     CategoryProgress,
     DashboardResponse,
+    HeatmapData,
     RecentSubmission,
+    SkillPrediction,
     StreakInfo,
     UserStats,
 )
@@ -31,11 +33,15 @@ class DashboardService:
         stats = await self._get_user_stats(user_id)
         category_progress = await self._get_category_progress(user_id)
         recent_submissions = await self._get_recent_submissions(user_id)
+        heatmap = await self._get_heatmap_data(user_id)
+        skill_predictions = self._generate_skill_predictions(category_progress)
 
         return DashboardResponse(
             stats=stats,
             category_progress=category_progress,
             recent_submissions=recent_submissions,
+            heatmap=heatmap,
+            skill_predictions=skill_predictions,
         )
 
     async def _get_user_stats(self, user_id: UUID) -> UserStats:
@@ -245,3 +251,98 @@ class DashboardService:
                 last_activity, datetime.min.time(), tzinfo=timezone.utc
             ),
         )
+
+    async def _get_heatmap_data(self, user_id: UUID, days: int = 365) -> list[HeatmapData]:
+        """Get activity heatmap data for the past year"""
+        end_date = datetime.now(timezone.utc).date()
+        start_date = end_date - timedelta(days=days)
+
+        # Get submission counts per day
+        query = (
+            select(
+                func.date(SubmissionModel.submitted_at).label("date"),
+                func.count(SubmissionModel.id).label("count"),
+            )
+            .where(
+                and_(
+                    SubmissionModel.user_id == user_id,
+                    func.date(SubmissionModel.submitted_at) >= start_date,
+                )
+            )
+            .group_by(func.date(SubmissionModel.submitted_at))
+            .order_by(func.date(SubmissionModel.submitted_at))
+        )
+
+        result = await self._session.execute(query)
+        submission_counts = {row[0]: row[1] for row in result.all()}
+
+        # Generate heatmap data for all days
+        heatmap = []
+        current_date = start_date
+
+        while current_date <= end_date:
+            count = submission_counts.get(current_date, 0)
+            level = self._calculate_activity_level(count)
+            heatmap.append(
+                HeatmapData(
+                    date=current_date.isoformat(),
+                    count=count,
+                    level=level,
+                )
+            )
+            current_date += timedelta(days=1)
+
+        return heatmap
+
+    def _calculate_activity_level(self, count: int) -> int:
+        """Calculate activity level (0-4) based on submission count"""
+        if count == 0:
+            return 0
+        elif count <= 2:
+            return 1
+        elif count <= 5:
+            return 2
+        elif count <= 10:
+            return 3
+        else:
+            return 4
+
+    def _generate_skill_predictions(
+        self, category_progress: list[CategoryProgress]
+    ) -> list[SkillPrediction]:
+        """Generate skill predictions based on category progress"""
+        predictions = []
+
+        for progress in category_progress:
+            if progress.total_problems == 0:
+                continue
+
+            # Calculate current skill level based on success rate and completion
+            completion_rate = progress.solved_problems / progress.total_problems
+            current_level = (progress.success_rate * 0.6 + completion_rate * 100 * 0.4)
+
+            # Predict future level (simple linear extrapolation)
+            # In production, this could use ML models
+            growth_factor = 1.1 if current_level < 50 else 1.05
+            predicted_level = min(100, current_level * growth_factor)
+
+            # Calculate confidence based on number of solved problems
+            confidence = min(1.0, progress.solved_problems / 10)
+
+            # Recommend focus if completion rate is low
+            recommended_focus = completion_rate < 0.3 and progress.total_problems >= 5
+
+            predictions.append(
+                SkillPrediction(
+                    category=progress.category,
+                    current_level=round(current_level, 1),
+                    predicted_level=round(predicted_level, 1),
+                    confidence=round(confidence, 2),
+                    recommended_focus=recommended_focus,
+                )
+            )
+
+        # Sort by recommended focus first, then by current level (ascending)
+        predictions.sort(key=lambda x: (-x.recommended_focus, x.current_level))
+
+        return predictions

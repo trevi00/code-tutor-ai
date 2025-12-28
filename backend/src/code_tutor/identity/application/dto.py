@@ -35,6 +35,13 @@ class RefreshTokenRequest(BaseModel):
     refresh_token: str
 
 
+class UpdateProfileRequest(BaseModel):
+    """Update user profile request"""
+
+    username: str | None = Field(None, min_length=3, max_length=30)
+    bio: str | None = Field(None, max_length=200)
+
+
 # Response DTOs
 class UserResponse(BaseModel):
     """User response DTO"""
@@ -47,6 +54,7 @@ class UserResponse(BaseModel):
     is_verified: bool
     created_at: datetime
     last_login_at: datetime | None = None
+    bio: str | None = None
 
     class Config:
         from_attributes = True

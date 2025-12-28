@@ -13,9 +13,11 @@ from code_tutor.learning.application.dashboard_service import DashboardService
 from code_tutor.learning.application.dto import (
     CreateProblemRequest,
     CreateSubmissionRequest,
+    HintsResponse,
     ProblemFilterParams,
     ProblemListResponse,
     ProblemResponse,
+    RecommendedProblemResponse,
     SubmissionResponse,
     SubmissionSummaryResponse,
 )
@@ -116,6 +118,38 @@ async def create_problem(
             detail="Admin access required",
         )
     return await service.create_problem(request)
+
+
+@router.get(
+    "/problems/recommended",
+    response_model=list[RecommendedProblemResponse],
+    summary="Get recommended problems for user",
+)
+async def get_recommended_problems(
+    service: Annotated[ProblemService, Depends(get_problem_service)],
+    current_user: Annotated[UserResponse, Depends(get_current_active_user)],
+    limit: int = Query(default=5, ge=1, le=20),
+) -> list[RecommendedProblemResponse]:
+    """Get personalized problem recommendations based on user's history"""
+    return await service.get_recommended_problems(current_user.id, limit)
+
+
+@router.get(
+    "/problems/{problem_id}/hints",
+    response_model=HintsResponse,
+    summary="Get hints for a problem",
+)
+async def get_problem_hints(
+    problem_id: UUID,
+    service: Annotated[ProblemService, Depends(get_problem_service)],
+    current_user: Annotated[UserResponse, Depends(get_current_active_user)],
+    hint_index: int | None = Query(default=None, ge=0, description="Get hints up to this index"),
+) -> HintsResponse:
+    """Get hints for a problem (progressive reveal)"""
+    try:
+        return await service.get_hints(problem_id, hint_index)
+    except AppException as e:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=e.message)
 
 
 @router.post(

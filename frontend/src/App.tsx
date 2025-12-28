@@ -8,6 +8,7 @@ import { ProblemsPage } from '@/pages/problems/ProblemsPage';
 import { ProblemSolvePage } from '@/pages/problems/ProblemSolvePage';
 import { ChatPage } from '@/pages/chat/ChatPage';
 import DashboardPage from '@/pages/dashboard/DashboardPage';
+import ProfilePage from '@/pages/profile/ProfilePage';
 import { useAuthStore } from '@/store/authStore';
 
 // Protected Route component
@@ -82,9 +83,7 @@ export default function App() {
             path="/profile"
             element={
               <ProtectedRoute>
-                <div className="container mx-auto px-4 py-8">
-                  <h1 className="text-2xl font-bold">Profile (Coming Soon)</h1>
-                </div>
+                <ProfilePage />
               </ProtectedRoute>
             }
           />

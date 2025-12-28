@@ -4,10 +4,12 @@ from datetime import timedelta
 from uuid import UUID
 
 from code_tutor.identity.application.dto import (
+    ChangePasswordRequest,
     LoginRequest,
     LoginResponse,
     RegisterRequest,
     TokenResponse,
+    UpdateProfileRequest,
     UserResponse,
 )
 from code_tutor.identity.domain.entities import User
@@ -47,6 +49,51 @@ class UserService:
             raise NotFoundError("User", email)
         return self._to_response(user)
 
+    async def update_profile(
+        self,
+        user_id: UUID,
+        request: UpdateProfileRequest,
+    ) -> UserResponse:
+        """Update user profile"""
+        user = await self._user_repo.get_by_id(user_id)
+        if user is None:
+            raise NotFoundError("User", str(user_id))
+
+        # Check if new username is taken by another user
+        if request.username is not None:
+            existing = await self._user_repo.get_by_username(request.username)
+            if existing and existing.id != user_id:
+                raise ConflictError(
+                    "Username is already taken",
+                    {"username": request.username},
+                )
+
+        # Update profile
+        user.update_profile(
+            username=request.username,
+            bio=request.bio,
+        )
+        updated_user = await self._user_repo.update(user)
+
+        logger.info("User profile updated", user_id=str(user_id))
+        return self._to_response(updated_user)
+
+    async def change_password(
+        self,
+        user_id: UUID,
+        request: ChangePasswordRequest,
+    ) -> None:
+        """Change user password"""
+        user = await self._user_repo.get_by_id(user_id)
+        if user is None:
+            raise NotFoundError("User", str(user_id))
+
+        # change_password validates old password and updates
+        user.change_password(request.old_password, request.new_password)
+        await self._user_repo.update(user)
+
+        logger.info("User password changed", user_id=str(user_id))
+
     def _to_response(self, user: User) -> UserResponse:
         """Convert User entity to UserResponse DTO"""
         return UserResponse(
@@ -58,6 +105,7 @@ class UserService:
             is_verified=user.is_verified,
             created_at=user.created_at,
             last_login_at=user.last_login_at,
+            bio=user.bio,
         )
 
 
@@ -218,4 +266,5 @@ class AuthService:
             is_verified=user.is_verified,
             created_at=user.created_at,
             last_login_at=user.last_login_at,
+            bio=user.bio,
         )

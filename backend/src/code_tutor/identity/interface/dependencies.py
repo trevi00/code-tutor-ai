@@ -71,6 +71,7 @@ async def get_current_user(
             is_verified=user.is_verified,
             created_at=user.created_at,
             last_login_at=user.last_login_at,
+            bio=user.bio,
         )
 
     except UnauthorizedError as e:

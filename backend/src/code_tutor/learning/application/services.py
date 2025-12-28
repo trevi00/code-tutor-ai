@@ -5,10 +5,12 @@ from uuid import UUID
 from code_tutor.learning.application.dto import (
     CreateProblemRequest,
     CreateSubmissionRequest,
+    HintsResponse,
     ProblemFilterParams,
     ProblemListResponse,
     ProblemResponse,
     ProblemSummaryResponse,
+    RecommendedProblemResponse,
     SubmissionResponse,
     SubmissionSummaryResponse,
     TestCaseResponse,
@@ -109,6 +111,57 @@ class ProblemService:
         if deleted:
             logger.info("Problem deleted", problem_id=str(problem_id))
         return deleted
+
+    async def get_hints(self, problem_id: UUID, hint_index: int | None = None) -> HintsResponse:
+        """Get hints for a problem"""
+        problem = await self._problem_repo.get_by_id(problem_id)
+        if problem is None:
+            raise NotFoundError("Problem", str(problem_id))
+
+        hints = problem.hints
+        if hint_index is not None:
+            # Return hints up to the specified index (progressive reveal)
+            hints = hints[:min(hint_index + 1, len(hints))]
+
+        return HintsResponse(
+            problem_id=problem_id,
+            hints=hints,
+            total_hints=len(problem.hints),
+        )
+
+    async def get_recommended_problems(
+        self,
+        user_id: UUID,
+        limit: int = 5,
+    ) -> list[RecommendedProblemResponse]:
+        """Get recommended problems for a user based on their history"""
+        # Get all published problems
+        all_problems = await self._problem_repo.get_published(limit=100, offset=0)
+
+        recommendations = []
+        for problem in all_problems[:limit]:
+            # Simple recommendation logic - can be enhanced with ML later
+            reason = self._get_recommendation_reason(problem)
+            recommendations.append(
+                RecommendedProblemResponse(
+                    id=problem.id,
+                    title=problem.title,
+                    difficulty=problem.difficulty.value,
+                    category=problem.category.value,
+                    reason=reason,
+                )
+            )
+
+        return recommendations
+
+    def _get_recommendation_reason(self, problem: Problem) -> str:
+        """Generate recommendation reason for a problem"""
+        reasons = {
+            "easy": "Good for practice and building confidence",
+            "medium": "Great for skill development",
+            "hard": "Challenge yourself with this problem",
+        }
+        return reasons.get(problem.difficulty.value, "Recommended for you")
 
     def _to_response(self, problem: Problem) -> ProblemResponse:
         """Convert Problem entity to ProblemResponse"""

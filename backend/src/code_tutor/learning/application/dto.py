@@ -147,3 +147,19 @@ class SubmissionSummaryResponse(BaseModel):
     passed_tests: int
     total_tests: int
     submitted_at: datetime
+
+
+class HintsResponse(BaseModel):
+    """Problem hints response"""
+    problem_id: UUID
+    hints: list[str]
+    total_hints: int
+
+
+class RecommendedProblemResponse(BaseModel):
+    """Recommended problem with reason"""
+    id: UUID
+    title: str
+    difficulty: str
+    category: str
+    reason: str

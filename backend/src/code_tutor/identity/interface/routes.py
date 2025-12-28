@@ -13,6 +13,7 @@ from code_tutor.identity.application.dto import (
     RefreshTokenRequest,
     RegisterRequest,
     TokenResponse,
+    UpdateProfileRequest,
     UserResponse,
 )
 from code_tutor.identity.application.services import AuthService, UserService
@@ -128,3 +129,46 @@ async def get_me(
 ) -> UserResponse:
     """Get current authenticated user's profile"""
     return current_user
+
+
+@router.put(
+    "/me",
+    response_model=UserResponse,
+    summary="Update current user profile",
+)
+async def update_profile(
+    request: UpdateProfileRequest,
+    current_user: Annotated[UserResponse, Depends(get_current_active_user)],
+    user_service: Annotated[UserService, Depends(get_user_service)],
+) -> UserResponse:
+    """Update current user's profile (username, bio)"""
+    try:
+        return await user_service.update_profile(current_user.id, request)
+    except AppException as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST
+            if e.code == "VALIDATION_ERROR"
+            else status.HTTP_409_CONFLICT,
+            detail=e.message,
+        )
+
+
+@router.put(
+    "/me/password",
+    response_model=MessageResponse,
+    summary="Change current user password",
+)
+async def change_password(
+    request: ChangePasswordRequest,
+    current_user: Annotated[UserResponse, Depends(get_current_active_user)],
+    user_service: Annotated[UserService, Depends(get_user_service)],
+) -> MessageResponse:
+    """Change current user's password"""
+    try:
+        await user_service.change_password(current_user.id, request)
+        return MessageResponse(message="Password changed successfully")
+    except AppException as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=e.message,
+        )

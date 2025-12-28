@@ -1,5 +1,12 @@
 import apiClient from './client';
-import type { LoginRequest, RegisterRequest, LoginResponse, User } from '@/types';
+import type {
+  LoginRequest,
+  RegisterRequest,
+  LoginResponse,
+  User,
+  UpdateProfileRequest,
+  ChangePasswordRequest,
+} from '@/types';
 
 export const authApi = {
   login: async (data: LoginRequest): Promise<LoginResponse> => {
@@ -14,6 +21,16 @@ export const authApi = {
 
   getMe: async (): Promise<User> => {
     const response = await apiClient.get<User>('/auth/me');
+    return response.data;
+  },
+
+  updateProfile: async (data: UpdateProfileRequest): Promise<User> => {
+    const response = await apiClient.put<User>('/auth/me', data);
+    return response.data;
+  },
+
+  changePassword: async (data: ChangePasswordRequest): Promise<{ message: string }> => {
+    const response = await apiClient.put<{ message: string }>('/auth/me/password', data);
     return response.data;
   },
 

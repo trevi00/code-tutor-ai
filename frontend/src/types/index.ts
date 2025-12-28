@@ -7,6 +7,18 @@ export interface User {
   is_active: boolean;
   is_verified: boolean;
   created_at: string;
+  last_login_at?: string;
+  bio?: string;
+}
+
+export interface UpdateProfileRequest {
+  username?: string;
+  bio?: string;
+}
+
+export interface ChangePasswordRequest {
+  old_password: string;
+  new_password: string;
 }
 
 export interface LoginRequest {
@@ -205,10 +217,26 @@ export interface RecentSubmission {
   submitted_at: string;
 }
 
+export interface HeatmapData {
+  date: string;
+  count: number;
+  level: number;
+}
+
+export interface SkillPrediction {
+  category: string;
+  current_level: number;
+  predicted_level: number;
+  confidence: number;
+  recommended_focus: boolean;
+}
+
 export interface DashboardData {
   stats: UserStats;
   category_progress: CategoryProgress[];
   recent_submissions: RecentSubmission[];
+  heatmap?: HeatmapData[];
+  skill_predictions?: SkillPrediction[];
 }
 
 // API Response wrapper
