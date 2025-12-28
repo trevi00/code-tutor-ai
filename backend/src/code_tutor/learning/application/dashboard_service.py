@@ -10,6 +10,9 @@ from code_tutor.learning.application.dashboard_dto import (
     CategoryProgress,
     DashboardResponse,
     HeatmapData,
+    PredictionInsight,
+    PredictionRecommendation,
+    PredictionResponse,
     RecentSubmission,
     SkillPrediction,
     StreakInfo,
@@ -346,3 +349,157 @@ class DashboardService:
         predictions.sort(key=lambda x: (-x.recommended_focus, x.current_level))
 
         return predictions
+
+    async def get_prediction(self, user_id: UUID) -> PredictionResponse:
+        """Get learning predictions for a user"""
+        # Get current stats
+        stats = await self._get_user_stats(user_id)
+        category_progress = await self._get_category_progress(user_id)
+        recent_submissions = await self._get_recent_submissions(user_id, limit=20)
+
+        # Calculate current success rate
+        current_rate = stats.overall_success_rate
+
+        # Predict future success rate (simple linear model)
+        # In production, this would use LSTM or other ML models
+        recent_trend = self._calculate_recent_trend(recent_submissions)
+        predicted_rate = min(100, max(0, current_rate + recent_trend * 5))
+
+        # Calculate confidence based on data amount
+        confidence = min(1.0, stats.total_submissions / 50)
+
+        # Generate insights
+        insights = self._generate_insights(stats, category_progress, recent_trend)
+
+        # Generate recommendations
+        recommendations = await self._generate_recommendations(
+            user_id, stats, category_progress, recent_submissions
+        )
+
+        return PredictionResponse(
+            current_success_rate=round(current_rate, 1),
+            predicted_success_rate=round(predicted_rate, 1),
+            prediction_period="next_week",
+            confidence=round(confidence, 2),
+            insights=insights,
+            recommendations=recommendations,
+            model_version="simple-v1.0",
+        )
+
+    def _calculate_recent_trend(self, submissions: list[RecentSubmission]) -> float:
+        """Calculate recent performance trend (-1 to 1)"""
+        if len(submissions) < 3:
+            return 0.0
+
+        # Split submissions into halves
+        mid = len(submissions) // 2
+        recent = submissions[:mid]
+        older = submissions[mid:]
+
+        recent_success = sum(1 for s in recent if s.status == "accepted") / len(recent)
+        older_success = sum(1 for s in older if s.status == "accepted") / len(older)
+
+        return recent_success - older_success
+
+    def _generate_insights(
+        self,
+        stats: UserStats,
+        category_progress: list[CategoryProgress],
+        trend: float,
+    ) -> list[PredictionInsight]:
+        """Generate prediction insights"""
+        insights = []
+
+        # Trend insight
+        if trend > 0.1:
+            insights.append(
+                PredictionInsight(
+                    type="trend",
+                    message=f"현재 추세라면 다음 주에 성공률이 {abs(trend * 5):.1f}% 상승할 것으로 예상됩니다.",
+                )
+            )
+        elif trend < -0.1:
+            insights.append(
+                PredictionInsight(
+                    type="trend",
+                    message=f"최근 성공률이 다소 하락했습니다. 기초 문제 복습을 권장합니다.",
+                )
+            )
+
+        # Streak insight
+        if stats.streak.current_streak >= 7:
+            insights.append(
+                PredictionInsight(
+                    type="achievement",
+                    message=f"현재 {stats.streak.current_streak}일 연속 학습 중입니다. 좋은 습관이에요!",
+                )
+            )
+        elif stats.streak.current_streak >= 3:
+            insights.append(
+                PredictionInsight(
+                    type="achievement",
+                    message=f"{stats.streak.current_streak}일 연속 학습 중! 7일까지 도전해보세요.",
+                )
+            )
+
+        # Category insight
+        weak_categories = [cp for cp in category_progress if cp.success_rate < 50 and cp.total_problems >= 3]
+        if weak_categories:
+            weak = weak_categories[0]
+            remaining = weak.total_problems - weak.solved_problems
+            insights.append(
+                PredictionInsight(
+                    type="recommendation",
+                    message=f"{weak.category} 문제를 {min(3, remaining)}개 더 풀면 카테고리 완료율이 향상됩니다.",
+                )
+            )
+
+        return insights
+
+    async def _generate_recommendations(
+        self,
+        user_id: UUID,
+        stats: UserStats,
+        category_progress: list[CategoryProgress],
+        recent_submissions: list[RecentSubmission],
+    ) -> list[PredictionRecommendation]:
+        """Generate personalized recommendations"""
+        recommendations = []
+
+        # Find failed submissions to retry
+        failed = [s for s in recent_submissions if s.status != "accepted"]
+        if failed:
+            recommendations.append(
+                PredictionRecommendation(
+                    type="review",
+                    message=f"최근 실패한 '{failed[0].problem_title}' 문제를 다시 풀어보세요.",
+                    problem_id=failed[0].problem_id,
+                    reason="복습을 통해 이해도를 높일 수 있습니다.",
+                )
+            )
+
+        # Recommend weak category practice
+        weak_categories = [cp for cp in category_progress if cp.success_rate < 50]
+        if weak_categories:
+            weak = weak_categories[0]
+            recommendations.append(
+                PredictionRecommendation(
+                    type="practice",
+                    message=f"{weak.category} 카테고리 연습을 추천드립니다.",
+                    problem_id=None,
+                    reason=f"현재 성공률이 {weak.success_rate:.0f}%로 개선이 필요합니다.",
+                )
+            )
+
+        # Challenge recommendation if doing well
+        if stats.overall_success_rate > 70 and stats.total_problems_solved >= 5:
+            recommendations.append(
+                PredictionRecommendation(
+                    type="challenge",
+                    message="실력이 향상되었습니다. 한 단계 높은 난이도에 도전해보세요!",
+                    problem_id=None,
+                    reason="현재 성공률이 높아 더 어려운 문제에 도전할 준비가 되었습니다.",
+                )
+            )
+
+        return recommendations[:3]  # Limit to 3 recommendations

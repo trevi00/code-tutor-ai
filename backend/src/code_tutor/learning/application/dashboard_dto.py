@@ -70,3 +70,28 @@ class DashboardResponse(BaseModel):
     recent_submissions: list[RecentSubmission]
     heatmap: list[HeatmapData] = []
     skill_predictions: list[SkillPrediction] = []
+
+
+class PredictionInsight(BaseModel):
+    """Prediction insight message"""
+    type: str  # trend, achievement, recommendation
+    message: str
+
+
+class PredictionRecommendation(BaseModel):
+    """Recommended action based on prediction"""
+    type: str  # practice, review, challenge
+    message: str
+    problem_id: UUID | None = None
+    reason: str
+
+
+class PredictionResponse(BaseModel):
+    """Learning prediction response"""
+    current_success_rate: float = Field(ge=0, le=100)
+    predicted_success_rate: float = Field(ge=0, le=100)
+    prediction_period: str = "next_week"
+    confidence: float = Field(ge=0, le=1)
+    insights: list[PredictionInsight] = []
+    recommendations: list[PredictionRecommendation] = []
+    model_version: str = "simple-v1.0"

@@ -239,6 +239,40 @@ export interface DashboardData {
   skill_predictions?: SkillPrediction[];
 }
 
+// Prediction types
+export interface PredictionInsight {
+  type: string;
+  message: string;
+}
+
+export interface PredictionRecommendation {
+  type: string;
+  message: string;
+  problem_id: string | null;
+  reason: string;
+}
+
+export interface PredictionData {
+  current_success_rate: number;
+  predicted_success_rate: number;
+  prediction_period: string;
+  confidence: number;
+  insights: PredictionInsight[];
+  recommendations: PredictionRecommendation[];
+  model_version: string;
+}
+
+// Submission summary for list
+export interface SubmissionSummary {
+  id: string;
+  problem_id: string;
+  problem_title: string;
+  status: SubmissionStatus;
+  execution_time_ms: number;
+  memory_usage_mb: number;
+  submitted_at: string;
+}
+
 // API Response wrapper
 export interface ApiResponse<T> {
   success: boolean;

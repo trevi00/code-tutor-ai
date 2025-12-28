@@ -8,7 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from code_tutor.identity.application.dto import UserResponse
 from code_tutor.identity.interface.dependencies import get_current_active_user
-from code_tutor.learning.application.dashboard_dto import DashboardResponse
+from code_tutor.learning.application.dashboard_dto import DashboardResponse, PredictionResponse
 from code_tutor.learning.application.dashboard_service import DashboardService
 from code_tutor.learning.application.dto import (
     CreateProblemRequest,
@@ -273,3 +273,24 @@ async def get_dashboard(
     service = DashboardService(session)
     dashboard = await service.get_dashboard(current_user.id)
     return success_response(dashboard.model_dump(mode="json"))
+
+
+@router.get(
+    "/dashboard/prediction",
+    summary="Get learning predictions",
+)
+async def get_prediction(
+    session: Annotated[AsyncSession, Depends(get_async_session)],
+    current_user: Annotated[UserResponse, Depends(get_current_active_user)],
+) -> dict[str, Any]:
+    """
+    Get AI-powered learning predictions and recommendations.
+
+    Returns:
+    - Current and predicted success rates
+    - Personalized insights based on learning patterns
+    - Recommendations for improvement
+    """
+    service = DashboardService(session)
+    prediction = await service.get_prediction(current_user.id)
+    return success_response(prediction.model_dump(mode="json"))

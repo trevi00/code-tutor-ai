@@ -8,7 +8,9 @@ import { ProblemsPage } from '@/pages/problems/ProblemsPage';
 import { ProblemSolvePage } from '@/pages/problems/ProblemSolvePage';
 import { ChatPage } from '@/pages/chat/ChatPage';
 import DashboardPage from '@/pages/dashboard/DashboardPage';
+import SubmissionsPage from '@/pages/dashboard/SubmissionsPage';
 import ProfilePage from '@/pages/profile/ProfilePage';
+import SettingsPage from '@/pages/settings/SettingsPage';
 import { useAuthStore } from '@/store/authStore';
 
 // Protected Route component
@@ -84,6 +86,22 @@ export default function App() {
             element={
               <ProtectedRoute>
                 <ProfilePage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/submissions"
+            element={
+              <ProtectedRoute>
+                <SubmissionsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/settings"
+            element={
+              <ProtectedRoute>
+                <SettingsPage />
               </ProtectedRoute>
             }
           />

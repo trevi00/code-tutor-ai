@@ -161,9 +161,9 @@ export default function DashboardPage() {
           {recent_submissions.length > 0 && (
             <Link
               to="/submissions"
-              className="block mt-4 text-center text-blue-600 hover:text-blue-800"
+              className="block mt-4 text-center text-blue-600 hover:text-blue-800 font-medium"
             >
-              전체 보기
+              전체 제출 기록 보기 →
             </Link>
           )}
         </div>
