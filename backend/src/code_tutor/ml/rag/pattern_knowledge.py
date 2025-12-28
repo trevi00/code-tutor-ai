@@ -749,27 +749,19 @@ class PatternKnowledgeBase:
         """
         documents = []
         for pattern in self._patterns:
-            # Create comprehensive document content
-            content = f"""# {pattern['name']} ({pattern['name_ko']})
+            # Create comprehensive document content with Korean emphasis
+            # Put Korean name first for better Korean query matching
+            content = f"""{pattern['name_ko']} {pattern['name']} 알고리즘 패턴
 
-## Description
-{pattern['description']}
 {pattern['description_ko']}
+{pattern['description']}
 
-## Use Cases
-{chr(10).join('- ' + uc for uc in pattern['use_cases'])}
+사용 사례: {', '.join(pattern['use_cases'])}
 
-## Complexity
-- Time: {pattern['time_complexity']}
-- Space: {pattern['space_complexity']}
+시간 복잡도: {pattern['time_complexity']}
+공간 복잡도: {pattern['space_complexity']}
 
-## Example Code
-```python
-{pattern['example_code']}
-```
-
-## Keywords
-{', '.join(pattern['keywords'])}
+키워드: {pattern['name_ko']}, {pattern['name']}, {', '.join(pattern['keywords'])}
 """
             documents.append({
                 "id": pattern["id"],

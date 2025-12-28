@@ -15,7 +15,7 @@ class MLConfig(BaseSettings):
     PATTERN_DATA_PATH: Path = Field(default=Path("./data/patterns.json"))
 
     # LLM Settings (EEVE-Korean or OpenAI fallback)
-    USE_LOCAL_LLM: bool = Field(default=False)
+    USE_LOCAL_LLM: bool = Field(default=True)
     LOCAL_LLM_MODEL: str = Field(default="yanolja/EEVE-Korean-2.8B-v1.0")
     OPENAI_API_KEY: str = Field(default="")
     OPENAI_MODEL: str = Field(default="gpt-3.5-turbo")
@@ -41,7 +41,7 @@ class MLConfig(BaseSettings):
 
     # RAG Settings
     RAG_TOP_K: int = Field(default=3)
-    RAG_SIMILARITY_THRESHOLD: float = Field(default=0.5)
+    RAG_SIMILARITY_THRESHOLD: float = Field(default=0.1)  # Lowered for Korean queries
 
     # Hardware Settings
     USE_GPU: bool = Field(default=True)
@@ -51,6 +51,7 @@ class MLConfig(BaseSettings):
     class Config:
         env_prefix = "ML_"
         env_file = ".env"
+        extra = "ignore"
 
 
 @lru_cache

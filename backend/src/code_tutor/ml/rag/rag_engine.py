@@ -155,10 +155,13 @@ class RAGEngine:
         top_k = top_k or self.config.RAG_TOP_K
         threshold = threshold or self.config.RAG_SIMILARITY_THRESHOLD
 
-        # Embed query
-        query_emb = self.text_embedder.embed(query)
+        # Try keyword-based matching first (for Korean queries)
+        keyword_match = self._match_by_keyword(query)
+        if keyword_match:
+            return keyword_match[:top_k]
 
-        # Search vector store
+        # Fall back to vector search
+        query_emb = self.text_embedder.embed(query)
         results = self.vector_store.search(query_emb, top_k, threshold)
 
         # Enrich with full pattern data
@@ -172,6 +175,73 @@ class RAGEngine:
                 })
 
         return enriched_results
+
+    def _match_by_keyword(self, query: str) -> List[Dict]:
+        """Match patterns by Korean/English keywords"""
+        query_lower = query.lower()
+
+        # Korean keyword mappings
+        keyword_to_pattern = {
+            "투 포인터": "two-pointers",
+            "two pointer": "two-pointers",
+            "슬라이딩 윈도우": "sliding-window",
+            "sliding window": "sliding-window",
+            "빠른 느린 포인터": "fast-slow-pointers",
+            "fast slow": "fast-slow-pointers",
+            "구간 병합": "merge-intervals",
+            "merge interval": "merge-intervals",
+            "순환 정렬": "cyclic-sort",
+            "cyclic sort": "cyclic-sort",
+            "링크드 리스트 뒤집기": "in-place-linked-list-reversal",
+            "reverse linked": "in-place-linked-list-reversal",
+            "bfs": "bfs",
+            "너비 우선": "bfs",
+            "dfs": "dfs",
+            "깊이 우선": "dfs",
+            "이진 탐색": "binary-search",
+            "binary search": "binary-search",
+            "이진 트리": "binary-tree-traversal",
+            "binary tree": "binary-tree-traversal",
+            "힙": "top-k-elements",
+            "top k": "top-k-elements",
+            "dp": "dp",
+            "동적 프로그래밍": "dp",
+            "dynamic programming": "dp",
+            "다이나믹": "dp",
+            "백트래킹": "backtracking",
+            "backtracking": "backtracking",
+            "그리디": "greedy",
+            "greedy": "greedy",
+            "탐욕": "greedy",
+            "유니온 파인드": "union-find",
+            "union find": "union-find",
+            "최단 경로": "shortest-path",
+            "다익스트라": "shortest-path",
+            "dijkstra": "shortest-path",
+            "트라이": "trie",
+            "trie": "trie",
+            "위상 정렬": "topological-sort",
+            "topological": "topological-sort",
+            "모노토닉 스택": "monotonic-stack",
+            "monotonic stack": "monotonic-stack",
+            "비트 조작": "bit-manipulation",
+            "bit manipulation": "bit-manipulation",
+            "비트마스크": "bit-manipulation",
+            "행렬": "matrix-traversal",
+            "matrix": "matrix-traversal",
+            "접두사 합": "prefix-sum",
+            "prefix sum": "prefix-sum",
+            "누적 합": "prefix-sum",
+        }
+
+        matched_patterns = []
+        for keyword, pattern_id in keyword_to_pattern.items():
+            if keyword in query_lower:
+                pattern = self._pattern_kb.get_pattern(pattern_id)
+                if pattern and pattern not in matched_patterns:
+                    matched_patterns.append({**pattern, "score": 1.0})
+
+        return matched_patterns
 
     def retrieve_by_code(
         self,
@@ -297,22 +367,32 @@ class RAGEngine:
 
         # Default system prompt
         if system_prompt is None:
-            system_prompt = """당신은 알고리즘 튜터입니다. 학생의 질문에 대해 주어진 패턴 정보를 활용하여
-친절하고 교육적인 답변을 제공하세요. 코드 예제를 포함하고, 한국어로 답변하세요.
+            system_prompt = """아래 알고리즘 패턴 정보를 참고하여 학생의 질문에 상세하게 답변하세요.
 
-관련 패턴 정보:
-{context}"""
+[참고 패턴 정보]
+{context}
+
+[답변 지침]
+- 패턴의 개념을 쉽게 설명하세요
+- Python 예제 코드를 포함하세요
+- 시간/공간 복잡도를 설명하세요
+- 실제 활용 사례를 언급하세요"""
 
         prompt = system_prompt.format(context=context_str)
 
+        # Use pattern-based response for reliability
+        # LLM can be enabled for more dynamic responses if needed
         llm = self._get_llm()
+
         if llm is None:
             return self._generate_fallback(query, context)
 
         if llm["type"] == "openai":
             return self._generate_openai(llm["client"], prompt, query, max_tokens)
         else:
-            return self._generate_local(llm, prompt, query, max_tokens)
+            # For local LLM, use pattern-based response for accuracy
+            # The 2.8B model struggles with context-following
+            return self._generate_fallback(query, context)
 
     def _build_context_string(self, patterns: List[Dict]) -> str:
         """Build context string from patterns"""
@@ -358,30 +438,33 @@ class RAGEngine:
             model = llm["model"]
             tokenizer = llm["tokenizer"]
 
-            # Format prompt for EEVE
-            full_prompt = f"""### System:
-{system_prompt}
+            # Format prompt for EEVE-Korean - Q&A style with context
+            full_prompt = f"""{system_prompt}
 
-### User:
-{query}
-
-### Assistant:
+Q: {query}
+A: 위 패턴 정보를 바탕으로 설명드리겠습니다.
 """
             inputs = tokenizer(full_prompt, return_tensors="pt").to(model.device)
 
             outputs = model.generate(
                 **inputs,
                 max_new_tokens=max_tokens,
-                temperature=0.7,
+                temperature=0.3,
                 do_sample=True,
-                top_p=0.9,
+                top_p=0.85,
+                top_k=40,
+                repetition_penalty=1.2,
                 pad_token_id=tokenizer.eos_token_id
             )
 
             response = tokenizer.decode(outputs[0], skip_special_tokens=True)
-            # Extract only the assistant's response
-            if "### Assistant:" in response:
-                response = response.split("### Assistant:")[-1].strip()
+            # Extract only the answer part after "A:"
+            if "A:" in response:
+                response = response.split("A:")[-1].strip()
+
+            # Remove any Q: that might appear in the response
+            if "\nQ:" in response:
+                response = response.split("\nQ:")[0].strip()
 
             return response
 
@@ -390,31 +473,48 @@ class RAGEngine:
             return self._generate_fallback(query, [])
 
     def _generate_fallback(self, query: str, context: List[Dict]) -> str:
-        """Fallback response when LLM is unavailable"""
+        """Generate response using pattern data directly (more reliable than LLM)"""
         if not context:
             return f"죄송합니다. '{query}'에 대한 관련 패턴을 찾지 못했습니다."
 
-        # Simple pattern-based response
         pattern = context[0]
-        return f"""'{query}'에 관련된 알고리즘 패턴을 찾았습니다:
 
-## {pattern['name']} ({pattern['name_ko']})
+        # Build a comprehensive response using pattern data
+        response_parts = [
+            f"## {pattern['name_ko']} ({pattern['name']})",
+            "",
+            f"**개념**: {pattern['description_ko']}",
+            "",
+            "### 복잡도",
+            f"- **시간 복잡도**: {pattern['time_complexity']}",
+            f"- **공간 복잡도**: {pattern['space_complexity']}",
+            "",
+            "### 언제 사용하나요?",
+        ]
 
-**설명**: {pattern['description_ko']}
+        for use_case in pattern['use_cases']:
+            response_parts.append(f"- {use_case}")
 
-**시간 복잡도**: {pattern['time_complexity']}
-**공간 복잡도**: {pattern['space_complexity']}
+        response_parts.extend([
+            "",
+            "### 예제 코드",
+            "```python",
+            pattern['example_code'],
+            "```",
+            "",
+            f"**관련 키워드**: {', '.join(pattern['keywords'])}",
+        ])
 
-**활용 사례**:
-{chr(10).join('- ' + uc for uc in pattern['use_cases'])}
+        # Add related patterns if available
+        if len(context) > 1:
+            response_parts.extend([
+                "",
+                "### 관련 패턴",
+            ])
+            for p in context[1:3]:
+                response_parts.append(f"- **{p['name_ko']}**: {p['description_ko']}")
 
-**예제 코드**:
-```python
-{pattern['example_code']}
-```
-
-**키워드**: {', '.join(pattern['keywords'])}
-"""
+        return "\n".join(response_parts)
 
     def analyze_code(
         self,
