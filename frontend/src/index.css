@@ -1,0 +1,39 @@
+@import "tailwindcss";
+
+/* Custom properties based on UI_DESIGN.md */
+:root {
+  /* Primary colors */
+  --color-primary-50: #eff6ff;
+  --color-primary-100: #dbeafe;
+  --color-primary-500: #3b82f6;
+  --color-primary-600: #2563eb;
+  --color-primary-700: #1d4ed8;
+
+  /* Success */
+  --color-success-500: #22c55e;
+
+  /* Warning */
+  --color-warning-500: #f59e0b;
+
+  /* Error */
+  --color-error-500: #ef4444;
+
+  /* Neutrals */
+  --color-neutral-50: #f8fafc;
+  --color-neutral-100: #f1f5f9;
+  --color-neutral-200: #e2e8f0;
+  --color-neutral-700: #334155;
+  --color-neutral-800: #1e293b;
+  --color-neutral-900: #0f172a;
+}
+
+/* Base styles */
+body {
+  @apply bg-neutral-50 text-neutral-900 antialiased;
+  font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+}
+
+/* Code font */
+.font-mono {
+  font-family: 'JetBrains Mono', 'Fira Code', 'SF Mono', Monaco, monospace;
+}
