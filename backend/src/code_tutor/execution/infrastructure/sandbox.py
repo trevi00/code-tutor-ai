@@ -1,6 +1,7 @@
 """Docker sandbox for code execution"""
 
 import asyncio
+import sys
 import tempfile
 import time
 from pathlib import Path
@@ -166,35 +167,33 @@ class MockSandbox:
 
     async def execute(self, request: ExecutionRequest) -> ExecutionResult:
         """Execute code using subprocess (for development only)"""
+        import subprocess
         start_time = time.perf_counter()
 
         try:
             with tempfile.TemporaryDirectory() as temp_dir:
                 code_file = Path(temp_dir) / "solution.py"
-                code_file.write_text(request.code)
-
-                process = await asyncio.create_subprocess_exec(
-                    "python",
-                    str(code_file),
-                    stdin=asyncio.subprocess.PIPE,
-                    stdout=asyncio.subprocess.PIPE,
-                    stderr=asyncio.subprocess.PIPE,
-                )
+                code_file.write_text(request.code, encoding="utf-8")
 
                 try:
-                    stdout, stderr = await asyncio.wait_for(
-                        process.communicate(input=request.stdin.encode()),
+                    result = subprocess.run(
+                        [sys.executable, str(code_file)],
+                        input=request.stdin,
+                        capture_output=True,
+                        text=True,
                         timeout=request.timeout_seconds,
+                        encoding="utf-8",
+                        errors="replace",
                     )
 
                     execution_time = (time.perf_counter() - start_time) * 1000
 
-                    if process.returncode == 0:
+                    if result.returncode == 0:
                         return ExecutionResult(
                             execution_id=request.execution_id,
                             status=ExecutionStatus.SUCCESS,
-                            stdout=stdout.decode("utf-8", errors="replace"),
-                            stderr=stderr.decode("utf-8", errors="replace"),
+                            stdout=result.stdout,
+                            stderr=result.stderr,
                             exit_code=0,
                             execution_time_ms=execution_time,
                         )
@@ -202,15 +201,14 @@ class MockSandbox:
                         return ExecutionResult(
                             execution_id=request.execution_id,
                             status=ExecutionStatus.RUNTIME_ERROR,
-                            stdout=stdout.decode("utf-8", errors="replace"),
-                            stderr=stderr.decode("utf-8", errors="replace"),
-                            exit_code=process.returncode or 1,
+                            stdout=result.stdout,
+                            stderr=result.stderr,
+                            exit_code=result.returncode,
                             execution_time_ms=execution_time,
-                            error_message=stderr.decode("utf-8", errors="replace")[:500],
+                            error_message=result.stderr[:500] if result.stderr else None,
                         )
 
-                except asyncio.TimeoutError:
-                    process.kill()
+                except subprocess.TimeoutExpired:
                     return ExecutionResult(
                         execution_id=request.execution_id,
                         status=ExecutionStatus.TIMEOUT,
@@ -219,8 +217,11 @@ class MockSandbox:
                     )
 
         except Exception as e:
+            import traceback
+            error_detail = f"{type(e).__name__}: {str(e)}\n{traceback.format_exc()}"
+            logger.error(f"MockSandbox execution error: {error_detail}")
             return ExecutionResult(
                 execution_id=request.execution_id,
                 status=ExecutionStatus.RUNTIME_ERROR,
-                error_message=str(e),
+                error_message=error_detail[:500],
             )

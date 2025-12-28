@@ -217,10 +217,18 @@ class DashboardService:
         )
 
         result = await self._session.execute(query)
-        dates = [row[0] for row in result.all()]
+        raw_dates = [row[0] for row in result.all()]
 
-        if not dates:
+        if not raw_dates:
             return StreakInfo()
+
+        # Convert strings to date objects if needed (SQLite returns strings)
+        dates = []
+        for d in raw_dates:
+            if isinstance(d, str):
+                dates.append(datetime.strptime(d, "%Y-%m-%d").date())
+            else:
+                dates.append(d)
 
         today = datetime.now(timezone.utc).date()
         last_activity = dates[0]
