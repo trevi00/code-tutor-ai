@@ -204,6 +204,40 @@ async def create_submission(
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=e.message)
 
 
+@router.post(
+    "/submit",
+    response_model=SubmissionResponse,
+    status_code=status.HTTP_201_CREATED,
+    summary="Submit and evaluate code",
+)
+async def submit_and_evaluate(
+    request: CreateSubmissionRequest,
+    service: Annotated[SubmissionService, Depends(get_submission_service)],
+    evaluator: Annotated[SubmissionEvaluator, Depends(get_submission_evaluator)],
+    current_user: Annotated[UserResponse, Depends(get_current_active_user)],
+) -> SubmissionResponse:
+    """
+    Submit code and immediately evaluate against all test cases.
+
+    This is a convenience endpoint that combines:
+    1. POST /submissions (create submission)
+    2. POST /submissions/{id}/evaluate (run evaluation)
+
+    Returns the evaluated submission with status and test results.
+    """
+    try:
+        # Create submission
+        submission = await service.create_submission(current_user.id, request)
+
+        # Evaluate immediately
+        await evaluator.evaluate_submission(submission.id)
+
+        # Return updated submission
+        return await service.get_submission(submission.id)
+    except AppException as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=e.message)
+
+
 @router.get(
     "/submissions/{submission_id}",
     response_model=SubmissionResponse,
