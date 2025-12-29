@@ -155,10 +155,14 @@ class SubmissionEvaluator:
 
         result = await self._sandbox.execute(request)
 
-        # Compare output
+        # Compare output (normalize whitespace for comparison)
         actual_output = result.output.strip()
         expected_output = test_case.expected_output.strip()
-        is_passed = result.is_success and actual_output == expected_output
+
+        # Normalize: remove all whitespace for comparison
+        actual_normalized = "".join(actual_output.split())
+        expected_normalized = "".join(expected_output.split())
+        is_passed = result.is_success and actual_normalized == expected_normalized
 
         return TestResult(
             test_case_id=test_case.id,
