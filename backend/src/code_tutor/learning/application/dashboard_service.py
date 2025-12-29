@@ -285,7 +285,13 @@ class DashboardService:
         )
 
         result = await self._session.execute(query)
-        submission_counts = {row[0]: row[1] for row in result.all()}
+        # Convert string dates to date objects (SQLite returns strings)
+        submission_counts = {}
+        for row in result.all():
+            date_key = row[0]
+            if isinstance(date_key, str):
+                date_key = datetime.strptime(date_key, "%Y-%m-%d").date()
+            submission_counts[date_key] = row[1]
 
         # Generate heatmap data for all days
         heatmap = []
