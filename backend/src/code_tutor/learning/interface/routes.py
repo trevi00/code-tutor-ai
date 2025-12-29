@@ -21,7 +21,9 @@ from code_tutor.learning.application.dto import (
     SubmissionResponse,
     SubmissionSummaryResponse,
 )
+from code_tutor.execution.application.services import SubmissionEvaluator
 from code_tutor.learning.application.services import ProblemService, SubmissionService
+from code_tutor.shared.config import get_settings
 from code_tutor.learning.domain.repository import ProblemRepository, SubmissionRepository
 from code_tutor.learning.domain.value_objects import Category, Difficulty
 from code_tutor.learning.infrastructure.repository import (
@@ -59,6 +61,15 @@ async def get_submission_service(
     problem_repo: Annotated[ProblemRepository, Depends(get_problem_repository)],
 ) -> SubmissionService:
     return SubmissionService(submission_repo, problem_repo)
+
+
+async def get_submission_evaluator(
+    problem_repo: Annotated[ProblemRepository, Depends(get_problem_repository)],
+    submission_repo: Annotated[SubmissionRepository, Depends(get_submission_repository)],
+) -> SubmissionEvaluator:
+    settings = get_settings()
+    use_docker = settings.ENVIRONMENT != "development"
+    return SubmissionEvaluator(problem_repo, submission_repo, use_docker=use_docker)
 
 
 # Problem endpoints
@@ -213,6 +224,42 @@ async def get_submission(
                 detail="Access denied",
             )
         return submission
+    except AppException as e:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=e.message)
+
+
+@router.post(
+    "/submissions/{submission_id}/evaluate",
+    response_model=SubmissionResponse,
+    summary="Evaluate a submission",
+)
+async def evaluate_submission(
+    submission_id: UUID,
+    evaluator: Annotated[SubmissionEvaluator, Depends(get_submission_evaluator)],
+    service: Annotated[SubmissionService, Depends(get_submission_service)],
+    current_user: Annotated[UserResponse, Depends(get_current_active_user)],
+) -> SubmissionResponse:
+    """
+    Evaluate a pending submission against all test cases.
+
+    - Runs code in sandboxed environment
+    - Compares output with expected results
+    - Updates submission status (ACCEPTED, WRONG_ANSWER, etc.)
+    """
+    try:
+        # Check if user owns the submission
+        submission = await service.get_submission(submission_id)
+        if submission.user_id != current_user.id and current_user.role != "admin":
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Access denied",
+            )
+
+        # Run evaluation
+        await evaluator.evaluate_submission(submission_id)
+
+        # Return updated submission
+        return await service.get_submission(submission_id)
     except AppException as e:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=e.message)
 
