@@ -102,7 +102,10 @@ class SubmissionEvaluator:
 
         # Determine final status
         all_passed = all(r.is_passed for r in test_results)
-        has_timeout = any(r.error_message and "timeout" in r.error_message.lower() for r in test_results)
+        has_timeout = any(
+            r.error_message and ("timeout" in r.error_message.lower() or "time limit" in r.error_message.lower())
+            for r in test_results
+        )
         has_memory_error = any(r.error_message and "memory" in r.error_message.lower() for r in test_results)
 
         if all_passed:
