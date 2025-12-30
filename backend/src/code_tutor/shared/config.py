@@ -43,10 +43,20 @@ class Settings(BaseSettings):
     # CORS
     CORS_ORIGINS: list[str] = ["http://localhost:3000", "http://localhost:5173"]
 
-    # LLM (for later phases)
+    # LLM Configuration
+    LLM_PROVIDER: Literal["ollama", "openai", "pattern"] = "ollama"
     LLM_MODEL_PATH: str = "yanolja/EEVE-Korean-2.8B-v1.0"
     LLM_DEVICE: str = "cuda"
     LLM_MAX_TOKENS: int = 512
+
+    # Ollama Configuration
+    OLLAMA_BASE_URL: str = "http://localhost:11434"
+    OLLAMA_MODEL: str = "llama3"
+    OLLAMA_TIMEOUT: int = 60
+
+    # OpenAI Configuration (optional)
+    OPENAI_API_KEY: str = ""
+    OPENAI_MODEL: str = "gpt-4o-mini"
 
     # Docker Sandbox
     SANDBOX_TIMEOUT_SECONDS: int = 5
