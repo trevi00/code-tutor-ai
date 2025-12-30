@@ -56,6 +56,7 @@ class ProblemFilterParams(BaseModel):
     """Problem filter parameters"""
     category: Category | None = None
     difficulty: Difficulty | None = None
+    pattern_id: str | None = None
     page: int = Field(default=1, ge=1)
     size: int = Field(default=20, ge=1, le=100)
 

@@ -16,7 +16,7 @@ ALGORITHM_PATTERNS = [
         "name_ko": "투 포인터",
         "description": "Use two pointers to traverse array from different positions",
         "description_ko": "배열을 두 포인터로 다른 위치에서 순회하는 기법",
-        "use_cases": ["Sorted array pair sum", "Remove duplicates", "Container with most water"],
+        "use_cases": ["정렬된 배열에서 두 수의 합 찾기", "중복 제거하기", "가장 많은 물을 담는 컨테이너"],
         "time_complexity": "O(n)",
         "space_complexity": "O(1)",
         "example_code": '''def two_sum_sorted(nums, target):
@@ -38,7 +38,7 @@ ALGORITHM_PATTERNS = [
         "name_ko": "슬라이딩 윈도우",
         "description": "Maintain a window that slides through the array",
         "description_ko": "배열을 통해 슬라이딩하는 윈도우를 유지하는 기법",
-        "use_cases": ["Maximum sum subarray", "Longest substring", "Minimum window substring"],
+        "use_cases": ["최대 합 부분배열", "가장 긴 부분 문자열", "최소 윈도우 부분 문자열"],
         "time_complexity": "O(n)",
         "space_complexity": "O(k) where k is window size",
         "example_code": '''def max_sum_subarray(nums, k):
@@ -56,7 +56,7 @@ ALGORITHM_PATTERNS = [
         "name_ko": "빠른/느린 포인터",
         "description": "Two pointers moving at different speeds",
         "description_ko": "다른 속도로 이동하는 두 포인터 기법",
-        "use_cases": ["Cycle detection", "Find middle of linked list", "Happy number"],
+        "use_cases": ["순환 감지", "연결 리스트 중간 노드 찾기", "행복한 숫자"],
         "time_complexity": "O(n)",
         "space_complexity": "O(1)",
         "example_code": '''def has_cycle(head):
@@ -75,7 +75,7 @@ ALGORITHM_PATTERNS = [
         "name_ko": "구간 병합",
         "description": "Merge overlapping intervals",
         "description_ko": "겹치는 구간들을 병합하는 기법",
-        "use_cases": ["Merge intervals", "Insert interval", "Meeting rooms"],
+        "use_cases": ["구간 병합하기", "구간 삽입하기", "회의실 배정"],
         "time_complexity": "O(n log n)",
         "space_complexity": "O(n)",
         "example_code": '''def merge_intervals(intervals):
@@ -95,7 +95,7 @@ ALGORITHM_PATTERNS = [
         "name_ko": "순환 정렬",
         "description": "Sort array with numbers in range [1, n]",
         "description_ko": "[1, n] 범위의 숫자 배열을 정렬하는 기법",
-        "use_cases": ["Find missing number", "Find duplicate", "Find all duplicates"],
+        "use_cases": ["누락된 숫자 찾기", "중복 숫자 찾기", "모든 중복 숫자 찾기"],
         "time_complexity": "O(n)",
         "space_complexity": "O(1)",
         "example_code": '''def cyclic_sort(nums):
@@ -115,7 +115,7 @@ ALGORITHM_PATTERNS = [
         "name_ko": "연결 리스트 뒤집기",
         "description": "Reverse linked list in-place",
         "description_ko": "연결 리스트를 제자리에서 뒤집는 기법",
-        "use_cases": ["Reverse linked list", "Reverse sublist", "Rotate list"],
+        "use_cases": ["연결 리스트 뒤집기", "부분 리스트 뒤집기", "리스트 회전"],
         "time_complexity": "O(n)",
         "space_complexity": "O(1)",
         "example_code": '''def reverse_list(head):
@@ -134,7 +134,7 @@ ALGORITHM_PATTERNS = [
         "name_ko": "너비 우선 탐색",
         "description": "Level-by-level traversal using queue",
         "description_ko": "큐를 사용한 레벨별 순회",
-        "use_cases": ["Level order traversal", "Shortest path", "Minimum depth"],
+        "use_cases": ["레벨 순서 순회", "최단 경로", "최소 깊이"],
         "time_complexity": "O(V + E)",
         "space_complexity": "O(V)",
         "example_code": '''from collections import deque
@@ -160,7 +160,7 @@ def bfs(root):
         "name_ko": "깊이 우선 탐색",
         "description": "Explore as deep as possible before backtracking",
         "description_ko": "백트래킹 전에 가능한 깊이 탐색",
-        "use_cases": ["Tree traversal", "Path finding", "Connected components"],
+        "use_cases": ["트리 순회", "경로 찾기", "연결 요소"],
         "time_complexity": "O(V + E)",
         "space_complexity": "O(V)",
         "example_code": '''def dfs(root):
@@ -182,7 +182,7 @@ def bfs(root):
         "name_ko": "두 개의 힙",
         "description": "Use min-heap and max-heap together",
         "description_ko": "최소 힙과 최대 힙을 함께 사용하는 기법",
-        "use_cases": ["Find median", "Sliding window median", "IPO problem"],
+        "use_cases": ["중앙값 찾기", "슬라이딩 윈도우 중앙값", "IPO 문제"],
         "time_complexity": "O(log n) per operation",
         "space_complexity": "O(n)",
         "example_code": '''import heapq
@@ -204,7 +204,7 @@ class MedianFinder:
         "name_ko": "부분집합",
         "description": "Generate all subsets of a set",
         "description_ko": "집합의 모든 부분집합 생성",
-        "use_cases": ["All subsets", "Subsets with duplicates", "Letter combinations"],
+        "use_cases": ["모든 부분집합", "중복 포함 부분집합", "문자 조합"],
         "time_complexity": "O(2^n)",
         "space_complexity": "O(2^n)",
         "example_code": '''def subsets(nums):
@@ -220,7 +220,7 @@ class MedianFinder:
         "name_ko": "이진 탐색",
         "description": "Divide and conquer on sorted array",
         "description_ko": "정렬된 배열에서 분할 정복",
-        "use_cases": ["Search in sorted array", "Search range", "Peak element"],
+        "use_cases": ["정렬된 배열에서 검색", "범위 검색", "피크 요소 찾기"],
         "time_complexity": "O(log n)",
         "space_complexity": "O(1)",
         "example_code": '''def binary_search(nums, target):
@@ -242,7 +242,7 @@ class MedianFinder:
         "name_ko": "상위 K개 요소",
         "description": "Find top/bottom K elements using heap",
         "description_ko": "힙을 사용해 상위/하위 K개 요소 찾기",
-        "use_cases": ["Kth largest", "Top K frequent", "K closest points"],
+        "use_cases": ["K번째 큰 수", "상위 K개 빈출 요소", "K개의 가장 가까운 점"],
         "time_complexity": "O(n log k)",
         "space_complexity": "O(k)",
         "example_code": '''import heapq
@@ -259,7 +259,7 @@ def top_k_frequent(nums, k):
         "name_ko": "K-방향 병합",
         "description": "Merge K sorted lists using heap",
         "description_ko": "힙을 사용해 K개의 정렬된 리스트 병합",
-        "use_cases": ["Merge K sorted lists", "Kth smallest in matrix", "Smallest range"],
+        "use_cases": ["K개의 정렬된 리스트 병합", "행렬에서 K번째 작은 수", "가장 작은 범위"],
         "time_complexity": "O(n log k)",
         "space_complexity": "O(k)",
         "example_code": '''import heapq
@@ -283,7 +283,7 @@ def merge_k_lists(lists):
         "name_ko": "동적 프로그래밍",
         "description": "Solve problems by breaking into subproblems",
         "description_ko": "문제를 하위 문제로 분해하여 해결",
-        "use_cases": ["Fibonacci", "Knapsack", "Longest subsequence"],
+        "use_cases": ["피보나치", "배낭 문제", "최장 부분 수열"],
         "time_complexity": "Problem dependent",
         "space_complexity": "Problem dependent",
         "example_code": '''def longest_common_subsequence(text1, text2):
@@ -304,7 +304,7 @@ def merge_k_lists(lists):
         "name_ko": "위상 정렬",
         "description": "Linear ordering of vertices in DAG",
         "description_ko": "방향 비순환 그래프의 선형 정렬",
-        "use_cases": ["Course schedule", "Build order", "Alien dictionary"],
+        "use_cases": ["수강 순서", "빌드 순서", "외계인 사전"],
         "time_complexity": "O(V + E)",
         "space_complexity": "O(V)",
         "example_code": '''from collections import deque
@@ -332,7 +332,7 @@ def topological_sort(n, edges):
         "name_ko": "유니온-파인드",
         "description": "Track elements in disjoint sets",
         "description_ko": "분리 집합의 요소 추적",
-        "use_cases": ["Connected components", "Redundant connection", "Accounts merge"],
+        "use_cases": ["연결 요소", "중복 연결", "계정 병합"],
         "time_complexity": "O(α(n)) per operation",
         "space_complexity": "O(n)",
         "example_code": '''class UnionFind:
@@ -362,7 +362,7 @@ def topological_sort(n, edges):
         "name_ko": "트라이",
         "description": "Tree structure for string operations",
         "description_ko": "문자열 연산을 위한 트리 구조",
-        "use_cases": ["Autocomplete", "Word search", "Prefix matching"],
+        "use_cases": ["자동완성", "단어 검색", "접두사 매칭"],
         "time_complexity": "O(m) where m is word length",
         "space_complexity": "O(n * m)",
         "example_code": '''class TrieNode:
@@ -397,7 +397,7 @@ class Trie:
         "name_ko": "백트래킹",
         "description": "Build solution incrementally and backtrack",
         "description_ko": "점진적으로 솔루션을 구축하고 백트래킹",
-        "use_cases": ["N-Queens", "Sudoku solver", "Permutations"],
+        "use_cases": ["N-퀸", "스도쿠 풀이", "순열"],
         "time_complexity": "Problem dependent (often exponential)",
         "space_complexity": "O(n)",
         "example_code": '''def permutations(nums):
@@ -420,7 +420,7 @@ class Trie:
         "name_ko": "그리디 알고리즘",
         "description": "Make locally optimal choice at each step",
         "description_ko": "각 단계에서 국소 최적 선택",
-        "use_cases": ["Activity selection", "Huffman coding", "Jump game"],
+        "use_cases": ["활동 선택", "허프만 코딩", "점프 게임"],
         "time_complexity": "Problem dependent",
         "space_complexity": "Problem dependent",
         "example_code": '''def jump_game(nums):
@@ -438,7 +438,7 @@ class Trie:
         "name_ko": "단조 스택",
         "description": "Stack maintaining monotonic order",
         "description_ko": "단조 순서를 유지하는 스택",
-        "use_cases": ["Next greater element", "Largest rectangle", "Daily temperatures"],
+        "use_cases": ["다음 큰 요소", "가장 큰 직사각형", "일일 온도"],
         "time_complexity": "O(n)",
         "space_complexity": "O(n)",
         "example_code": '''def next_greater_element(nums):
@@ -458,7 +458,7 @@ class Trie:
         "name_ko": "비트 조작",
         "description": "Operations using binary representation",
         "description_ko": "이진 표현을 사용한 연산",
-        "use_cases": ["Single number", "Power of two", "Counting bits"],
+        "use_cases": ["단일 숫자", "2의 거듭제곱", "비트 세기"],
         "time_complexity": "O(1) or O(log n)",
         "space_complexity": "O(1)",
         "example_code": '''def single_number(nums):
@@ -477,7 +477,7 @@ def is_power_of_two(n):
         "name_ko": "그래프 색칠",
         "description": "Color graph vertices with constraints",
         "description_ko": "제약 조건에 따라 그래프 정점 색칠",
-        "use_cases": ["Bipartite check", "M-coloring", "Sudoku validation"],
+        "use_cases": ["이분 그래프 확인", "M-색칠", "스도쿠 검증"],
         "time_complexity": "O(V + E)",
         "space_complexity": "O(V)",
         "example_code": '''def is_bipartite(graph):
@@ -505,7 +505,7 @@ def is_power_of_two(n):
         "name_ko": "세그먼트 트리",
         "description": "Tree for range queries and updates",
         "description_ko": "범위 쿼리와 업데이트를 위한 트리",
-        "use_cases": ["Range sum query", "Range minimum", "Range update"],
+        "use_cases": ["범위 합 쿼리", "범위 최솟값", "범위 업데이트"],
         "time_complexity": "O(log n) per query/update",
         "space_complexity": "O(n)",
         "example_code": '''class SegmentTree:
@@ -546,7 +546,7 @@ def is_power_of_two(n):
         "name_ko": "행렬 순회",
         "description": "Traverse 2D matrix in various patterns",
         "description_ko": "다양한 패턴으로 2D 행렬 순회",
-        "use_cases": ["Spiral order", "Diagonal traverse", "Island problems"],
+        "use_cases": ["나선형 순회", "대각선 순회", "섬 문제"],
         "time_complexity": "O(m * n)",
         "space_complexity": "O(1) to O(m * n)",
         "example_code": '''def spiral_order(matrix):

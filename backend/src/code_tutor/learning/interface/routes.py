@@ -82,6 +82,7 @@ async def list_problems(
     service: Annotated[ProblemService, Depends(get_problem_service)],
     category: Category | None = None,
     difficulty: Difficulty | None = None,
+    pattern: str | None = Query(default=None, description="Filter by pattern ID"),
     page: int = Query(default=1, ge=1),
     size: int = Query(default=20, ge=1, le=100),
 ) -> ProblemListResponse:
@@ -89,6 +90,7 @@ async def list_problems(
     params = ProblemFilterParams(
         category=category,
         difficulty=difficulty,
+        pattern_id=pattern,
         page=page,
         size=size,
     )

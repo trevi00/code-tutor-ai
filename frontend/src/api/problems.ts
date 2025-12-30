@@ -6,6 +6,7 @@ export interface ListProblemsParams {
   size?: number;
   difficulty?: string;
   category?: string;
+  pattern?: string;
   search?: string;
 }
 

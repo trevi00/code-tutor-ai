@@ -214,7 +214,7 @@ export function PatternDetailPage() {
           {pattern.name_ko} 패턴을 활용하는 연습 문제를 풀어보세요.
         </p>
         <Link
-          to="/problems"
+          to={`/problems?pattern=${pattern.id}`}
           className="inline-flex items-center gap-2 px-4 py-2 bg-white text-purple-600 rounded-lg font-medium hover:bg-purple-50 transition-colors"
         >
           <BookOpen className="h-5 w-5" />

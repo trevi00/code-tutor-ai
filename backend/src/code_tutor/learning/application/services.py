@@ -78,6 +78,7 @@ class ProblemService:
         problems = await self._problem_repo.get_published(
             category=params.category,
             difficulty=params.difficulty,
+            pattern_id=params.pattern_id,
             limit=params.size,
             offset=offset,
         )
@@ -85,6 +86,7 @@ class ProblemService:
         total = await self._problem_repo.count_published(
             category=params.category,
             difficulty=params.difficulty,
+            pattern_id=params.pattern_id,
         )
 
         pages = (total + params.size - 1) // params.size

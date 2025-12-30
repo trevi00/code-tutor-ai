@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { Search, Filter, ChevronRight, Loader2, RefreshCw } from 'lucide-react';
+import { Link, useSearchParams } from 'react-router-dom';
+import { Search, Filter, ChevronRight, Loader2, RefreshCw, X } from 'lucide-react';
 import type { Difficulty, Category, ProblemSummary } from '@/types';
 import { problemsApi } from '@/api/problems';
+import { patternsApi, type Pattern } from '@/api/patterns';
 
 
 const DIFFICULTY_COLORS: Record<Difficulty, string> = {
@@ -24,23 +25,45 @@ const CATEGORY_LABELS: Partial<Record<Category, string>> = {
   linked_list: '연결 리스트',
   stack: '스택',
   queue: '큐',
+  heap: '힙',
   tree: '트리',
   graph: '그래프',
   dp: '동적 프로그래밍',
   greedy: '그리디',
   binary_search: '이진 탐색',
   sorting: '정렬',
+  backtracking: '백트래킹',
 };
 
 export function ProblemsPage() {
+  const [searchParams, setSearchParams] = useSearchParams();
   const [problems, setProblems] = useState<ProblemSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [difficultyFilter, setDifficultyFilter] = useState<Difficulty | ''>('');
   const [categoryFilter, setCategoryFilter] = useState<Category | ''>('');
+  const [patternFilter, setPatternFilter] = useState<string>('');
+  const [patternInfo, setPatternInfo] = useState<Pattern | null>(null);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+
+  // Read pattern from URL on mount
+  useEffect(() => {
+    const patternParam = searchParams.get('pattern');
+    if (patternParam) {
+      setPatternFilter(patternParam);
+      // Fetch pattern info for display
+      patternsApi.get(patternParam).then(setPatternInfo).catch(console.error);
+    }
+  }, [searchParams]);
+
+  const clearPatternFilter = () => {
+    setPatternFilter('');
+    setPatternInfo(null);
+    setSearchParams({});
+    setPage(1);
+  };
 
   const fetchProblems = async () => {
     setLoading(true);
@@ -51,6 +74,7 @@ export function ProblemsPage() {
         size: 20,
         difficulty: difficultyFilter || undefined,
         category: categoryFilter || undefined,
+        pattern: patternFilter || undefined,
         search: search || undefined,
       });
       setProblems(response.items);
@@ -65,7 +89,7 @@ export function ProblemsPage() {
 
   useEffect(() => {
     fetchProblems();
-  }, [page, difficultyFilter, categoryFilter]);
+  }, [page, difficultyFilter, categoryFilter, patternFilter]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -81,6 +105,28 @@ export function ProblemsPage() {
         <h1 className="text-3xl font-bold mb-2">문제 목록</h1>
         <p className="text-neutral-600">AI 힌트와 함께 알고리즘 문제를 풀어보세요</p>
       </div>
+
+      {/* Active Pattern Filter Banner */}
+      {patternInfo && (
+        <div className="mb-6 bg-purple-50 border border-purple-200 rounded-lg p-4 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <span className="text-purple-600 font-medium">패턴 필터:</span>
+            <span className="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-sm font-medium">
+              {patternInfo.name_ko}
+            </span>
+            <span className="text-neutral-500 text-sm">
+              이 패턴과 관련된 문제만 표시됩니다
+            </span>
+          </div>
+          <button
+            onClick={clearPatternFilter}
+            className="flex items-center gap-1 px-3 py-1 text-sm text-purple-600 hover:text-purple-700 hover:bg-purple-100 rounded-lg transition-colors"
+          >
+            <X className="h-4 w-4" />
+            필터 해제
+          </button>
+        </div>
+      )}
 
       {/* Filters */}
       <div className="flex flex-col md:flex-row gap-4 mb-6">

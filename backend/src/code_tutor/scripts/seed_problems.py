@@ -664,6 +664,339 @@ if __name__ == "__main__":
             {"input": "8", "expected_output": "92", "is_sample": False},
         ],
     },
+    {
+        "title": "최대 합 슬라이딩 윈도우",
+        "description": """정수 배열 `nums`와 정수 `k`가 주어집니다.
+
+길이 `k`인 연속 부분배열 중 합이 최대인 값을 반환하세요.
+
+### 예시
+```
+입력: nums = [2, 1, 5, 1, 3, 2], k = 3
+출력: 9
+설명: 길이 3인 부분배열 [5, 1, 3]의 합이 9로 최대입니다.
+```""",
+        "difficulty": Difficulty.EASY,
+        "category": Category.ARRAY,
+        "constraints": "1 <= k <= nums.length <= 10^5",
+        "hints": [
+            "처음 k개 원소의 합을 먼저 계산하세요.",
+            "윈도우를 오른쪽으로 한 칸씩 이동하세요.",
+            "왼쪽 원소를 빼고 오른쪽 원소를 더하세요.",
+        ],
+        "pattern_ids": ["sliding-window"],
+        "pattern_explanation": "슬라이딩 윈도우 패턴을 사용합니다. 고정 크기의 윈도우를 이동시키며 합을 O(1)에 업데이트합니다.",
+        "approach_hint": "window_sum = window_sum - nums[i-k] + nums[i]로 효율적으로 계산하세요.",
+        "time_complexity_hint": "O(n)",
+        "space_complexity_hint": "O(1)",
+        "solution_template": """def solution(nums: list[int], k: int) -> int:
+    # 여기에 코드를 작성하세요
+    pass
+
+
+# 테스트
+if __name__ == "__main__":
+    print(solution([2, 1, 5, 1, 3, 2], 3))  # 9
+""",
+        "reference_solution": """def solution(nums: list[int], k: int) -> int:
+    window_sum = sum(nums[:k])
+    max_sum = window_sum
+
+    for i in range(k, len(nums)):
+        window_sum = window_sum - nums[i-k] + nums[i]
+        max_sum = max(max_sum, window_sum)
+
+    return max_sum
+""",
+        "time_limit_ms": 5000,
+        "memory_limit_mb": 256,
+        "test_cases": [
+            {"input": "[2, 1, 5, 1, 3, 2]\n3", "expected_output": "9", "is_sample": True},
+            {"input": "[2, 3, 4, 1, 5]\n2", "expected_output": "7", "is_sample": True},
+            {"input": "[1]\n1", "expected_output": "1", "is_sample": False},
+        ],
+    },
+    {
+        "title": "연결 리스트 사이클 감지",
+        "description": """연결 리스트의 head가 주어집니다.
+
+연결 리스트에 사이클이 있는지 확인하세요.
+
+사이클이 있으면 True, 없으면 False를 반환하세요.
+
+### 예시
+```
+입력: head = [3, 2, 0, -4], 마지막 노드가 인덱스 1의 노드를 가리킴
+출력: True
+```""",
+        "difficulty": Difficulty.EASY,
+        "category": Category.LINKED_LIST,
+        "constraints": "0 <= 노드 수 <= 10^4",
+        "hints": [
+            "두 포인터를 사용하세요.",
+            "느린 포인터는 한 칸, 빠른 포인터는 두 칸씩 이동합니다.",
+            "사이클이 있으면 두 포인터가 만나게 됩니다.",
+        ],
+        "pattern_ids": ["fast-slow-pointers"],
+        "pattern_explanation": "Floyd의 사이클 감지 알고리즘입니다. 빠른 포인터와 느린 포인터가 만나면 사이클이 존재합니다.",
+        "approach_hint": "토끼와 거북이 알고리즘을 생각해보세요.",
+        "time_complexity_hint": "O(n)",
+        "space_complexity_hint": "O(1)",
+        "solution_template": """class ListNode:
+    def __init__(self, val=0, next=None):
+        self.val = val
+        self.next = next
+
+
+def solution(head: ListNode) -> bool:
+    # 여기에 코드를 작성하세요
+    pass
+""",
+        "reference_solution": """class ListNode:
+    def __init__(self, val=0, next=None):
+        self.val = val
+        self.next = next
+
+
+def solution(head: ListNode) -> bool:
+    if not head or not head.next:
+        return False
+
+    slow = fast = head
+
+    while fast and fast.next:
+        slow = slow.next
+        fast = fast.next.next
+        if slow == fast:
+            return True
+
+    return False
+""",
+        "time_limit_ms": 5000,
+        "memory_limit_mb": 256,
+        "test_cases": [
+            {"input": "[3, 2, 0, -4]\n1", "expected_output": "True", "is_sample": True},
+            {"input": "[1, 2]\n0", "expected_output": "True", "is_sample": True},
+            {"input": "[1]\n-1", "expected_output": "False", "is_sample": False},
+        ],
+    },
+    {
+        "title": "K번째 큰 수",
+        "description": """정수 배열 `nums`와 정수 `k`가 주어집니다.
+
+배열에서 `k`번째로 큰 원소를 반환하세요.
+
+### 예시
+```
+입력: nums = [3, 2, 1, 5, 6, 4], k = 2
+출력: 5
+
+입력: nums = [3, 2, 3, 1, 2, 4, 5, 5, 6], k = 4
+출력: 4
+```""",
+        "difficulty": Difficulty.MEDIUM,
+        "category": Category.HEAP,
+        "constraints": "1 <= k <= nums.length <= 10^5",
+        "hints": [
+            "정렬하면 O(n log n)에 해결됩니다.",
+            "힙을 사용하면 O(n log k)에 해결할 수 있습니다.",
+            "크기 k인 최소 힙을 유지하세요.",
+        ],
+        "pattern_ids": ["top-k-elements"],
+        "pattern_explanation": "Top K 패턴의 전형적인 문제입니다. 최소 힙을 사용하면 효율적으로 K번째 큰 수를 찾을 수 있습니다.",
+        "approach_hint": "크기 k인 최소 힙을 유지하면, 힙의 root가 k번째 큰 수입니다.",
+        "time_complexity_hint": "O(n log k)",
+        "space_complexity_hint": "O(k)",
+        "solution_template": """def solution(nums: list[int], k: int) -> int:
+    # 여기에 코드를 작성하세요
+    pass
+
+
+# 테스트
+if __name__ == "__main__":
+    print(solution([3, 2, 1, 5, 6, 4], 2))  # 5
+    print(solution([3, 2, 3, 1, 2, 4, 5, 5, 6], 4))  # 4
+""",
+        "reference_solution": """import heapq
+
+
+def solution(nums: list[int], k: int) -> int:
+    # 크기 k인 최소 힙 유지
+    heap = []
+
+    for num in nums:
+        heapq.heappush(heap, num)
+        if len(heap) > k:
+            heapq.heappop(heap)
+
+    return heap[0]
+""",
+        "time_limit_ms": 5000,
+        "memory_limit_mb": 256,
+        "test_cases": [
+            {"input": "[3, 2, 1, 5, 6, 4]\n2", "expected_output": "5", "is_sample": True},
+            {"input": "[3, 2, 3, 1, 2, 4, 5, 5, 6]\n4", "expected_output": "4", "is_sample": True},
+            {"input": "[1]\n1", "expected_output": "1", "is_sample": False},
+        ],
+    },
+    {
+        "title": "부분집합 생성",
+        "description": """중복 없는 정수 배열 `nums`가 주어집니다.
+
+가능한 모든 부분집합(멱집합)을 반환하세요.
+
+### 예시
+```
+입력: nums = [1, 2, 3]
+출력: [[], [1], [2], [1,2], [3], [1,3], [2,3], [1,2,3]]
+```
+
+### 참고
+- 부분집합에는 빈 집합도 포함됩니다.
+- 순서는 상관없습니다.""",
+        "difficulty": Difficulty.MEDIUM,
+        "category": Category.BACKTRACKING,
+        "constraints": "1 <= nums.length <= 10, 모든 원소는 유일합니다.",
+        "hints": [
+            "각 원소를 포함하거나 포함하지 않는 두 가지 선택이 있습니다.",
+            "재귀적으로 모든 조합을 생성하세요.",
+            "반복적인 방법도 가능합니다.",
+        ],
+        "pattern_ids": ["subsets", "backtracking"],
+        "pattern_explanation": "부분집합 패턴은 각 원소에 대해 '포함/비포함' 결정을 내리는 방식입니다. 총 2^n개의 부분집합이 생성됩니다.",
+        "approach_hint": "기존 부분집합들에 현재 원소를 추가한 새 부분집합들을 만드세요.",
+        "time_complexity_hint": "O(2^n)",
+        "space_complexity_hint": "O(2^n)",
+        "solution_template": """def solution(nums: list[int]) -> list[list[int]]:
+    # 여기에 코드를 작성하세요
+    pass
+
+
+# 테스트
+if __name__ == "__main__":
+    print(solution([1, 2, 3]))  # [[], [1], [2], [1,2], [3], [1,3], [2,3], [1,2,3]]
+""",
+        "reference_solution": """def solution(nums: list[int]) -> list[list[int]]:
+    result = [[]]
+
+    for num in nums:
+        result += [curr + [num] for curr in result]
+
+    return result
+""",
+        "time_limit_ms": 5000,
+        "memory_limit_mb": 256,
+        "test_cases": [
+            {"input": "[1, 2, 3]", "expected_output": "[[], [1], [2], [1, 2], [3], [1, 3], [2, 3], [1, 2, 3]]", "is_sample": True},
+            {"input": "[0]", "expected_output": "[[], [0]]", "is_sample": True},
+        ],
+    },
+    {
+        "title": "문자열 뒤집기",
+        "description": """문자 배열 `s`가 주어집니다.
+
+배열을 제자리에서 뒤집으세요.
+
+**추가 공간 O(1)만 사용해야 합니다.**
+
+### 예시
+```
+입력: s = ["h","e","l","l","o"]
+출력: ["o","l","l","e","h"]
+```""",
+        "difficulty": Difficulty.EASY,
+        "category": Category.STRING,
+        "constraints": "1 <= s.length <= 10^5",
+        "hints": [
+            "투 포인터를 사용하세요.",
+            "양쪽 끝에서 시작하여 가운데로 이동합니다.",
+            "두 문자를 스왑하세요.",
+        ],
+        "pattern_ids": ["two-pointers"],
+        "pattern_explanation": "투 포인터 패턴의 기본 예시입니다. 양쪽 끝에서 시작해 중앙으로 이동하며 스왑합니다.",
+        "approach_hint": "left와 right 포인터가 만날 때까지 스왑을 반복하세요.",
+        "time_complexity_hint": "O(n)",
+        "space_complexity_hint": "O(1)",
+        "solution_template": """def solution(s: list[str]) -> None:
+    # 여기에 코드를 작성하세요
+    pass
+
+
+# 테스트
+if __name__ == "__main__":
+    arr = ["h", "e", "l", "l", "o"]
+    solution(arr)
+    print(arr)  # ["o", "l", "l", "e", "h"]
+""",
+        "reference_solution": """def solution(s: list[str]) -> None:
+    left, right = 0, len(s) - 1
+
+    while left < right:
+        s[left], s[right] = s[right], s[left]
+        left += 1
+        right -= 1
+""",
+        "time_limit_ms": 5000,
+        "memory_limit_mb": 256,
+        "test_cases": [
+            {"input": '["h", "e", "l", "l", "o"]', "expected_output": '["o", "l", "l", "e", "h"]', "is_sample": True},
+            {"input": '["H", "a", "n", "n", "a", "h"]', "expected_output": '["h", "a", "n", "n", "a", "H"]', "is_sample": True},
+        ],
+    },
+    {
+        "title": "다음 큰 원소",
+        "description": """정수 배열 `nums`가 주어집니다.
+
+각 원소에 대해, 오른쪽에 있는 첫 번째 '더 큰' 원소를 찾으세요.
+없으면 -1을 반환합니다.
+
+### 예시
+```
+입력: nums = [4, 5, 2, 25]
+출력: [5, 25, 25, -1]
+```""",
+        "difficulty": Difficulty.MEDIUM,
+        "category": Category.STACK,
+        "constraints": "1 <= nums.length <= 10^4",
+        "hints": [
+            "스택을 사용하세요.",
+            "아직 답을 찾지 못한 인덱스를 스택에 저장하세요.",
+            "현재 원소가 스택 top보다 크면 pop하며 답을 기록하세요.",
+        ],
+        "pattern_ids": ["monotonic-stack"],
+        "pattern_explanation": "단조 스택 패턴을 사용합니다. 감소하는 순서를 유지하며, 더 큰 원소가 나오면 스택에서 pop합니다.",
+        "approach_hint": "스택에 인덱스를 저장하고, 현재 원소가 더 크면 스택을 pop하며 결과를 채우세요.",
+        "time_complexity_hint": "O(n)",
+        "space_complexity_hint": "O(n)",
+        "solution_template": """def solution(nums: list[int]) -> list[int]:
+    # 여기에 코드를 작성하세요
+    pass
+
+
+# 테스트
+if __name__ == "__main__":
+    print(solution([4, 5, 2, 25]))  # [5, 25, 25, -1]
+""",
+        "reference_solution": """def solution(nums: list[int]) -> list[int]:
+    result = [-1] * len(nums)
+    stack = []
+
+    for i, num in enumerate(nums):
+        while stack and nums[stack[-1]] < num:
+            idx = stack.pop()
+            result[idx] = num
+        stack.append(i)
+
+    return result
+""",
+        "time_limit_ms": 5000,
+        "memory_limit_mb": 256,
+        "test_cases": [
+            {"input": "[4, 5, 2, 25]", "expected_output": "[5, 25, 25, -1]", "is_sample": True},
+            {"input": "[1, 2, 3, 4]", "expected_output": "[2, 3, 4, -1]", "is_sample": True},
+            {"input": "[4, 3, 2, 1]", "expected_output": "[-1, -1, -1, -1]", "is_sample": False},
+        ],
+    },
 ]
 
 

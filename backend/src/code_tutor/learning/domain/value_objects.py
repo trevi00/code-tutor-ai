@@ -35,6 +35,7 @@ class Category(str, Enum):
     STACK = "stack"
     QUEUE = "queue"
     HASH_TABLE = "hash_table"
+    HEAP = "heap"
     TREE = "tree"
     GRAPH = "graph"
     SORTING = "sorting"
