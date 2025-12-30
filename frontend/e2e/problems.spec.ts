@@ -14,9 +14,9 @@ test.describe('Problems Page - Protected Route', () => {
     // Wait for redirect
     await page.waitForURL(/login/);
 
-    // Should show login form
-    await expect(page.getByLabel('Email')).toBeVisible();
-    await expect(page.getByLabel('Password')).toBeVisible();
+    // Should show login form (Korean labels)
+    await expect(page.getByLabel('이메일')).toBeVisible();
+    await expect(page.getByLabel('비밀번호')).toBeVisible();
   });
 
   test('should preserve redirect destination after login attempt', async ({ page }) => {
@@ -25,7 +25,7 @@ test.describe('Problems Page - Protected Route', () => {
     // Should be redirected to login
     await expect(page).toHaveURL(/login/);
 
-    // Login form should be displayed
-    await expect(page.getByRole('button', { name: /Sign In/i })).toBeVisible();
+    // Login form should be displayed (Korean)
+    await expect(page.getByRole('button', { name: /로그인/i })).toBeVisible();
   });
 });

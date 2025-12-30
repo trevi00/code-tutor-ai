@@ -29,6 +29,12 @@ class CreateProblemRequest(BaseModel):
     time_limit_ms: int = Field(default=1000, ge=100, le=10000)
     memory_limit_mb: int = Field(default=256, ge=32, le=512)
     test_cases: list[CreateTestCaseRequest] = []
+    # Pattern-related fields
+    pattern_ids: list[str] = []
+    pattern_explanation: str = ""
+    approach_hint: str = ""
+    time_complexity_hint: str = ""
+    space_complexity_hint: str = ""
 
 
 class UpdateProblemRequest(BaseModel):
@@ -81,6 +87,12 @@ class ProblemResponse(BaseModel):
     memory_limit_mb: int
     is_published: bool
     test_cases: list[TestCaseResponse]
+    # Pattern-related fields
+    pattern_ids: list[str] = []
+    pattern_explanation: str = ""
+    approach_hint: str = ""
+    time_complexity_hint: str = ""
+    space_complexity_hint: str = ""
     created_at: datetime
     updated_at: datetime
 
@@ -95,6 +107,7 @@ class ProblemSummaryResponse(BaseModel):
     difficulty: str
     category: str
     is_published: bool
+    pattern_ids: list[str] = []
     created_at: datetime
 
 

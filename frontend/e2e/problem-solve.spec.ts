@@ -1,15 +1,14 @@
 import { test, expect } from '@playwright/test';
 
 test.describe('Problem Solving Flow', () => {
-  const baseUrl = 'http://localhost:5176';
   const testUser = {
-    email: 'fronttest@example.com',
-    password: 'Password123',
+    email: 'e2etest@example.com',
+    password: 'TestPassword123!',
   };
 
   test('should login, view problems, and access solve page', async ({ page }) => {
     // 1. Go to login page
-    await page.goto(`${baseUrl}/login`);
+    await page.goto('/login');
     console.log('1. Login page loaded');
 
     // 2. Fill login form
@@ -23,8 +22,8 @@ test.describe('Problem Solving Flow', () => {
     console.log('3. Redirected after login');
 
     // 4. Navigate to problems page
-    await page.goto(`${baseUrl}/problems`);
-    await expect(page.locator('h1')).toContainText('Problems');
+    await page.goto('/problems');
+    await expect(page.locator('h1')).toContainText('문제');
     console.log('4. Problems page loaded');
 
     // 5. Wait for problems to load from API
@@ -47,12 +46,12 @@ test.describe('Problem Solving Flow', () => {
     await page.waitForSelector('.monaco-editor', { timeout: 15000 });
     console.log('8. Monaco editor loaded');
 
-    // 9. Verify submit button exists
+    // 9. Verify submit button exists (Korean)
     const submitButton = page.locator('button:has-text("제출")');
     await expect(submitButton).toBeVisible();
     console.log('9. Submit button visible');
 
-    // 10. Verify run button exists
+    // 10. Verify run button exists (Korean)
     const runButton = page.locator('button:has-text("실행")');
     await expect(runButton).toBeVisible();
     console.log('10. Run button visible');

@@ -18,11 +18,12 @@ export default defineConfig({
       name: 'setup',
       testMatch: /.*\.setup\.ts/,
     },
-    // Tests without authentication
+    // Tests without authentication (depends on setup so user exists for login tests)
     {
       name: 'chromium',
       use: { ...devices['Desktop Chrome'] },
       testIgnore: /.*\.authenticated\.spec\.ts/,
+      dependencies: ['setup'],
     },
     // Tests with authentication
     {

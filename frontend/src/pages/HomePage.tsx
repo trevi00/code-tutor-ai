@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { BookOpen, Code, MessageSquare, BarChart3, ArrowRight } from 'lucide-react';
+import { BookOpen, Code, MessageSquare, BarChart3, ArrowRight, Sparkles } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
 
 export function HomePage() {
@@ -13,12 +13,12 @@ export function HomePage() {
         <div className="container mx-auto px-4 py-24 relative">
           <div className="max-w-3xl mx-auto text-center">
             <h1 className="text-4xl md:text-6xl font-bold mb-6">
-              Master Algorithms with{' '}
-              <span className="text-yellow-300">AI-Powered</span> Tutoring
+              <span className="text-yellow-300">AI 튜터</span>와 함께하는{' '}
+              알고리즘 마스터
             </h1>
             <p className="text-xl md:text-2xl text-blue-100 mb-8">
-              Learn Python algorithms step-by-step with personalized AI guidance,
-              instant code feedback, and interactive problem-solving.
+              맞춤형 AI 가이드, 실시간 코드 피드백, 인터랙티브 문제 풀이로
+              Python 알고리즘을 단계별로 학습하세요.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               {isAuthenticated ? (
@@ -26,7 +26,7 @@ export function HomePage() {
                   to="/problems"
                   className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-white text-blue-600 rounded-xl font-semibold hover:bg-blue-50 transition-colors"
                 >
-                  Start Learning
+                  학습 시작하기
                   <ArrowRight className="h-5 w-5" />
                 </Link>
               ) : (
@@ -35,14 +35,14 @@ export function HomePage() {
                     to="/register"
                     className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-white text-blue-600 rounded-xl font-semibold hover:bg-blue-50 transition-colors"
                   >
-                    Get Started Free
+                    무료로 시작하기
                     <ArrowRight className="h-5 w-5" />
                   </Link>
                   <Link
                     to="/login"
                     className="inline-flex items-center justify-center px-8 py-4 border-2 border-white text-white rounded-xl font-semibold hover:bg-white/10 transition-colors"
                   >
-                    Sign In
+                    로그인
                   </Link>
                 </>
               )}
@@ -64,53 +64,97 @@ export function HomePage() {
       <section className="py-20 bg-neutral-50">
         <div className="container mx-auto px-4">
           <h2 className="text-3xl md:text-4xl font-bold text-center mb-4">
-            Why Code Tutor AI?
+            왜 Code Tutor AI인가요?
           </h2>
           <p className="text-xl text-neutral-600 text-center mb-12 max-w-2xl mx-auto">
-            An intelligent learning platform designed to help you master algorithms
-            at your own pace.
+            나만의 속도로 알고리즘을 마스터할 수 있도록 설계된 지능형 학습 플랫폼입니다.
           </p>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
             <FeatureCard
               icon={<BookOpen className="h-8 w-8" />}
-              title="Curated Problems"
-              description="25+ algorithm patterns with step-by-step explanations in Korean."
+              title="엄선된 문제"
+              description="25개 이상의 알고리즘 패턴을 단계별 설명과 함께 학습하세요."
             />
             <FeatureCard
               icon={<MessageSquare className="h-8 w-8" />}
-              title="AI Tutor Chat"
-              description="Get personalized hints and explanations from our AI tutor."
+              title="AI 튜터 채팅"
+              description="AI 튜터에게 맞춤형 힌트와 설명을 받으세요."
             />
             <FeatureCard
               icon={<Code className="h-8 w-8" />}
-              title="Code Sandbox"
-              description="Write, run, and test your code in a secure environment."
+              title="코드 샌드박스"
+              description="안전한 환경에서 코드를 작성하고 실행하고 테스트하세요."
             />
             <FeatureCard
               icon={<BarChart3 className="h-8 w-8" />}
-              title="Track Progress"
-              description="Monitor your learning journey with detailed analytics."
+              title="진도 추적"
+              description="상세한 분석으로 학습 여정을 모니터링하세요."
             />
           </div>
         </div>
       </section>
 
-      {/* CTA Section */}
+      {/* Patterns Section */}
       <section className="py-20 bg-white">
+        <div className="container mx-auto px-4">
+          <div className="flex items-center justify-center gap-2 mb-4">
+            <Sparkles className="h-6 w-6 text-yellow-500" />
+            <h2 className="text-3xl md:text-4xl font-bold text-center">
+              리트코드 패턴 학습
+            </h2>
+          </div>
+          <p className="text-xl text-neutral-600 text-center mb-12 max-w-2xl mx-auto">
+            코딩 테스트에 자주 나오는 25개 핵심 알고리즘 패턴을 체계적으로 학습하세요.
+          </p>
+          <div className="grid md:grid-cols-3 lg:grid-cols-5 gap-4 max-w-4xl mx-auto">
+            {[
+              'Two Pointers',
+              'Sliding Window',
+              'BFS/DFS',
+              'Binary Search',
+              'Dynamic Programming',
+              'Backtracking',
+              'Greedy',
+              'Stack/Queue',
+              'Graph',
+              'Tree',
+            ].map((pattern) => (
+              <div
+                key={pattern}
+                className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-4 text-center border border-blue-100"
+              >
+                <span className="text-sm font-medium text-blue-700">{pattern}</span>
+              </div>
+            ))}
+          </div>
+          <div className="text-center mt-8">
+            <Link
+              to="/patterns"
+              className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-700 font-medium"
+            >
+              모든 패턴 보기
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* CTA Section */}
+      <section className="py-20 bg-neutral-50">
         <div className="container mx-auto px-4 text-center">
           <h2 className="text-3xl md:text-4xl font-bold mb-4">
-            Ready to Start Learning?
+            지금 바로 학습을 시작하세요
           </h2>
           <p className="text-xl text-neutral-600 mb-8">
-            Join thousands of learners mastering algorithms with AI assistance.
+            AI와 함께 알고리즘을 마스터하는 수천 명의 학습자와 함께하세요.
           </p>
           {!isAuthenticated && (
             <Link
               to="/register"
               className="inline-flex items-center gap-2 px-8 py-4 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 transition-colors"
             >
-              Create Free Account
+              무료 계정 만들기
               <ArrowRight className="h-5 w-5" />
             </Link>
           )}

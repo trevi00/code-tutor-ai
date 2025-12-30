@@ -462,9 +462,7 @@ async def classify_code(
     "/patterns",
     summary="List algorithm patterns",
 )
-async def list_patterns(
-    current_user: Annotated[UserResponse, Depends(get_current_active_user)] = None,
-) -> dict[str, Any]:
+async def list_patterns() -> dict[str, Any]:
     """
     List all available algorithm patterns in the knowledge base.
 
@@ -499,7 +497,6 @@ async def list_patterns(
 )
 async def get_pattern(
     pattern_id: str,
-    current_user: Annotated[UserResponse, Depends(get_current_active_user)] = None,
 ) -> dict[str, Any]:
     """
     Get detailed information about a specific algorithm pattern.
@@ -535,7 +532,6 @@ async def get_pattern(
 async def search_patterns(
     query: str,
     top_k: int = Query(default=3, ge=1, le=10),
-    current_user: Annotated[UserResponse, Depends(get_current_active_user)] = None,
 ) -> dict[str, Any]:
     """
     Search for algorithm patterns using semantic search.

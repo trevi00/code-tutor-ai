@@ -11,19 +11,25 @@ const DIFFICULTY_COLORS: Record<Difficulty, string> = {
   hard: 'bg-red-100 text-red-700',
 };
 
+const DIFFICULTY_LABELS: Record<Difficulty, string> = {
+  easy: '쉬움',
+  medium: '보통',
+  hard: '어려움',
+};
+
 const CATEGORY_LABELS: Partial<Record<Category, string>> = {
-  array: 'Array',
-  string: 'String',
-  hash_table: 'Hash Table',
-  linked_list: 'Linked List',
-  stack: 'Stack',
-  queue: 'Queue',
-  tree: 'Tree',
-  graph: 'Graph',
-  dp: 'Dynamic Programming',
-  greedy: 'Greedy',
-  binary_search: 'Binary Search',
-  sorting: 'Sorting',
+  array: '배열',
+  string: '문자열',
+  hash_table: '해시 테이블',
+  linked_list: '연결 리스트',
+  stack: '스택',
+  queue: '큐',
+  tree: '트리',
+  graph: '그래프',
+  dp: '동적 프로그래밍',
+  greedy: '그리디',
+  binary_search: '이진 탐색',
+  sorting: '정렬',
 };
 
 export function ProblemsPage() {
@@ -50,7 +56,7 @@ export function ProblemsPage() {
       setProblems(response.items);
       setTotalPages(response.pages);
     } catch (err) {
-      setError('Failed to load problems. Please try again.');
+      setError('문제를 불러오는데 실패했습니다. 다시 시도해주세요.');
       console.error('Error fetching problems:', err);
     } finally {
       setLoading(false);
@@ -72,8 +78,8 @@ export function ProblemsPage() {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2">Problems</h1>
-        <p className="text-neutral-600">Practice algorithm problems with AI-powered hints</p>
+        <h1 className="text-3xl font-bold mb-2">문제 목록</h1>
+        <p className="text-neutral-600">AI 힌트와 함께 알고리즘 문제를 풀어보세요</p>
       </div>
 
       {/* Filters */}
@@ -82,7 +88,7 @@ export function ProblemsPage() {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-neutral-400" />
           <input
             type="text"
-            placeholder="Search problems..."
+            placeholder="문제 검색..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="w-full pl-10 pr-4 py-3 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -97,10 +103,10 @@ export function ProblemsPage() {
               onChange={(e) => setDifficultyFilter(e.target.value as Difficulty | '')}
               className="pl-10 pr-8 py-3 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-blue-500 appearance-none bg-white"
             >
-              <option value="">All Difficulties</option>
-              <option value="easy">Easy</option>
-              <option value="medium">Medium</option>
-              <option value="hard">Hard</option>
+              <option value="">전체 난이도</option>
+              <option value="easy">쉬움</option>
+              <option value="medium">보통</option>
+              <option value="hard">어려움</option>
             </select>
           </div>
 
@@ -109,7 +115,7 @@ export function ProblemsPage() {
             onChange={(e) => setCategoryFilter(e.target.value as Category | '')}
             className="px-4 py-3 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-blue-500 appearance-none bg-white"
           >
-            <option value="">All Categories</option>
+            <option value="">전체 카테고리</option>
             {Object.entries(CATEGORY_LABELS).map(([value, label]) => (
               <option key={value} value={value}>
                 {label}
@@ -124,9 +130,9 @@ export function ProblemsPage() {
         <table className="w-full">
           <thead className="bg-neutral-50 border-b border-neutral-200">
             <tr>
-              <th className="text-left py-4 px-6 font-medium text-neutral-600">Title</th>
-              <th className="text-left py-4 px-4 font-medium text-neutral-600">Difficulty</th>
-              <th className="text-left py-4 px-4 font-medium text-neutral-600">Category</th>
+              <th className="text-left py-4 px-6 font-medium text-neutral-600">제목</th>
+              <th className="text-left py-4 px-4 font-medium text-neutral-600">난이도</th>
+              <th className="text-left py-4 px-4 font-medium text-neutral-600">카테고리</th>
               <th className="w-12"></th>
             </tr>
           </thead>
@@ -143,11 +149,11 @@ export function ProblemsPage() {
                 </td>
                 <td className="py-4 px-4">
                   <span
-                    className={`px-3 py-1 rounded-full text-sm font-medium capitalize ${
+                    className={`px-3 py-1 rounded-full text-sm font-medium ${
                       DIFFICULTY_COLORS[problem.difficulty]
                     }`}
                   >
-                    {problem.difficulty}
+                    {DIFFICULTY_LABELS[problem.difficulty]}
                   </span>
                 </td>
                 <td className="py-4 px-4 text-neutral-600">
@@ -169,7 +175,7 @@ export function ProblemsPage() {
         {loading && (
           <div className="py-12 text-center">
             <Loader2 className="h-8 w-8 animate-spin text-blue-500 mx-auto" />
-            <p className="mt-2 text-neutral-500">Loading problems...</p>
+            <p className="mt-2 text-neutral-500">문제를 불러오는 중...</p>
           </div>
         )}
 
@@ -181,14 +187,14 @@ export function ProblemsPage() {
               className="inline-flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
             >
               <RefreshCw className="h-4 w-4" />
-              Retry
+              다시 시도
             </button>
           </div>
         )}
 
         {!loading && !error && problems.length === 0 && (
           <div className="py-12 text-center text-neutral-500">
-            No problems found matching your filters.
+            필터에 맞는 문제가 없습니다.
           </div>
         )}
       </div>
@@ -201,17 +207,17 @@ export function ProblemsPage() {
             disabled={page === 1}
             className="px-4 py-2 border border-neutral-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-neutral-50"
           >
-            Previous
+            이전
           </button>
           <span className="px-4 py-2 text-neutral-600">
-            Page {page} of {totalPages}
+            {page} / {totalPages} 페이지
           </span>
           <button
             onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
             disabled={page === totalPages}
             className="px-4 py-2 border border-neutral-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-neutral-50"
           >
-            Next
+            다음
           </button>
         </div>
       )}

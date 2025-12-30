@@ -15,9 +15,10 @@ setup('authenticate', async ({ page }) => {
   await page.goto('/login');
   await page.waitForLoadState('networkidle');
 
-  await page.getByLabel('Email').fill(testEmail);
-  await page.getByLabel('Password').fill(testPassword);
-  await page.getByRole('button', { name: /Sign In/i }).click();
+  // Korean labels
+  await page.getByLabel('이메일').fill(testEmail);
+  await page.getByLabel('비밀번호').fill(testPassword);
+  await page.getByRole('button', { name: /로그인/i }).click();
 
   // Wait for result
   await page.waitForTimeout(2000);
@@ -34,13 +35,13 @@ setup('authenticate', async ({ page }) => {
   await page.goto('/register');
   await page.waitForLoadState('networkidle');
 
-  await page.getByLabel('Email').fill(testEmail);
-  await page.getByLabel('Username').fill(testUsername);
-  await page.getByLabel('Password', { exact: true }).fill(testPassword);
-  await page.getByLabel('Confirm Password').fill(testPassword);
+  await page.getByLabel('이메일').fill(testEmail);
+  await page.getByLabel('사용자명').fill(testUsername);
+  await page.getByLabel('비밀번호', { exact: true }).fill(testPassword);
+  await page.getByLabel('비밀번호 확인').fill(testPassword);
 
-  // Click register button
-  await page.getByRole('button', { name: /Create Account/i }).click();
+  // Click register button (계정 만들기 = Create Account)
+  await page.getByRole('button', { name: /계정 만들기/i }).click();
 
   // Wait for result - could be success or already exists error
   await page.waitForTimeout(3000);
@@ -52,9 +53,9 @@ setup('authenticate', async ({ page }) => {
     console.log('User already exists, proceeding to login');
     await page.goto('/login');
     await page.waitForLoadState('networkidle');
-    await page.getByLabel('Email').fill(testEmail);
-    await page.getByLabel('Password').fill(testPassword);
-    await page.getByRole('button', { name: /Sign In/i }).click();
+    await page.getByLabel('이메일').fill(testEmail);
+    await page.getByLabel('비밀번호').fill(testPassword);
+    await page.getByRole('button', { name: /로그인/i }).click();
     await page.waitForURL(/problems|dashboard/, { timeout: 10000 });
     await page.context().storageState({ path: authFile });
     return;
@@ -66,9 +67,9 @@ setup('authenticate', async ({ page }) => {
   // Step 3: Now login with the registered user
   await page.waitForLoadState('networkidle');
 
-  await page.getByLabel('Email').fill(testEmail);
-  await page.getByLabel('Password').fill(testPassword);
-  await page.getByRole('button', { name: /Sign In/i }).click();
+  await page.getByLabel('이메일').fill(testEmail);
+  await page.getByLabel('비밀번호').fill(testPassword);
+  await page.getByRole('button', { name: /로그인/i }).click();
 
   // Wait for redirect to protected route
   await page.waitForURL(/problems|dashboard/, { timeout: 10000 });

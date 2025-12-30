@@ -50,6 +50,11 @@ class SQLAlchemyProblemRepository(ProblemRepository):
             memory_limit_mb=model.memory_limit_mb,
             is_published=model.is_published,
             test_cases=test_cases,
+            pattern_ids=model.pattern_ids or [],
+            pattern_explanation=model.pattern_explanation or "",
+            approach_hint=model.approach_hint or "",
+            time_complexity_hint=model.time_complexity_hint or "",
+            space_complexity_hint=model.space_complexity_hint or "",
         )
         problem._created_at = model.created_at
         problem._updated_at = model.updated_at
@@ -70,6 +75,11 @@ class SQLAlchemyProblemRepository(ProblemRepository):
             time_limit_ms=entity.time_limit_ms,
             memory_limit_mb=entity.memory_limit_mb,
             is_published=entity.is_published,
+            pattern_ids=entity.pattern_ids,
+            pattern_explanation=entity.pattern_explanation,
+            approach_hint=entity.approach_hint,
+            time_complexity_hint=entity.time_complexity_hint,
+            space_complexity_hint=entity.space_complexity_hint,
             created_at=entity.created_at,
             updated_at=entity.updated_at,
         )

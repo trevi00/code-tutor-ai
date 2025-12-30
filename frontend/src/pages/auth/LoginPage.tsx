@@ -28,7 +28,7 @@ export function LoginPage() {
             <BookOpen className="h-8 w-8" />
             <span>Code Tutor AI</span>
           </Link>
-          <p className="mt-2 text-neutral-600">Sign in to continue your learning journey</p>
+          <p className="mt-2 text-neutral-600">학습을 계속하려면 로그인하세요</p>
         </div>
 
         {/* Form */}
@@ -50,7 +50,7 @@ export function LoginPage() {
 
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-neutral-700 mb-2">
-                Email
+                이메일
               </label>
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-neutral-400" />
@@ -59,7 +59,7 @@ export function LoginPage() {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="you@example.com"
+                  placeholder="example@email.com"
                   required
                   className="w-full pl-10 pr-4 py-3 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                 />
@@ -68,7 +68,7 @@ export function LoginPage() {
 
             <div>
               <label htmlFor="password" className="block text-sm font-medium text-neutral-700 mb-2">
-                Password
+                비밀번호
               </label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-neutral-400" />
@@ -77,7 +77,7 @@ export function LoginPage() {
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Enter your password"
+                  placeholder="비밀번호를 입력하세요"
                   required
                   className="w-full pl-10 pr-4 py-3 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                 />
@@ -89,14 +89,14 @@ export function LoginPage() {
               disabled={isLoading}
               className="w-full py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
-              {isLoading ? 'Signing in...' : 'Sign In'}
+              {isLoading ? '로그인 중...' : '로그인'}
             </button>
           </form>
 
           <p className="mt-6 text-center text-sm text-neutral-600">
-            Don't have an account?{' '}
+            계정이 없으신가요?{' '}
             <Link to="/register" className="text-blue-600 hover:text-blue-700 font-medium">
-              Sign up
+              회원가입
             </Link>
           </p>
         </div>

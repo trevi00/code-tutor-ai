@@ -44,6 +44,12 @@ class ProblemModel(Base):
     time_limit_ms: Mapped[int] = mapped_column(Integer, default=1000)
     memory_limit_mb: Mapped[int] = mapped_column(Integer, default=256)
     is_published: Mapped[bool] = mapped_column(Boolean, default=False, index=True)
+    # Pattern-related fields
+    pattern_ids: Mapped[list[str]] = mapped_column(JSON, default=[])
+    pattern_explanation: Mapped[str] = mapped_column(Text, default="")
+    approach_hint: Mapped[str] = mapped_column(Text, default="")
+    time_complexity_hint: Mapped[str] = mapped_column(String(50), default="")
+    space_complexity_hint: Mapped[str] = mapped_column(String(50), default="")
     created_at: Mapped[datetime] = mapped_column(
         DateTime,
         default=datetime.utcnow,

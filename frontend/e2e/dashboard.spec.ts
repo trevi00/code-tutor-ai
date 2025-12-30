@@ -1,15 +1,14 @@
 import { test, expect } from '@playwright/test';
 
 test.describe('Dashboard Page', () => {
-  const baseUrl = 'http://localhost:5176';
   const testUser = {
-    email: 'fronttest@example.com',
-    password: 'Password123',
+    email: 'e2etest@example.com',
+    password: 'TestPassword123!',
   };
 
   test('should display dashboard with stats and activity', async ({ page }) => {
     // 1. Login first
-    await page.goto(`${baseUrl}/login`);
+    await page.goto('/login');
     await page.fill('input[type="email"]', testUser.email);
     await page.fill('input[type="password"]', testUser.password);
     await page.click('button[type="submit"]');
@@ -17,7 +16,7 @@ test.describe('Dashboard Page', () => {
     console.log('1. Logged in');
 
     // 2. Navigate to dashboard
-    await page.goto(`${baseUrl}/dashboard`);
+    await page.goto('/dashboard');
     console.log('2. Navigated to dashboard');
 
     // 3. Wait for dashboard to load
@@ -54,9 +53,9 @@ test.describe('Dashboard Page', () => {
     await expect(page.locator('text=빠른 시작')).toBeVisible();
     console.log('10. Quick actions section visible');
 
-    // 11. Check quick action links
-    await expect(page.locator('text=문제 풀기')).toBeVisible();
-    await expect(page.locator('text=AI 튜터')).toBeVisible();
+    // 11. Check quick action links (use first() to avoid strict mode violation)
+    await expect(page.locator('text=문제 풀기').first()).toBeVisible();
+    await expect(page.locator('text=AI 튜터').first()).toBeVisible();
     console.log('11. Quick action links visible');
 
     // Take screenshot

@@ -75,6 +75,12 @@ class Problem(AggregateRoot):
         memory_limit_mb: int = 256,
         is_published: bool = False,
         test_cases: list[TestCase] | None = None,
+        # Pattern-related fields
+        pattern_ids: list[str] | None = None,
+        pattern_explanation: str = "",
+        approach_hint: str = "",
+        time_complexity_hint: str = "",
+        space_complexity_hint: str = "",
     ) -> None:
         super().__init__(id)
         self._title = title
@@ -89,6 +95,12 @@ class Problem(AggregateRoot):
         self._memory_limit_mb = memory_limit_mb
         self._is_published = is_published
         self._test_cases = test_cases or []
+        # Pattern-related fields
+        self._pattern_ids = pattern_ids or []
+        self._pattern_explanation = pattern_explanation
+        self._approach_hint = approach_hint
+        self._time_complexity_hint = time_complexity_hint
+        self._space_complexity_hint = space_complexity_hint
 
     @classmethod
     def create(
@@ -103,6 +115,11 @@ class Problem(AggregateRoot):
         reference_solution: str = "",
         time_limit_ms: int = 1000,
         memory_limit_mb: int = 256,
+        pattern_ids: list[str] | None = None,
+        pattern_explanation: str = "",
+        approach_hint: str = "",
+        time_complexity_hint: str = "",
+        space_complexity_hint: str = "",
     ) -> "Problem":
         """Factory method to create a new problem"""
         problem = cls(
@@ -116,6 +133,11 @@ class Problem(AggregateRoot):
             reference_solution=reference_solution,
             time_limit_ms=time_limit_ms,
             memory_limit_mb=memory_limit_mb,
+            pattern_ids=pattern_ids,
+            pattern_explanation=pattern_explanation,
+            approach_hint=approach_hint,
+            time_complexity_hint=time_complexity_hint,
+            space_complexity_hint=space_complexity_hint,
         )
 
         problem.add_domain_event(
@@ -180,6 +202,26 @@ class Problem(AggregateRoot):
     @property
     def sample_test_cases(self) -> list[TestCase]:
         return [tc for tc in self._test_cases if tc.is_sample]
+
+    @property
+    def pattern_ids(self) -> list[str]:
+        return self._pattern_ids.copy()
+
+    @property
+    def pattern_explanation(self) -> str:
+        return self._pattern_explanation
+
+    @property
+    def approach_hint(self) -> str:
+        return self._approach_hint
+
+    @property
+    def time_complexity_hint(self) -> str:
+        return self._time_complexity_hint
+
+    @property
+    def space_complexity_hint(self) -> str:
+        return self._space_complexity_hint
 
     # Behavior methods
     def add_test_case(

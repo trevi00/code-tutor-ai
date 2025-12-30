@@ -6,6 +6,8 @@ import { LoginPage } from '@/pages/auth/LoginPage';
 import { RegisterPage } from '@/pages/auth/RegisterPage';
 import { ProblemsPage } from '@/pages/problems/ProblemsPage';
 import { ProblemSolvePage } from '@/pages/problems/ProblemSolvePage';
+import { PatternsPage } from '@/pages/patterns/PatternsPage';
+import { PatternDetailPage } from '@/pages/patterns/PatternDetailPage';
 import { ChatPage } from '@/pages/chat/ChatPage';
 import DashboardPage from '@/pages/dashboard/DashboardPage';
 import SubmissionsPage from '@/pages/dashboard/SubmissionsPage';
@@ -62,6 +64,22 @@ export default function App() {
             element={
               <ProtectedRoute>
                 <ProblemSolvePage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/patterns"
+            element={
+              <ProtectedRoute>
+                <PatternsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/patterns/:id"
+            element={
+              <ProtectedRoute>
+                <PatternDetailPage />
               </ProtectedRoute>
             }
           />

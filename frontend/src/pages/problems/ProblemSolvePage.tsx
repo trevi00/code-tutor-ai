@@ -10,10 +10,28 @@ import {
   XCircle,
   Clock,
   Loader2,
+  Sparkles,
+  Lightbulb,
+  Box,
 } from 'lucide-react';
 import type { Problem, ExecutionStatus, SubmissionStatus } from '@/types';
 import { problemsApi } from '@/api/problems';
 import { executionApi } from '@/api/execution';
+
+// Pattern ID to Korean name mapping
+const PATTERN_NAMES: Record<string, string> = {
+  'two-pointers': '투 포인터',
+  'sliding-window': '슬라이딩 윈도우',
+  'binary-search': '이진 탐색',
+  'bfs': 'BFS',
+  'dfs': 'DFS',
+  'dp': '동적 프로그래밍',
+  'greedy': '그리디',
+  'backtracking': '백트래킹',
+  'monotonic-stack': '모노토닉 스택',
+  'merge-intervals': '구간 병합',
+  'matrix-traversal': '행렬 탐색',
+};
 
 
 interface ExecutionResult {
@@ -40,7 +58,7 @@ export function ProblemSolvePage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [code, setCode] = useState('');
-  const [activeTab, setActiveTab] = useState<'description' | 'hints'>('description');
+  const [activeTab, setActiveTab] = useState<'description' | 'approach' | 'hints'>('description');
   const [isRunning, setIsRunning] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [executionResult, setExecutionResult] = useState<ExecutionResult | null>(null);
@@ -220,6 +238,17 @@ export function ProblemSolvePage() {
               문제 설명
             </button>
             <button
+              onClick={() => setActiveTab('approach')}
+              className={`px-4 py-2 font-medium transition-colors flex items-center gap-1 ${
+                activeTab === 'approach'
+                  ? 'text-purple-600 border-b-2 border-purple-600'
+                  : 'text-neutral-600 hover:text-neutral-900'
+              }`}
+            >
+              <Sparkles className="h-4 w-4" />
+              접근법
+            </button>
+            <button
               onClick={() => setActiveTab('hints')}
               className={`px-4 py-2 font-medium transition-colors ${
                 activeTab === 'hints'
@@ -233,19 +262,118 @@ export function ProblemSolvePage() {
 
           {/* Content */}
           <div className="flex-1 overflow-y-auto p-4">
-            {activeTab === 'description' ? (
-              <div className="prose prose-neutral max-w-none">
-                <div
-                  dangerouslySetInnerHTML={{
-                    __html: problem.description
-                      .replace(/## (.*)/g, '<h2>$1</h2>')
-                      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-                      .replace(/`([^`]+)`/g, '<code>$1</code>')
-                      .replace(/\n/g, '<br />'),
-                  }}
-                />
+            {activeTab === 'description' && (
+              <div>
+                {/* Pattern badges */}
+                {problem.pattern_ids && problem.pattern_ids.length > 0 && (
+                  <div className="flex flex-wrap gap-2 mb-4">
+                    {problem.pattern_ids.map((patternId) => (
+                      <Link
+                        key={patternId}
+                        to={`/patterns/${patternId}`}
+                        className="inline-flex items-center gap-1 px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-sm font-medium hover:bg-purple-200 transition-colors"
+                      >
+                        <Sparkles className="h-3 w-3" />
+                        {PATTERN_NAMES[patternId] || patternId}
+                      </Link>
+                    ))}
+                  </div>
+                )}
+                <div className="prose prose-neutral max-w-none">
+                  <div
+                    dangerouslySetInnerHTML={{
+                      __html: problem.description
+                        .replace(/## (.*)/g, '<h2>$1</h2>')
+                        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                        .replace(/`([^`]+)`/g, '<code>$1</code>')
+                        .replace(/\n/g, '<br />'),
+                    }}
+                  />
+                </div>
               </div>
-            ) : (
+            )}
+            {activeTab === 'approach' && (
+              <div className="space-y-6">
+                {/* Patterns */}
+                {problem.pattern_ids && problem.pattern_ids.length > 0 && (
+                  <div className="bg-purple-50 rounded-lg p-4">
+                    <h3 className="font-bold text-purple-900 mb-2 flex items-center gap-2">
+                      <Sparkles className="h-5 w-5" />
+                      적용 패턴
+                    </h3>
+                    <div className="flex flex-wrap gap-2">
+                      {problem.pattern_ids.map((patternId) => (
+                        <Link
+                          key={patternId}
+                          to={`/patterns/${patternId}`}
+                          className="inline-flex items-center gap-1 px-3 py-1 bg-white text-purple-700 rounded-full text-sm font-medium hover:bg-purple-100 transition-colors border border-purple-200"
+                        >
+                          {PATTERN_NAMES[patternId] || patternId}
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Pattern explanation */}
+                {problem.pattern_explanation && (
+                  <div className="bg-blue-50 rounded-lg p-4">
+                    <h3 className="font-bold text-blue-900 mb-2 flex items-center gap-2">
+                      <Lightbulb className="h-5 w-5" />
+                      패턴 적용 방법
+                    </h3>
+                    <p className="text-blue-800">{problem.pattern_explanation}</p>
+                  </div>
+                )}
+
+                {/* Approach hint */}
+                {problem.approach_hint && (
+                  <div className="bg-green-50 rounded-lg p-4">
+                    <h3 className="font-bold text-green-900 mb-2">접근법 힌트</h3>
+                    <p className="text-green-800">{problem.approach_hint}</p>
+                  </div>
+                )}
+
+                {/* Complexity hints */}
+                <div className="grid grid-cols-2 gap-4">
+                  {problem.time_complexity_hint && (
+                    <div className="bg-neutral-50 rounded-lg p-4">
+                      <h3 className="font-bold text-neutral-700 mb-1 flex items-center gap-2">
+                        <Clock className="h-4 w-4" />
+                        목표 시간복잡도
+                      </h3>
+                      <p className="text-lg font-mono text-neutral-900">
+                        {problem.time_complexity_hint}
+                      </p>
+                    </div>
+                  )}
+                  {problem.space_complexity_hint && (
+                    <div className="bg-neutral-50 rounded-lg p-4">
+                      <h3 className="font-bold text-neutral-700 mb-1 flex items-center gap-2">
+                        <Box className="h-4 w-4" />
+                        목표 공간복잡도
+                      </h3>
+                      <p className="text-lg font-mono text-neutral-900">
+                        {problem.space_complexity_hint}
+                      </p>
+                    </div>
+                  )}
+                </div>
+
+                {/* Link to pattern pages */}
+                {problem.pattern_ids && problem.pattern_ids.length > 0 && (
+                  <div className="text-center pt-4 border-t border-neutral-200">
+                    <Link
+                      to="/patterns"
+                      className="text-purple-600 hover:text-purple-700 font-medium"
+                    >
+                      패턴 학습 페이지에서 더 자세히 알아보기 →
+                    </Link>
+                  </div>
+                )}
+              </div>
+            )}
+            {activeTab === 'hints' && (
               <div className="space-y-4">
                 {(problem.hints || []).map((hint, index) => (
                   <div

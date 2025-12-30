@@ -4,27 +4,27 @@ test.describe('Authentication', () => {
   test('should display login page', async ({ page }) => {
     await page.goto('/login');
 
-    // Check login form elements exist
-    await expect(page.getByLabel('Email')).toBeVisible();
-    await expect(page.getByLabel('Password')).toBeVisible();
-    await expect(page.getByRole('button', { name: /Sign In/i })).toBeVisible();
+    // Check login form elements exist (Korean labels)
+    await expect(page.getByLabel('이메일')).toBeVisible();
+    await expect(page.getByLabel('비밀번호')).toBeVisible();
+    await expect(page.getByRole('button', { name: /로그인/i })).toBeVisible();
   });
 
   test('should display register page', async ({ page }) => {
     await page.goto('/register');
 
-    // Check register form elements exist
-    await expect(page.getByLabel('Email')).toBeVisible();
-    await expect(page.getByLabel('Username')).toBeVisible();
-    await expect(page.getByLabel('Password', { exact: true })).toBeVisible();
-    await expect(page.getByRole('button', { name: /Create Account|Sign Up/i })).toBeVisible();
+    // Check register form elements exist (Korean labels)
+    await expect(page.getByLabel('이메일')).toBeVisible();
+    await expect(page.getByLabel('사용자명')).toBeVisible();
+    await expect(page.getByLabel('비밀번호', { exact: true })).toBeVisible();
+    await expect(page.getByRole('button', { name: /계정 만들기/i })).toBeVisible();
   });
 
   test('should navigate from login to register', async ({ page }) => {
     await page.goto('/login');
 
-    // Find and click register link
-    const registerLink = page.getByRole('link', { name: /Sign up/i });
+    // Find and click register link (Korean)
+    const registerLink = page.getByRole('link', { name: /회원가입/i });
     await registerLink.click();
 
     await expect(page).toHaveURL(/register/);
@@ -34,7 +34,7 @@ test.describe('Authentication', () => {
     await page.goto('/login');
 
     // Try to submit empty form - HTML5 validation should prevent
-    const submitButton = page.getByRole('button', { name: /Sign In/i });
+    const submitButton = page.getByRole('button', { name: /로그인/i });
     await submitButton.click();
 
     // Form should still be on login page (HTML5 required validation)

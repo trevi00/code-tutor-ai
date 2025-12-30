@@ -39,7 +39,7 @@ export function RegisterPage() {
             <BookOpen className="h-8 w-8" />
             <span>Code Tutor AI</span>
           </Link>
-          <p className="mt-2 text-neutral-600">Create your account to start learning</p>
+          <p className="mt-2 text-neutral-600">계정을 만들고 학습을 시작하세요</p>
         </div>
 
         {/* Form */}
@@ -47,8 +47,8 @@ export function RegisterPage() {
           {success ? (
             <div className="text-center py-8">
               <CheckCircle className="h-16 w-16 text-green-500 mx-auto mb-4" />
-              <h2 className="text-xl font-bold text-neutral-900">Registration Successful!</h2>
-              <p className="mt-2 text-neutral-600">Redirecting to login...</p>
+              <h2 className="text-xl font-bold text-neutral-900">회원가입 완료!</h2>
+              <p className="mt-2 text-neutral-600">로그인 페이지로 이동합니다...</p>
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-5">
@@ -68,7 +68,7 @@ export function RegisterPage() {
 
               <div>
                 <label htmlFor="email" className="block text-sm font-medium text-neutral-700 mb-2">
-                  Email
+                  이메일
                 </label>
                 <div className="relative">
                   <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-neutral-400" />
@@ -77,7 +77,7 @@ export function RegisterPage() {
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder="you@example.com"
+                    placeholder="example@email.com"
                     required
                     className="w-full pl-10 pr-4 py-3 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                   />
@@ -86,7 +86,7 @@ export function RegisterPage() {
 
               <div>
                 <label htmlFor="username" className="block text-sm font-medium text-neutral-700 mb-2">
-                  Username
+                  사용자명
                 </label>
                 <div className="relative">
                   <User className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-neutral-400" />
@@ -95,7 +95,7 @@ export function RegisterPage() {
                     type="text"
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
-                    placeholder="Choose a username"
+                    placeholder="사용자명을 입력하세요"
                     required
                     minLength={3}
                     maxLength={20}
@@ -106,7 +106,7 @@ export function RegisterPage() {
 
               <div>
                 <label htmlFor="password" className="block text-sm font-medium text-neutral-700 mb-2">
-                  Password
+                  비밀번호
                 </label>
                 <div className="relative">
                   <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-neutral-400" />
@@ -115,7 +115,7 @@ export function RegisterPage() {
                     type="password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    placeholder="At least 8 characters"
+                    placeholder="8자 이상 입력하세요"
                     required
                     minLength={8}
                     className="w-full pl-10 pr-4 py-3 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
@@ -125,7 +125,7 @@ export function RegisterPage() {
 
               <div>
                 <label htmlFor="confirmPassword" className="block text-sm font-medium text-neutral-700 mb-2">
-                  Confirm Password
+                  비밀번호 확인
                 </label>
                 <div className="relative">
                   <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-neutral-400" />
@@ -134,7 +134,7 @@ export function RegisterPage() {
                     type="password"
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
-                    placeholder="Repeat your password"
+                    placeholder="비밀번호를 다시 입력하세요"
                     required
                     className={`w-full pl-10 pr-10 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
                       confirmPassword && !passwordsMatch
@@ -155,16 +155,16 @@ export function RegisterPage() {
                 disabled={isLoading || !passwordsMatch}
                 className="w-full py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
-                {isLoading ? 'Creating account...' : 'Create Account'}
+                {isLoading ? '계정 생성 중...' : '계정 만들기'}
               </button>
             </form>
           )}
 
           {!success && (
             <p className="mt-6 text-center text-sm text-neutral-600">
-              Already have an account?{' '}
+              이미 계정이 있으신가요?{' '}
               <Link to="/login" className="text-blue-600 hover:text-blue-700 font-medium">
-                Sign in
+                로그인
               </Link>
             </p>
           )}

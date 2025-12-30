@@ -1,15 +1,15 @@
 import { test, expect } from '@playwright/test';
 
 test.describe('Code Review via AI Chat', () => {
-  const baseUrl = 'http://localhost:5176';
   const testUser = {
-    email: 'fronttest@example.com',
-    password: 'Password123',
+    email: 'e2etest@example.com',
+    password: 'TestPassword123!',
   };
 
   test('should get code review from AI tutor', async ({ page }) => {
+    test.setTimeout(120000); // AI response can take up to 90 seconds
     // 1. Login
-    await page.goto(`${baseUrl}/login`);
+    await page.goto('/login');
     await page.fill('input[type="email"]', testUser.email);
     await page.fill('input[type="password"]', testUser.password);
     await page.click('button[type="submit"]');
@@ -17,12 +17,12 @@ test.describe('Code Review via AI Chat', () => {
     console.log('1. Logged in');
 
     // 2. Navigate to chat page
-    await page.goto(`${baseUrl}/chat`);
-    await page.waitForSelector('text=AI Tutor Chat', { timeout: 10000 });
+    await page.goto('/chat');
+    await page.waitForSelector('text=AI 튜터', { timeout: 10000 });
     console.log('2. Chat page loaded');
 
-    // 3. Type code review request
-    const inputField = page.locator('input[placeholder*="message"]');
+    // 3. Type code review request (placeholder: 메시지를 입력하세요...)
+    const inputField = page.locator('input[placeholder*="메시지"], textarea[placeholder*="메시지"]');
     const codeReviewMessage = `이 코드를 리뷰해줘:
 
 def two_sum(nums, target):
@@ -32,7 +32,7 @@ def two_sum(nums, target):
                 return [i, j]
     return []`;
 
-    await inputField.fill(codeReviewMessage);
+    await inputField.first().fill(codeReviewMessage);
     console.log('3. Code review request typed');
 
     // 4. Take screenshot before sending

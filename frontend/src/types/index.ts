@@ -71,6 +71,12 @@ export interface Problem {
   memory_limit_mb: number;
   is_published: boolean;
   test_cases: TestCase[];
+  // Pattern-related fields
+  pattern_ids: string[];
+  pattern_explanation: string;
+  approach_hint: string;
+  time_complexity_hint: string;
+  space_complexity_hint: string;
   created_at: string;
 }
 
@@ -80,6 +86,7 @@ export interface ProblemSummary {
   difficulty: Difficulty;
   category: Category;
   is_published: boolean;
+  pattern_ids: string[];
 }
 
 // Submission types

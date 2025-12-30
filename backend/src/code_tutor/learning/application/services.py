@@ -43,6 +43,11 @@ class ProblemService:
             reference_solution=request.reference_solution,
             time_limit_ms=request.time_limit_ms,
             memory_limit_mb=request.memory_limit_mb,
+            pattern_ids=request.pattern_ids,
+            pattern_explanation=request.pattern_explanation,
+            approach_hint=request.approach_hint,
+            time_complexity_hint=request.time_complexity_hint,
+            space_complexity_hint=request.space_complexity_hint,
         )
 
         # Add test cases
@@ -187,6 +192,11 @@ class ProblemService:
                 )
                 for tc in problem.sample_test_cases  # Only return sample test cases
             ],
+            pattern_ids=problem.pattern_ids,
+            pattern_explanation=problem.pattern_explanation,
+            approach_hint=problem.approach_hint,
+            time_complexity_hint=problem.time_complexity_hint,
+            space_complexity_hint=problem.space_complexity_hint,
             created_at=problem.created_at,
             updated_at=problem.updated_at,
         )
@@ -199,6 +209,7 @@ class ProblemService:
             difficulty=problem.difficulty.value,
             category=problem.category.value,
             is_published=problem.is_published,
+            pattern_ids=problem.pattern_ids,
             created_at=problem.created_at,
         )
 

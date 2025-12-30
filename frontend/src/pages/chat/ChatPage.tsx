@@ -101,10 +101,10 @@ export function ChatPage() {
           <div>
             <h1 className="text-xl font-bold flex items-center gap-2">
               <Bot className="h-6 w-6 text-blue-600" />
-              AI Tutor Chat
+              AI 튜터 채팅
             </h1>
             <p className="text-sm text-neutral-600 mt-1">
-              Ask questions about algorithms, get hints, or request code reviews
+              알고리즘에 대해 질문하고, 힌트를 받거나, 코드 리뷰를 요청하세요
             </p>
           </div>
           <button
@@ -112,7 +112,7 @@ export function ChatPage() {
             className="flex items-center gap-2 px-3 py-2 text-sm text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
           >
             <RefreshCw className="h-4 w-4" />
-            New Chat
+            새 대화
           </button>
         </div>
 
@@ -168,7 +168,7 @@ export function ChatPage() {
               type="text"
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              placeholder="Type your message..."
+              placeholder="메시지를 입력하세요..."
               className="flex-1 px-4 py-3 border border-neutral-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
             <button
