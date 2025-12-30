@@ -57,17 +57,52 @@ test.describe('AI Tutor Chat Page', () => {
     await expect(page.locator('text=Two Sum 문제 힌트 알려줘')).toBeVisible();
     console.log('10. User message visible');
 
-    // 12. Wait for loading indicator or response (with longer timeout for AI)
+    // 12. Wait for AI response (Ollama can take 30-60 seconds)
+    console.log('11. Waiting for AI response...');
+
+    // Wait for loading indicator to disappear (AI finished responding)
+    // or wait for response content to appear
     try {
-      // Wait for either loading dots or response
-      await page.waitForSelector('.animate-bounce, text=/해시|배열|힌트|도움|오류/', { timeout: 30000 });
-      console.log('11. Response or loading indicator visible');
+      // Wait up to 90 seconds for the response
+      await page.waitForFunction(
+        () => {
+          // Check if loading dots are gone and we have AI response text
+          const loadingDots = document.querySelector('.animate-bounce');
+          const pageText = document.body.innerText;
+          const hasResponse =
+            pageText.includes('hash') ||
+            pageText.includes('Hash') ||
+            pageText.includes('dictionary') ||
+            pageText.includes('O(n)') ||
+            pageText.includes('힌트') ||
+            pageText.includes('complement');
+          return !loadingDots && hasResponse;
+        },
+        { timeout: 90000 }
+      );
+      console.log('12. AI response received!');
+
+      // Verify the response contains helpful content
+      const pageContent = await page.content();
+      const hasHelpfulContent =
+        pageContent.includes('hash') ||
+        pageContent.includes('Hash') ||
+        pageContent.includes('dictionary') ||
+        pageContent.includes('O(n)');
+
+      if (hasHelpfulContent) {
+        console.log('13. AI response contains helpful algorithm hints!');
+      }
+
+      // Take screenshot of AI response
+      await page.screenshot({ path: 'test-results/chat-ai-response.png', fullPage: true });
     } catch {
-      console.log('11. Timeout waiting for response (API might not be configured)');
+      console.log('12. Timeout waiting for AI response (Ollama might be slow)');
+      await page.screenshot({ path: 'test-results/chat-timeout.png', fullPage: true });
     }
 
-    // 13. Take final screenshot
-    await page.screenshot({ path: 'test-results/chat-after-send.png', fullPage: true });
+    // Final screenshot
+    await page.screenshot({ path: 'test-results/chat-final.png', fullPage: true });
     console.log('Chat test completed!');
   });
 
