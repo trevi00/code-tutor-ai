@@ -14,7 +14,8 @@ export const executionApi = {
   },
 
   submit: async (data: SubmitCodeRequest): Promise<Submission> => {
-    const response = await apiClient.post<Submission>('/submissions', data);
+    // Use /submit endpoint for immediate evaluation
+    const response = await apiClient.post<Submission>('/submit', data);
     return response.data;
   },
 

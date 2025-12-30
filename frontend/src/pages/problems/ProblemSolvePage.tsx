@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import Editor from '@monaco-editor/react';
 import {
@@ -12,68 +12,9 @@ import {
   Loader2,
 } from 'lucide-react';
 import type { Problem, ExecutionStatus, SubmissionStatus } from '@/types';
+import { problemsApi } from '@/api/problems';
+import { executionApi } from '@/api/execution';
 
-// Mock problem data - will be replaced with API
-const MOCK_PROBLEM: Problem = {
-  id: '1',
-  title: 'Two Sum',
-  description: `## 문제 설명
-
-정수 배열 \`nums\`와 정수 \`target\`이 주어집니다.
-배열에서 두 수의 합이 \`target\`이 되는 두 수의 인덱스를 반환하세요.
-
-각 입력에는 정확히 하나의 해답이 있으며, 같은 요소를 두 번 사용할 수 없습니다.
-
-## 예제
-
-**입력:** nums = [2, 7, 11, 15], target = 9
-**출력:** [0, 1]
-**설명:** nums[0] + nums[1] = 2 + 7 = 9이므로 [0, 1]을 반환합니다.
-
-## 제한사항
-
-- 2 <= nums.length <= 10^4
-- -10^9 <= nums[i] <= 10^9
-- -10^9 <= target <= 10^9
-- 정확히 하나의 유효한 답이 존재합니다.`,
-  difficulty: 'easy',
-  category: 'array',
-  constraints: '2 <= nums.length <= 10^4',
-  hints: [
-    '브루트 포스로 O(n²)에 풀 수 있습니다.',
-    '해시맵을 사용하면 O(n)에 풀 수 있습니다.',
-    '각 숫자의 보수(target - num)를 저장해보세요.',
-  ],
-  solution_template: `def two_sum(nums: list[int], target: int) -> list[int]:
-    """
-    두 수의 합이 target이 되는 인덱스를 찾습니다.
-
-    Args:
-        nums: 정수 배열
-        target: 목표 합
-
-    Returns:
-        두 수의 인덱스 리스트
-    """
-    # 여기에 코드를 작성하세요
-    pass
-
-
-# 테스트
-if __name__ == "__main__":
-    print(two_sum([2, 7, 11, 15], 9))  # [0, 1]
-    print(two_sum([3, 2, 4], 6))       # [1, 2]
-    print(two_sum([3, 3], 6))          # [0, 1]
-`,
-  time_limit_ms: 1000,
-  memory_limit_mb: 256,
-  is_published: true,
-  test_cases: [
-    { id: '1', input_data: '[2,7,11,15]\n9', expected_output: '[0, 1]', is_sample: true },
-    { id: '2', input_data: '[3,2,4]\n6', expected_output: '[1, 2]', is_sample: true },
-  ],
-  created_at: new Date().toISOString(),
-};
 
 interface ExecutionResult {
   status: ExecutionStatus;
@@ -89,19 +30,41 @@ interface SubmissionResult {
   results: Array<{
     is_passed: boolean;
     actual_output: string;
-    expected_output: string;
+    expected_output?: string;
   }>;
 }
 
 export function ProblemSolvePage() {
   const { id } = useParams<{ id: string }>();
-  const [code, setCode] = useState(MOCK_PROBLEM.solution_template);
+  const [problem, setProblem] = useState<Problem | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [code, setCode] = useState('');
   const [activeTab, setActiveTab] = useState<'description' | 'hints'>('description');
   const [isRunning, setIsRunning] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [executionResult, setExecutionResult] = useState<ExecutionResult | null>(null);
   const [submissionResult, setSubmissionResult] = useState<SubmissionResult | null>(null);
   const [showHintIndex, setShowHintIndex] = useState(-1);
+
+  useEffect(() => {
+    const fetchProblem = async () => {
+      if (!id) return;
+      setLoading(true);
+      setError(null);
+      try {
+        const data = await problemsApi.get(id);
+        setProblem(data);
+        setCode(data.solution_template || '# Write your solution here\n');
+      } catch (err) {
+        setError('Failed to load problem. Please try again.');
+        console.error('Error fetching problem:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchProblem();
+  }, [id]);
 
   const handleEditorChange = useCallback((value: string | undefined) => {
     if (value !== undefined) {
@@ -110,47 +73,99 @@ export function ProblemSolvePage() {
   }, []);
 
   const handleRun = async () => {
+    if (!id) return;
     setIsRunning(true);
     setExecutionResult(null);
     setSubmissionResult(null);
 
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-
-    // Mock execution result
-    setExecutionResult({
-      status: 'success',
-      stdout: '[0, 1]\n[1, 2]\n[0, 1]\n',
-      stderr: '',
-      execution_time_ms: 45,
-    });
-
-    setIsRunning(false);
+    try {
+      const result = await executionApi.execute({
+        problem_id: id,
+        code,
+        language: 'python',
+      });
+      setExecutionResult({
+        status: result.status,
+        stdout: result.stdout || '',
+        stderr: result.stderr || '',
+        execution_time_ms: result.execution_time_ms || 0,
+      });
+    } catch (err) {
+      setExecutionResult({
+        status: 'runtime_error',
+        stdout: '',
+        stderr: 'Failed to execute code. Please try again.',
+        execution_time_ms: 0,
+      });
+      console.error('Execution error:', err);
+    } finally {
+      setIsRunning(false);
+    }
   };
 
   const handleSubmit = async () => {
+    if (!id) return;
     setIsSubmitting(true);
     setExecutionResult(null);
     setSubmissionResult(null);
 
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 2000));
+    try {
+      // /submit endpoint returns evaluated result immediately
+      const result = await executionApi.submit({
+        problem_id: id,
+        code,
+        language: 'python',
+      });
 
-    // Mock submission result
-    setSubmissionResult({
-      status: 'accepted',
-      passed_tests: 5,
-      total_tests: 5,
-      results: [
-        { is_passed: true, actual_output: '[0, 1]', expected_output: '[0, 1]' },
-        { is_passed: true, actual_output: '[1, 2]', expected_output: '[1, 2]' },
-      ],
-    });
-
-    setIsSubmitting(false);
+      setSubmissionResult({
+        status: result.status,
+        passed_tests: result.passed_tests || 0,
+        total_tests: result.total_tests || 0,
+        results: result.test_results?.map((tr) => ({
+          is_passed: tr.is_passed,
+          actual_output: tr.actual_output || '',
+        })) || [],
+      });
+    } catch (err) {
+      setSubmissionResult({
+        status: 'runtime_error',
+        passed_tests: 0,
+        total_tests: 0,
+        results: [],
+      });
+      console.error('Submission error:', err);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
-  const problem = MOCK_PROBLEM;
+  if (loading) {
+    return (
+      <div className="h-[calc(100vh-4rem)] flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="h-8 w-8 animate-spin text-blue-500 mx-auto" />
+          <p className="mt-2 text-neutral-500">Loading problem...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !problem) {
+    return (
+      <div className="h-[calc(100vh-4rem)] flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-red-500 mb-4">{error || 'Problem not found'}</p>
+          <Link
+            to="/problems"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+          >
+            <ChevronLeft className="h-4 w-4" />
+            Back to Problems
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="h-[calc(100vh-4rem)] flex flex-col">
@@ -212,7 +227,7 @@ export function ProblemSolvePage() {
                   : 'text-neutral-600 hover:text-neutral-900'
               }`}
             >
-              힌트 ({problem.hints.length})
+              힌트 ({(problem.hints || []).length})
             </button>
           </div>
 
@@ -232,7 +247,7 @@ export function ProblemSolvePage() {
               </div>
             ) : (
               <div className="space-y-4">
-                {problem.hints.map((hint, index) => (
+                {(problem.hints || []).map((hint, index) => (
                   <div
                     key={index}
                     className="border border-neutral-200 rounded-lg overflow-hidden"
@@ -381,7 +396,7 @@ export function ProblemSolvePage() {
                       </div>
                       {!result.is_passed && (
                         <div className="text-xs text-neutral-400 ml-6">
-                          <div>예상: {result.expected_output}</div>
+                          {result.expected_output && <div>예상: {result.expected_output}</div>}
                           <div>실제: {result.actual_output}</div>
                         </div>
                       )}

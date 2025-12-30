@@ -1,21 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Search, Filter, ChevronRight } from 'lucide-react';
-import type { Difficulty, Category } from '@/types';
+import { Search, Filter, ChevronRight, Loader2, RefreshCw } from 'lucide-react';
+import type { Difficulty, Category, ProblemSummary } from '@/types';
+import { problemsApi } from '@/api/problems';
 
-// Mock data - will be replaced with API calls
-const MOCK_PROBLEMS = [
-  { id: '1', title: 'Two Sum', difficulty: 'easy' as Difficulty, category: 'array' as Category },
-  { id: '2', title: 'Valid Parentheses', difficulty: 'easy' as Difficulty, category: 'stack' as Category },
-  { id: '3', title: 'Merge Two Sorted Lists', difficulty: 'easy' as Difficulty, category: 'linked_list' as Category },
-  { id: '4', title: 'Best Time to Buy and Sell Stock', difficulty: 'easy' as Difficulty, category: 'dp' as Category },
-  { id: '5', title: 'Longest Substring Without Repeating', difficulty: 'medium' as Difficulty, category: 'string' as Category },
-  { id: '6', title: 'Container With Most Water', difficulty: 'medium' as Difficulty, category: 'array' as Category },
-  { id: '7', title: 'Coin Change', difficulty: 'medium' as Difficulty, category: 'dp' as Category },
-  { id: '8', title: 'Binary Tree Level Order', difficulty: 'medium' as Difficulty, category: 'tree' as Category },
-  { id: '9', title: 'Word Break', difficulty: 'hard' as Difficulty, category: 'dp' as Category },
-  { id: '10', title: 'Merge k Sorted Lists', difficulty: 'hard' as Difficulty, category: 'linked_list' as Category },
-];
 
 const DIFFICULTY_COLORS: Record<Difficulty, string> = {
   easy: 'bg-green-100 text-green-700',
@@ -39,16 +27,47 @@ const CATEGORY_LABELS: Partial<Record<Category, string>> = {
 };
 
 export function ProblemsPage() {
+  const [problems, setProblems] = useState<ProblemSummary[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [difficultyFilter, setDifficultyFilter] = useState<Difficulty | ''>('');
   const [categoryFilter, setCategoryFilter] = useState<Category | ''>('');
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
 
-  const filteredProblems = MOCK_PROBLEMS.filter((problem) => {
-    const matchesSearch = problem.title.toLowerCase().includes(search.toLowerCase());
-    const matchesDifficulty = !difficultyFilter || problem.difficulty === difficultyFilter;
-    const matchesCategory = !categoryFilter || problem.category === categoryFilter;
-    return matchesSearch && matchesDifficulty && matchesCategory;
-  });
+  const fetchProblems = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await problemsApi.list({
+        page,
+        size: 20,
+        difficulty: difficultyFilter || undefined,
+        category: categoryFilter || undefined,
+        search: search || undefined,
+      });
+      setProblems(response.items);
+      setTotalPages(response.pages);
+    } catch (err) {
+      setError('Failed to load problems. Please try again.');
+      console.error('Error fetching problems:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchProblems();
+  }, [page, difficultyFilter, categoryFilter]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setPage(1);
+      fetchProblems();
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [search]);
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -112,7 +131,7 @@ export function ProblemsPage() {
             </tr>
           </thead>
           <tbody className="divide-y divide-neutral-200">
-            {filteredProblems.map((problem) => (
+            {problems.map((problem) => (
               <tr key={problem.id} className="hover:bg-neutral-50 transition-colors">
                 <td className="py-4 px-6">
                   <Link
@@ -147,12 +166,55 @@ export function ProblemsPage() {
           </tbody>
         </table>
 
-        {filteredProblems.length === 0 && (
+        {loading && (
+          <div className="py-12 text-center">
+            <Loader2 className="h-8 w-8 animate-spin text-blue-500 mx-auto" />
+            <p className="mt-2 text-neutral-500">Loading problems...</p>
+          </div>
+        )}
+
+        {error && !loading && (
+          <div className="py-12 text-center">
+            <p className="text-red-500 mb-4">{error}</p>
+            <button
+              onClick={fetchProblems}
+              className="inline-flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+            >
+              <RefreshCw className="h-4 w-4" />
+              Retry
+            </button>
+          </div>
+        )}
+
+        {!loading && !error && problems.length === 0 && (
           <div className="py-12 text-center text-neutral-500">
             No problems found matching your filters.
           </div>
         )}
       </div>
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="flex justify-center gap-2 mt-6">
+          <button
+            onClick={() => setPage((p) => Math.max(1, p - 1))}
+            disabled={page === 1}
+            className="px-4 py-2 border border-neutral-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-neutral-50"
+          >
+            Previous
+          </button>
+          <span className="px-4 py-2 text-neutral-600">
+            Page {page} of {totalPages}
+          </span>
+          <button
+            onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+            disabled={page === totalPages}
+            className="px-4 py-2 border border-neutral-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-neutral-50"
+          >
+            Next
+          </button>
+        </div>
+      )}
     </div>
   );
 }

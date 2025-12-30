@@ -1,5 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
-import { Send, Bot, User } from 'lucide-react';
+import { useSearchParams } from 'react-router-dom';
+import { Send, Bot, User, RefreshCw } from 'lucide-react';
+import { tutorApi } from '@/api/tutor';
 
 interface Message {
   id: string;
@@ -9,16 +11,22 @@ interface Message {
 }
 
 export function ChatPage() {
+  const [searchParams] = useSearchParams();
+  const problemId = searchParams.get('problem');
+
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
       role: 'assistant',
-      content: '안녕하세요! 알고리즘 학습을 도와드리는 AI 튜터입니다. 무엇을 도와드릴까요?',
+      content: problemId
+        ? '안녕하세요! 이 문제에 대해 도움이 필요하시면 질문해주세요.'
+        : '안녕하세요! 알고리즘 학습을 도와드리는 AI 튜터입니다. 무엇을 도와드릴까요?',
       timestamp: new Date(),
     },
   ]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [conversationId, setConversationId] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -40,31 +48,72 @@ export function ChatPage() {
     setInput('');
     setIsLoading(true);
 
-    // Simulate AI response (will be replaced with actual API call)
-    setTimeout(() => {
+    try {
+      const response = await tutorApi.chat({
+        message: input,
+        conversation_id: conversationId || undefined,
+        problem_id: problemId || undefined,
+      });
+
+      if (response.is_new_conversation) {
+        setConversationId(response.conversation_id);
+      }
+
       const aiMessage: Message = {
-        id: (Date.now() + 1).toString(),
+        id: response.message.id || (Date.now() + 1).toString(),
         role: 'assistant',
-        content: getSimulatedResponse(input),
-        timestamp: new Date(),
+        content: response.message.content,
+        timestamp: new Date(response.message.created_at || Date.now()),
       };
       setMessages((prev) => [...prev, aiMessage]);
+    } catch (err) {
+      console.error('Chat error:', err);
+      // Add error message to chat
+      const errorMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        role: 'assistant',
+        content: '죄송합니다. 일시적인 오류가 발생했습니다. 잠시 후 다시 시도해주세요.',
+        timestamp: new Date(),
+      };
+      setMessages((prev) => [...prev, errorMessage]);
+    } finally {
       setIsLoading(false);
-    }, 1000);
+    }
+  };
+
+  const handleNewChat = () => {
+    setConversationId(null);
+    setMessages([
+      {
+        id: '1',
+        role: 'assistant',
+        content: '안녕하세요! 새로운 대화를 시작합니다. 무엇을 도와드릴까요?',
+        timestamp: new Date(),
+      },
+    ]);
   };
 
   return (
     <div className="container mx-auto px-4 py-8 h-[calc(100vh-8rem)]">
       <div className="bg-white rounded-xl shadow-sm border border-neutral-200 h-full flex flex-col">
         {/* Header */}
-        <div className="p-4 border-b border-neutral-200">
-          <h1 className="text-xl font-bold flex items-center gap-2">
-            <Bot className="h-6 w-6 text-blue-600" />
-            AI Tutor Chat
-          </h1>
-          <p className="text-sm text-neutral-600 mt-1">
-            Ask questions about algorithms, get hints, or request code reviews
-          </p>
+        <div className="p-4 border-b border-neutral-200 flex items-center justify-between">
+          <div>
+            <h1 className="text-xl font-bold flex items-center gap-2">
+              <Bot className="h-6 w-6 text-blue-600" />
+              AI Tutor Chat
+            </h1>
+            <p className="text-sm text-neutral-600 mt-1">
+              Ask questions about algorithms, get hints, or request code reviews
+            </p>
+          </div>
+          <button
+            onClick={handleNewChat}
+            className="flex items-center gap-2 px-3 py-2 text-sm text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+          >
+            <RefreshCw className="h-4 w-4" />
+            New Chat
+          </button>
         </div>
 
         {/* Messages */}
@@ -136,39 +185,3 @@ export function ChatPage() {
   );
 }
 
-function getSimulatedResponse(input: string): string {
-  const lowerInput = input.toLowerCase();
-
-  if (lowerInput.includes('two sum') || lowerInput.includes('배열')) {
-    return `Two Sum 문제를 도와드릴게요!
-
-**문제 이해**
-두 수의 합이 target이 되는 인덱스 쌍을 찾는 문제입니다.
-
-**힌트**
-1. 브루트 포스: O(n²) - 모든 쌍을 검사
-2. 해시맵: O(n) - 각 숫자의 보수(target - num)를 저장
-
-더 자세한 설명이 필요하시면 말씀해주세요!`;
-  }
-
-  if (lowerInput.includes('dp') || lowerInput.includes('동적')) {
-    return `동적 프로그래밍(DP)은 복잡한 문제를 작은 하위 문제로 나누어 해결하는 기법입니다.
-
-**핵심 개념**
-1. 최적 부분 구조: 큰 문제의 최적해가 작은 문제의 최적해로 구성
-2. 중복 부분 문제: 같은 하위 문제가 여러 번 계산됨
-3. 메모이제이션: 계산 결과를 저장해 재사용
-
-어떤 DP 문제를 풀고 계신가요?`;
-  }
-
-  return `좋은 질문입니다! 알고리즘 학습에서 중요한 부분이에요.
-
-다음과 같은 도움을 드릴 수 있습니다:
-- 알고리즘 문제 풀이 힌트
-- 코드 리뷰 및 개선 제안
-- 알고리즘/자료구조 개념 설명
-
-구체적인 질문을 해주시면 더 자세히 도와드릴게요!`;
-}
