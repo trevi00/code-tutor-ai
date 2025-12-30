@@ -202,20 +202,31 @@ Running 34 tests using 10 workers
 
 ## 스크린샷
 
-### 문제 풀이 페이지
-- Monaco Editor로 코드 작성
-- 실행 및 제출 버튼
-- AI 도움 버튼으로 튜터 연결
+### 홈 페이지
+![Home](./docs/screenshots/01-home.png)
 
-### AI 튜터 채팅
-- 한국어로 알고리즘 질문
-- 코드 리뷰 요청
-- 마크다운 형식 응답
+### 로그인
+![Login](./docs/screenshots/02-login.png)
 
 ### 대시보드
-- 푼 문제 / 총 제출 / 성공률
-- 연속 스트릭
-- 카테고리별 진행률
+학습 통계, 스트릭, 카테고리별 진행률을 한눈에 확인
+![Dashboard](./docs/screenshots/03-dashboard.png)
+
+### 문제 목록
+난이도별, 카테고리별 알고리즘 문제
+![Problems](./docs/screenshots/04-problems.png)
+
+### 문제 풀이
+Monaco Editor로 코드 작성, 실행 및 제출
+![Solve](./docs/screenshots/05-solve.png)
+
+### AI 튜터 채팅
+한국어로 알고리즘 질문 및 힌트 요청
+![Chat](./docs/screenshots/06-chat.png)
+
+### AI 응답
+마크다운 형식으로 친절한 힌트 제공
+![Chat Response](./docs/screenshots/08-chat-response.png)
 
 ---
 
