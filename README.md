@@ -2,77 +2,161 @@
 
 > **AI 기반 Python 알고리즘 & 자료구조 학습 플랫폼**
 
-한국어 LLM과 5개의 딥러닝 모델을 활용한 맞춤형 코딩 교육 웹 애플리케이션
+한국어 AI 튜터와 함께하는 맞춤형 코딩 교육 웹 애플리케이션
 
 ---
 
-## 주요 특징
+## 프로젝트 상태
 
-### 🎓 AI 튜터 학습 (RAG 기반)
-- **LeetCode 스타일 패턴 학습**: 15개 알고리즘 패턴 체계적 교육
+**MVP 완료** - 모든 핵심 기능 구현 및 테스트 통과
+
+| 기능 | 상태 |
+|------|------|
+| AI 튜터 채팅 (한국어) | ✅ 완료 |
+| 코드 리뷰 (복잡도 분석) | ✅ 완료 |
+| 문제 풀이 (Monaco Editor) | ✅ 완료 |
+| 코드 실행 (Docker 샌드박스) | ✅ 완료 |
+| 대시보드 (통계/스트릭/히트맵) | ✅ 완료 |
+| E2E 테스트 (34개) | ✅ 통과 |
+
+---
+
+## 주요 기능
+
+### AI 튜터
 - 한국어 자연어로 알고리즘 개념 질문
-- 실시간 코드 리뷰 & 피드백
+- 실시간 코드 리뷰 & 복잡도 분석
 - 대화형 문제 풀이 가이드
-- **환각 방지 RAG 시스템**: 지식 베이스 기반 정확한 답변
+- 힌트 제공 (직접 답을 주지 않고 사고 유도)
 
-### 🤖 딥러닝 기반 기능 (5개 모델)
-- **알고리즘 패턴 추천 (RAG)**: Two Pointers, Sliding Window 등 15개 패턴 학습
-- **맞춤형 문제 추천**: 사용자 수준 분석 후 최적 문제 자동 선정
-- **코드 유사도 검색**: 트랜스포머로 유사 풀이 찾기 & 표절 감지
-- **학습 성과 예측**: LSTM으로 다음 주 성공률 및 취약점 분석
-- **코드 품질 분석**: AI 기반 복잡도/가독성/버그 위험도 평가
+### 문제 풀이
+- 11개 알고리즘 문제 (Easy/Medium/Hard)
+- 8개 카테고리 (Array, Stack, LinkedList, Tree, Graph, DP, Binary Search, String)
+- Monaco Editor (VS Code와 동일한 에디터)
+- Docker 샌드박스에서 안전한 코드 실행
 
-### 💻 실전 기능
-- 브라우저 코드 실행 (Docker 샌드박스)
-- 30+ 알고리즘 문제 (난이도별)
-- 학습 진도 대시보드
+### 학습 대시보드
+- 문제 풀이 통계 (푼 문제, 성공률)
+- 연속 학습 스트릭
+- 365일 히트맵
+- 카테고리별 진행률
 
 ---
 
 ## 기술 스택
 
-### AI/ML (5개 딥러닝 모델)
-```
-EEVE-Korean-2.8B    → AI 튜터 대화 (LLM)
-DistilCodeBERT      → 코드 임베딩 (트랜스포머, 66M params)
-NCF                 → 맞춤형 추천 (100K params)
-LSTM                → 학습 예측 (500K params)
-CodeBERT Classifier → 품질 분석 (50M params)
-```
-
-**메모리 최적화**: 4GB VRAM에서 동작 (동적 로딩 + 양자화)
-
 ### Backend
-- FastAPI + Python 3.11
-- PostgreSQL 14 + Redis
-- **RAG 시스템**: LangChain + FAISS (벡터 검색)
-- Docker (코드 샌드박스)
+- **Framework**: FastAPI + Python 3.11
+- **Database**: PostgreSQL 14 + Redis
+- **AI/LLM**: Ollama (llama3)
+- **코드 실행**: Docker 샌드박스 (python:3.11-slim)
+- **아키텍처**: DDD + 헥사고날 아키텍처
 
 ### Frontend
-- React 18 + TypeScript
-- Tailwind CSS + Monaco Editor
-- Zustand + React Query
+- **Framework**: React 18 + TypeScript
+- **Build**: Vite
+- **Styling**: Tailwind CSS
+- **Editor**: Monaco Editor
+- **State**: Zustand + TanStack Query
+
+### Testing
+- **E2E**: Playwright (34개 테스트)
+- **API**: pytest
 
 ---
 
 ## 빠른 시작
 
+### 사전 요구사항
+- Docker & Docker Compose
+- Node.js 18+
+- Python 3.11+
+- Ollama (llama3 모델)
+
+### 1. 저장소 클론
 ```bash
-# 1. 클론
-git clone https://github.com/your-username/code-tutor-ai.git
+git clone https://github.com/trevi00/code-tutor-ai.git
 cd code-tutor-ai
-
-# 2. 환경 변수 설정
-cp backend/.env.example backend/.env
-# .env 파일 수정 (DATABASE_URL, JWT_SECRET_KEY 등)
-
-# 3. Docker Compose 실행
-docker-compose up -d
-
-# 4. 접속
-# http://localhost:3000 (Frontend)
-# http://localhost:8000/docs (API Docs)
 ```
+
+### 2. 환경 변수 설정
+```bash
+# Backend
+cp backend/.env.example backend/.env
+# 필요한 값 수정 (DATABASE_URL, JWT_SECRET_KEY 등)
+```
+
+### 3. 인프라 실행
+```bash
+# PostgreSQL + Redis 실행
+docker-compose up -d
+```
+
+### 4. Backend 실행
+```bash
+cd backend
+uv sync  # 또는 pip install -r requirements.txt
+uv run uvicorn src.code_tutor.main:app --reload --port 8000
+```
+
+### 5. Ollama 실행
+```bash
+ollama run llama3
+```
+
+### 6. Frontend 실행
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+### 7. 접속
+- **Frontend**: http://localhost:5173
+- **API Docs**: http://localhost:8000/docs
+
+---
+
+## API 엔드포인트
+
+### 인증
+| Method | Endpoint | 설명 |
+|--------|----------|------|
+| POST | `/api/v1/auth/register` | 회원가입 |
+| POST | `/api/v1/auth/login` | 로그인 |
+| POST | `/api/v1/auth/refresh` | 토큰 갱신 |
+| GET | `/api/v1/auth/me` | 현재 사용자 |
+
+### 문제
+| Method | Endpoint | 설명 |
+|--------|----------|------|
+| GET | `/api/v1/problems` | 문제 목록 |
+| GET | `/api/v1/problems/{id}` | 문제 상세 |
+| GET | `/api/v1/problems/{id}/hints` | 힌트 조회 |
+
+### 제출
+| Method | Endpoint | 설명 |
+|--------|----------|------|
+| POST | `/api/v1/submissions` | 코드 제출 |
+| GET | `/api/v1/submissions` | 제출 목록 |
+| GET | `/api/v1/submissions/{id}` | 제출 상세 |
+
+### AI 튜터
+| Method | Endpoint | 설명 |
+|--------|----------|------|
+| POST | `/api/v1/tutor/chat` | AI 채팅 |
+| GET | `/api/v1/tutor/conversations` | 대화 기록 |
+| POST | `/api/v1/tutor/review` | 코드 리뷰 |
+
+### 코드 실행
+| Method | Endpoint | 설명 |
+|--------|----------|------|
+| POST | `/api/v1/execute/run` | 코드 실행 |
+
+### 대시보드
+| Method | Endpoint | 설명 |
+|--------|----------|------|
+| GET | `/api/v1/dashboard` | 전체 대시보드 |
 
 ---
 
@@ -80,82 +164,106 @@ docker-compose up -d
 
 ```
 code-tutor-ai/
-├── backend/          # FastAPI + 5개 딥러닝 모델 + RAG 시스템
-├── frontend/         # React + TypeScript
-├── models/           # AI 모델 저장소
-├── data/             # 알고리즘 패턴 지식 베이스 (15개 패턴)
-├── docs/
-│   ├── PRD.md                # 📋 통합 프로젝트 문서
-│   └── RAG_ARCHITECTURE.md   # 🧠 RAG 시스템 아키텍처 (LeetCode 패턴)
+├── backend/
+│   └── src/code_tutor/
+│       ├── auth/           # 인증 도메인
+│       ├── problem/        # 문제 도메인
+│       ├── submission/     # 제출 도메인
+│       ├── tutor/          # AI 튜터 도메인
+│       ├── execution/      # 코드 실행 도메인
+│       ├── dashboard/      # 대시보드 도메인
+│       └── shared/         # 공유 모듈
+├── frontend/
+│   └── src/
+│       ├── pages/          # 페이지 컴포넌트
+│       ├── shared/         # 공유 컴포넌트/훅/API
+│       └── e2e/            # E2E 테스트
+├── docs/                   # 프로젝트 문서
 └── docker-compose.yml
 ```
 
 ---
 
-## 📋 문서
+## 테스트 실행
 
-**[통합 PRD 문서](./docs/PRD.md)** - 모든 내용이 하나의 문서에!
+### E2E 테스트
+```bash
+cd frontend
+npx playwright test
+```
 
-- 프로젝트 개요 & 핵심 기능
-- 5개 딥러닝 모델 상세 스펙
-- 시스템 아키텍처 & API 명세
-- 12주 개발 로드맵
-- 요구사항 명세 & 성공 지표
+### 테스트 결과
+```
+Running 34 tests using 10 workers
+34 passed (1.0m)
+```
 
-**[RAG 시스템 아키텍처](./docs/RAG_ARCHITECTURE.md)** - LeetCode 스타일 패턴 학습!
+---
 
-- 15개 알고리즘 패턴 (Two Pointers, Sliding Window, DP 등)
-- RAG (Retrieval-Augmented Generation) 구조
-- LangChain + FAISS 통합
-- 패턴 지식 베이스 설계
-- 템플릿 코드 & Editorial
+## 스크린샷
+
+### 문제 풀이 페이지
+- Monaco Editor로 코드 작성
+- 실행 및 제출 버튼
+- AI 도움 버튼으로 튜터 연결
+
+### AI 튜터 채팅
+- 한국어로 알고리즘 질문
+- 코드 리뷰 요청
+- 마크다운 형식 응답
+
+### 대시보드
+- 푼 문제 / 총 제출 / 성공률
+- 연속 스트릭
+- 카테고리별 진행률
+
+---
+
+## 환경 변수
+
+### Backend (.env)
+```env
+# Database
+DATABASE_URL=postgresql+asyncpg://postgres:postgres@localhost:5432/codetutor
+
+# Redis
+REDIS_URL=redis://localhost:6379/0
+
+# JWT
+JWT_SECRET_KEY=your-secret-key
+ACCESS_TOKEN_EXPIRE_MINUTES=60
+REFRESH_TOKEN_EXPIRE_DAYS=7
+
+# LLM
+LLM_PROVIDER=ollama
+OLLAMA_BASE_URL=http://localhost:11434
+OLLAMA_MODEL=llama3
+
+# Docker Sandbox
+SANDBOX_TIMEOUT_SECONDS=5
+SANDBOX_MEMORY_LIMIT_MB=256
+```
+
+---
+
+## 문서
+
+| 문서 | 설명 |
+|------|------|
+| [PROJECT_OVERVIEW.md](./docs/PROJECT_OVERVIEW.md) | 프로젝트 개요 |
+| [API_SPECIFICATION.md](./docs/API_SPECIFICATION.md) | API 명세 |
+| [DDD_ARCHITECTURE.md](./docs/DDD_ARCHITECTURE.md) | 아키텍처 설계 |
+| [SECURITY.md](./docs/SECURITY.md) | 보안 설계 |
 
 ---
 
 ## 개발 로드맵
 
-| Phase | 기간 | 주요 내용 |
-|-------|------|-----------|
-| **Phase 1** | Week 1-4 | MVP (AI 채팅, 코드 리뷰, 5개 문제) |
-| **Phase 2** | Week 5-8 | 코드 실행, 30개 문제, 대시보드 |
-| **Phase 3** | Week 9-12 | 딥러닝 통합 (추천, 임베딩, 품질 분석) |
-| **Phase 4** | Week 13+ | LSTM 예측, 확장 기능 |
-
-**현재 상태**: 문서화 완료 ✅ → MVP 개발 준비 중
-
----
-
-## 딥러닝 모델 성능 목표
-
-| 모델 | 성능 목표 |
-|------|-----------|
-| AI 튜터 | 응답 < 5초 |
-| 코드 임베딩 | 임베딩 < 100ms, 검색 < 10ms |
-| 문제 추천 | 추론 < 20ms, Precision@5 > 0.7 |
-| 학습 예측 | 추론 < 5ms, MAE < 0.15 |
-| 품질 분석 | 분석 < 200ms |
-
----
-
-## 하드웨어 요구사항
-
-### 개발 환경
-- **GPU**: NVIDIA RTX 4050 (4GB VRAM)
-- **CPU**: Intel i7-13700H (14코어)
-- **RAM**: 16GB
-
-### 제약사항
-- ✅ 4GB VRAM에서 모든 모델 실행 가능
-- ✅ 클라우드 GPU 불필요 (동적 로딩 + 양자화)
-- ✅ CPU 오프로딩으로 경량 모델 병렬 처리
-
----
-
-## 라이선스
-
-- **프로젝트**: MIT License
-- **EEVE-Korean-2.8B**: Apache 2.0
-- **DistilCodeBERT**: Apache 2.0
+| Phase | 상태 | 내용 |
+|-------|------|------|
+| **Phase 1** | ✅ 완료 | MVP (AI 채팅, 코드 리뷰, 문제 풀이) |
+| **Phase 2** | 예정 | 추천 시스템 (NCF), 학습 분석 |
+| **Phase 3** | 예정 | 코드 분석 (CodeBERT), 성과 예측 (LSTM) |
 
 ---
 
@@ -167,8 +275,18 @@ code-tutor-ai/
 4. Push to the branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
 
-자세한 내용은 [통합 PRD 문서](./docs/PRD.md)를 참조하세요.
+---
+
+## 라이선스
+
+MIT License
 
 ---
 
-**⭐ 프로젝트가 마음에 드셨다면 Star를 눌러주세요!**
+## 저자
+
+- **trevi00** - [GitHub](https://github.com/trevi00)
+
+---
+
+**프로젝트가 마음에 드셨다면 Star를 눌러주세요!**
