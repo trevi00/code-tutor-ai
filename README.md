@@ -17,7 +17,9 @@
 | 문제 풀이 (Monaco Editor) | ✅ 완료 |
 | 코드 실행 (Docker 샌드박스) | ✅ 완료 |
 | 대시보드 (통계/스트릭/히트맵) | ✅ 완료 |
-| E2E 테스트 (34개) | ✅ 통과 |
+| 패턴 학습 (24개 알고리즘 패턴) | ✅ 완료 |
+| 전체 UI 한글화 | ✅ 완료 |
+| E2E 테스트 (35개) | ✅ 통과 |
 
 ---
 
@@ -30,10 +32,17 @@
 - 힌트 제공 (직접 답을 주지 않고 사고 유도)
 
 ### 문제 풀이
-- 11개 알고리즘 문제 (Easy/Medium/Hard)
+- 10개 알고리즘 문제 (Easy/Medium/Hard)
 - 8개 카테고리 (Array, Stack, LinkedList, Tree, Graph, DP, Binary Search, String)
 - Monaco Editor (VS Code와 동일한 에디터)
 - Docker 샌드박스에서 안전한 코드 실행
+- 문제별 관련 패턴 배지 표시
+
+### 패턴 학습
+- 24개 알고리즘 패턴 (투 포인터, 슬라이딩 윈도우, BFS/DFS 등)
+- 패턴별 상세 설명 및 템플릿 코드
+- 시간/공간 복잡도 안내
+- 패턴 기반 접근법 힌트
 
 ### 학습 대시보드
 - 문제 풀이 통계 (푼 문제, 성공률)
@@ -60,7 +69,7 @@
 - **State**: Zustand + TanStack Query
 
 ### Testing
-- **E2E**: Playwright (34개 테스트)
+- **E2E**: Playwright (35개 테스트)
 - **API**: pytest
 
 ---
@@ -153,6 +162,13 @@ npm run dev
 |--------|----------|------|
 | POST | `/api/v1/execute/run` | 코드 실행 |
 
+### 패턴
+| Method | Endpoint | 설명 |
+|--------|----------|------|
+| GET | `/api/v1/patterns` | 패턴 목록 |
+| GET | `/api/v1/patterns/{id}` | 패턴 상세 |
+| POST | `/api/v1/patterns/search` | 패턴 검색 |
+
 ### 대시보드
 | Method | Endpoint | 설명 |
 |--------|----------|------|
@@ -167,7 +183,7 @@ code-tutor-ai/
 ├── backend/
 │   └── src/code_tutor/
 │       ├── auth/           # 인증 도메인
-│       ├── problem/        # 문제 도메인
+│       ├── learning/       # 문제/패턴 도메인
 │       ├── submission/     # 제출 도메인
 │       ├── tutor/          # AI 튜터 도메인
 │       ├── execution/      # 코드 실행 도메인
@@ -176,7 +192,11 @@ code-tutor-ai/
 ├── frontend/
 │   └── src/
 │       ├── pages/          # 페이지 컴포넌트
-│       ├── shared/         # 공유 컴포넌트/훅/API
+│       │   ├── patterns/   # 패턴 학습 페이지
+│       │   ├── problems/   # 문제 풀이 페이지
+│       │   ├── chat/       # AI 튜터 채팅
+│       │   └── dashboard/  # 대시보드
+│       ├── api/            # API 클라이언트
 │       └── e2e/            # E2E 테스트
 ├── docs/                   # 프로젝트 문서
 └── docker-compose.yml
@@ -194,8 +214,8 @@ npx playwright test
 
 ### 테스트 결과
 ```
-Running 34 tests using 10 workers
-34 passed (1.0m)
+Running 35 tests using 10 workers
+35 passed (1.0m)
 ```
 
 ---
@@ -217,16 +237,16 @@ Running 34 tests using 10 workers
 ![Problems](./docs/screenshots/04-problems.png)
 
 ### 문제 풀이
-Monaco Editor로 코드 작성, 실행 및 제출
+Monaco Editor로 코드 작성, 실행 및 제출 (패턴 배지 표시)
 ![Solve](./docs/screenshots/05-solve.png)
+
+### 패턴 학습
+24개 알고리즘 패턴 목록 및 상세 설명
+![Patterns](./docs/screenshots/06-patterns.png)
 
 ### AI 튜터 채팅
 한국어로 알고리즘 질문 및 힌트 요청
-![Chat](./docs/screenshots/06-chat.png)
-
-### AI 응답
-마크다운 형식으로 친절한 힌트 제공
-![Chat Response](./docs/screenshots/08-chat-response.png)
+![Chat](./docs/screenshots/07-chat.png)
 
 ---
 
@@ -273,6 +293,7 @@ SANDBOX_MEMORY_LIMIT_MB=256
 | Phase | 상태 | 내용 |
 |-------|------|------|
 | **Phase 1** | ✅ 완료 | MVP (AI 채팅, 코드 리뷰, 문제 풀이) |
+| **Phase 1.5** | ✅ 완료 | 패턴 학습, 한글화 |
 | **Phase 2** | 예정 | 추천 시스템 (NCF), 학습 분석 |
 | **Phase 3** | 예정 | 코드 분석 (CodeBERT), 성과 예측 (LSTM) |
 
