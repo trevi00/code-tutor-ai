@@ -42,11 +42,26 @@ setup('authenticate', async ({ page }) => {
   // Click register button
   await page.getByRole('button', { name: /Create Account/i }).click();
 
-  // Wait for registration success message
-  await expect(page.getByText(/Registration Successful/i)).toBeVisible({ timeout: 10000 });
+  // Wait for result - could be success or already exists error
+  await page.waitForTimeout(3000);
 
-  // Wait for redirect to login
-  await page.waitForURL(/login/, { timeout: 5000 });
+  // Check if we got an error (user already exists)
+  const hasError = await page.locator('text=/already exists|이미 존재/i').isVisible();
+  if (hasError) {
+    // User already exists, go to login
+    console.log('User already exists, proceeding to login');
+    await page.goto('/login');
+    await page.waitForLoadState('networkidle');
+    await page.getByLabel('Email').fill(testEmail);
+    await page.getByLabel('Password').fill(testPassword);
+    await page.getByRole('button', { name: /Sign In/i }).click();
+    await page.waitForURL(/problems|dashboard/, { timeout: 10000 });
+    await page.context().storageState({ path: authFile });
+    return;
+  }
+
+  // Wait for redirect to login after successful registration
+  await page.waitForURL(/login/, { timeout: 10000 });
 
   // Step 3: Now login with the registered user
   await page.waitForLoadState('networkidle');

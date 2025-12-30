@@ -8,6 +8,7 @@ test.describe('AI Tutor Chat Page', () => {
   };
 
   test('should display chat page and send message', async ({ page }) => {
+    test.setTimeout(120000); // AI response can take up to 90 seconds
     // 1. Login first
     await page.goto(`${baseUrl}/login`);
     await page.fill('input[type="email"]', testUser.email);
