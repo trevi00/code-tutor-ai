@@ -44,17 +44,21 @@ SEED_PROBLEMS = [
         "approach_hint": "각 숫자를 순회하면서 target - num이 이미 해시맵에 있는지 확인하세요.",
         "time_complexity_hint": "O(n)",
         "space_complexity_hint": "O(n)",
-        "solution_template": """def solution(nums: list[int], target: int) -> list[int]:
+        "solution_template": """import json
+
+def solution(nums: list[int], target: int) -> list[int]:
     # 여기에 코드를 작성하세요
     pass
 
 
-# 테스트
 if __name__ == "__main__":
-    print(solution([2, 7, 11, 15], 9))  # [0, 1]
-    print(solution([3, 2, 4], 6))        # [1, 2]
+    nums = json.loads(input())
+    target = int(input())
+    print(solution(nums, target))
 """,
-        "reference_solution": """def solution(nums: list[int], target: int) -> list[int]:
+        "reference_solution": """import json
+
+def solution(nums: list[int], target: int) -> list[int]:
     seen = {}
     for i, num in enumerate(nums):
         complement = target - num
@@ -62,6 +66,12 @@ if __name__ == "__main__":
             return [seen[complement], i]
         seen[num] = i
     return []
+
+
+if __name__ == "__main__":
+    nums = json.loads(input())
+    target = int(input())
+    print(solution(nums, target))
 """,
         "time_limit_ms": 5000,
         "memory_limit_mb": 256,
@@ -110,11 +120,9 @@ if __name__ == "__main__":
     pass
 
 
-# 테스트
 if __name__ == "__main__":
-    print(solution("()"))       # True
-    print(solution("()[]{}"))   # True
-    print(solution("(]"))       # False
+    s = input().strip()
+    print(solution(s))
 """,
         "reference_solution": """def solution(s: str) -> bool:
     stack = []
@@ -128,6 +136,11 @@ if __name__ == "__main__":
                 return False
 
     return len(stack) == 0
+
+
+if __name__ == "__main__":
+    s = input().strip()
+    print(solution(s))
 """,
         "time_limit_ms": 5000,
         "memory_limit_mb": 256,
@@ -168,17 +181,21 @@ if __name__ == "__main__":
         "approach_hint": "mid = (left + right) // 2로 중간값을 구하고, target과 비교하여 범위를 좁혀가세요.",
         "time_complexity_hint": "O(log n)",
         "space_complexity_hint": "O(1)",
-        "solution_template": """def solution(nums: list[int], target: int) -> int:
+        "solution_template": """import json
+
+def solution(nums: list[int], target: int) -> int:
     # 여기에 코드를 작성하세요
     pass
 
 
-# 테스트
 if __name__ == "__main__":
-    print(solution([-1, 0, 3, 5, 9, 12], 9))   # 4
-    print(solution([-1, 0, 3, 5, 9, 12], 2))   # -1
+    nums = json.loads(input())
+    target = int(input())
+    print(solution(nums, target))
 """,
-        "reference_solution": """def solution(nums: list[int], target: int) -> int:
+        "reference_solution": """import json
+
+def solution(nums: list[int], target: int) -> int:
     left, right = 0, len(nums) - 1
 
     while left <= right:
@@ -191,6 +208,12 @@ if __name__ == "__main__":
             right = mid - 1
 
     return -1
+
+
+if __name__ == "__main__":
+    nums = json.loads(input())
+    target = int(input())
+    print(solution(nums, target))
 """,
         "time_limit_ms": 5000,
         "memory_limit_mb": 256,
@@ -231,18 +254,20 @@ Kadane's Algorithm을 사용하면 O(n)에 해결할 수 있습니다.""",
         "approach_hint": "음수가 나오면 새로 시작하는 것이 나을 수 있습니다. max(현재 원소, 이전 합 + 현재 원소)를 비교하세요.",
         "time_complexity_hint": "O(n)",
         "space_complexity_hint": "O(1)",
-        "solution_template": """def solution(nums: list[int]) -> int:
+        "solution_template": """import json
+
+def solution(nums: list[int]) -> int:
     # 여기에 코드를 작성하세요
     pass
 
 
-# 테스트
 if __name__ == "__main__":
-    print(solution([-2, 1, -3, 4, -1, 2, 1, -5, 4]))  # 6
-    print(solution([1]))                               # 1
-    print(solution([5, 4, -1, 7, 8]))                  # 23
+    nums = json.loads(input())
+    print(solution(nums))
 """,
-        "reference_solution": """def solution(nums: list[int]) -> int:
+        "reference_solution": """import json
+
+def solution(nums: list[int]) -> int:
     max_sum = nums[0]
     current_sum = nums[0]
 
@@ -251,6 +276,11 @@ if __name__ == "__main__":
         max_sum = max(max_sum, current_sum)
 
     return max_sum
+
+
+if __name__ == "__main__":
+    nums = json.loads(input())
+    print(solution(nums))
 """,
         "time_limit_ms": 5000,
         "memory_limit_mb": 256,
@@ -290,22 +320,20 @@ if __name__ == "__main__":
         "approach_hint": "각 셀을 순회하며 육지를 발견하면 DFS로 연결된 모든 육지를 방문(마킹)하고 카운트를 증가시키세요.",
         "time_complexity_hint": "O(m × n)",
         "space_complexity_hint": "O(m × n)",
-        "solution_template": """def solution(grid: list[list[str]]) -> int:
+        "solution_template": """import json
+
+def solution(grid: list[list[str]]) -> int:
     # 여기에 코드를 작성하세요
     pass
 
 
-# 테스트
 if __name__ == "__main__":
-    grid = [
-        ["1","1","0","0","0"],
-        ["1","1","0","0","0"],
-        ["0","0","1","0","0"],
-        ["0","0","0","1","1"]
-    ]
-    print(solution(grid))  # 3
+    grid = json.loads(input())
+    print(solution(grid))
 """,
-        "reference_solution": """def solution(grid: list[list[str]]) -> int:
+        "reference_solution": """import json
+
+def solution(grid: list[list[str]]) -> int:
     if not grid:
         return 0
 
@@ -328,6 +356,11 @@ if __name__ == "__main__":
                 dfs(r, c)
 
     return count
+
+
+if __name__ == "__main__":
+    grid = json.loads(input())
+    print(solution(grid))
 """,
         "time_limit_ms": 5000,
         "memory_limit_mb": 256,
@@ -364,18 +397,20 @@ if __name__ == "__main__":
         "approach_hint": "각 위치에서 '이 원소로 끝나는 최장 증가 부분수열'을 계산하세요.",
         "time_complexity_hint": "O(n²) 또는 O(n log n)",
         "space_complexity_hint": "O(n)",
-        "solution_template": """def solution(nums: list[int]) -> int:
+        "solution_template": """import json
+
+def solution(nums: list[int]) -> int:
     # 여기에 코드를 작성하세요
     pass
 
 
-# 테스트
 if __name__ == "__main__":
-    print(solution([10, 9, 2, 5, 3, 7, 101, 18]))  # 4
-    print(solution([0, 1, 0, 3, 2, 3]))             # 4
-    print(solution([7, 7, 7, 7, 7, 7, 7]))          # 1
+    nums = json.loads(input())
+    print(solution(nums))
 """,
-        "reference_solution": """def solution(nums: list[int]) -> int:
+        "reference_solution": """import json
+
+def solution(nums: list[int]) -> int:
     if not nums:
         return 0
 
@@ -388,6 +423,11 @@ if __name__ == "__main__":
                 dp[i] = max(dp[i], dp[j] + 1)
 
     return max(dp)
+
+
+if __name__ == "__main__":
+    nums = json.loads(input())
+    print(solution(nums))
 """,
         "time_limit_ms": 5000,
         "memory_limit_mb": 256,
@@ -425,18 +465,21 @@ if __name__ == "__main__":
         "approach_hint": "dp[0] = 0으로 시작하고, 각 금액 i에 대해 모든 동전을 시도해보세요.",
         "time_complexity_hint": "O(amount × coins)",
         "space_complexity_hint": "O(amount)",
-        "solution_template": """def solution(coins: list[int], amount: int) -> int:
+        "solution_template": """import json
+
+def solution(coins: list[int], amount: int) -> int:
     # 여기에 코드를 작성하세요
     pass
 
 
-# 테스트
 if __name__ == "__main__":
-    print(solution([1, 2, 5], 11))  # 3
-    print(solution([2], 3))          # -1
-    print(solution([1], 0))          # 0
+    coins = json.loads(input())
+    amount = int(input())
+    print(solution(coins, amount))
 """,
-        "reference_solution": """def solution(coins: list[int], amount: int) -> int:
+        "reference_solution": """import json
+
+def solution(coins: list[int], amount: int) -> int:
     dp = [float('inf')] * (amount + 1)
     dp[0] = 0
 
@@ -445,6 +488,12 @@ if __name__ == "__main__":
             dp[i] = min(dp[i], dp[i - coin] + 1)
 
     return dp[amount] if dp[amount] != float('inf') else -1
+
+
+if __name__ == "__main__":
+    coins = json.loads(input())
+    amount = int(input())
+    print(solution(coins, amount))
 """,
         "time_limit_ms": 5000,
         "memory_limit_mb": 256,

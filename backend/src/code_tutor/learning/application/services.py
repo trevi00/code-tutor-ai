@@ -181,6 +181,7 @@ class ProblemService:
             constraints=problem.constraints,
             hints=problem.hints,
             solution_template=problem.solution_template,
+            reference_solution=problem.reference_solution,
             time_limit_ms=problem.time_limit_ms,
             memory_limit_mb=problem.memory_limit_mb,
             is_published=problem.is_published,

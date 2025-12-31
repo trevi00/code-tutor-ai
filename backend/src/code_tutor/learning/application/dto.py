@@ -84,6 +84,7 @@ class ProblemResponse(BaseModel):
     constraints: str
     hints: list[str]
     solution_template: str
+    reference_solution: str = ""
     time_limit_ms: int
     memory_limit_mb: int
     is_published: bool
