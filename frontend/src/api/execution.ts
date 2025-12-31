@@ -9,7 +9,7 @@ export interface SubmitCodeRequest {
 
 export const executionApi = {
   execute: async (data: ExecuteCodeRequest): Promise<ExecuteCodeResponse> => {
-    const response = await apiClient.post<ExecuteCodeResponse>('/execute', data);
+    const response = await apiClient.post<ExecuteCodeResponse>('/execute/run', data);
     return response.data;
   },
 

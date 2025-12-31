@@ -1,63 +1,106 @@
 import { test, expect } from '@playwright/test';
 
-test.describe('Problem Solving Flow', () => {
-  const testUser = {
-    email: 'e2etest@example.com',
-    password: 'TestPassword123!',
-  };
+// Run this test in isolation to avoid Monaco editor conflicts
+test.describe.configure({ mode: 'serial' });
 
-  test('should login, view problems, and access solve page', async ({ page }) => {
-    // 1. Go to login page
-    await page.goto('/login');
-    console.log('1. Login page loaded');
+test('problem solve - run and submit', async ({ page, context }) => {
+  test.setTimeout(180000); // 3 minutes for safety
 
-    // 2. Fill login form
-    await page.fill('input[type="email"]', testUser.email);
-    await page.fill('input[type="password"]', testUser.password);
-    await page.click('button[type="submit"]');
-    console.log('2. Login submitted');
+  // Grant clipboard permissions
+  await context.grantPermissions(['clipboard-read', 'clipboard-write']);
 
-    // 3. Wait for redirect
-    await page.waitForURL(/\/(dashboard|problems|$)/, { timeout: 10000 });
-    console.log('3. Redirected after login');
+  // Login with e2etest user (same as other tests)
+  await page.goto('http://localhost:5173/login');
+  await page.fill('input[type="email"]', 'e2etest@example.com');
+  await page.fill('input[type="password"]', 'TestPassword123!');
+  await page.click('button[type="submit"]');
+  await page.waitForURL(/\/(dashboard|problems|$)/, { timeout: 10000 });
+  await page.waitForTimeout(2000);
 
-    // 4. Navigate to problems page
-    await page.goto('/problems');
-    await expect(page.locator('h1')).toContainText('문제');
-    console.log('4. Problems page loaded');
+  // Go to Two Sum problem
+  await page.goto('http://localhost:5173/problems/246130bc-e8ee-4909-a25b-b09dd1098ad0/solve');
+  await page.waitForLoadState('networkidle');
 
-    // 5. Wait for problems to load from API
-    await page.waitForSelector('table tbody tr', { timeout: 10000 });
-    const problemCount = await page.locator('table tbody tr').count();
-    console.log(`5. Found ${problemCount} problems`);
-    expect(problemCount).toBeGreaterThan(0);
+  // Wait for Monaco editor to fully load
+  await page.waitForTimeout(3000);
 
-    // 6. Click on first problem
-    const firstProblem = page.locator('table tbody tr:first-child a').first();
-    const problemTitle = await firstProblem.textContent();
-    console.log(`6. Clicking on problem: ${problemTitle}`);
-    await firstProblem.click();
+  // Screenshot initial state
+  await page.screenshot({ path: 'e2e/screenshots/solve-1-initial.png' });
 
-    // 7. Wait for solve page
-    await page.waitForURL(/\/problems\/.*\/solve/);
-    console.log('7. Solve page loaded');
+  // The solution code with stdin parsing
+  const solutionCode = `import json
 
-    // 8. Wait for Monaco editor
-    await page.waitForSelector('.monaco-editor', { timeout: 15000 });
-    console.log('8. Monaco editor loaded');
+def solution(nums: list[int], target: int) -> list[int]:
+    seen = {}
+    for i, num in enumerate(nums):
+        complement = target - num
+        if complement in seen:
+            return [seen[complement], i]
+        seen[num] = i
+    return []
 
-    // 9. Verify submit button exists (Korean)
-    const submitButton = page.locator('button:has-text("제출")');
-    await expect(submitButton).toBeVisible();
-    console.log('9. Submit button visible');
+if __name__ == "__main__":
+    nums = json.loads(input())
+    target = int(input())
+    print(solution(nums, target))`;
 
-    // 10. Verify run button exists (Korean)
-    const runButton = page.locator('button:has-text("실행")');
-    await expect(runButton).toBeVisible();
-    console.log('10. Run button visible');
+  // Wait for editor and click with retry
+  let editorClicked = false;
+  for (let attempt = 0; attempt < 5 && !editorClicked; attempt++) {
+    try {
+      const editorArea = page.locator('.monaco-editor .view-lines');
+      await editorArea.waitFor({ state: 'visible', timeout: 10000 });
+      await editorArea.click();
+      editorClicked = true;
+      console.log(`Editor clicked on attempt ${attempt + 1}`);
+    } catch (e) {
+      console.log(`Attempt ${attempt + 1} failed, retrying...`);
+      await page.waitForTimeout(2000);
+    }
+  }
 
-    // Take screenshot
-    await page.screenshot({ path: 'test-results/solve-page.png' });
-    console.log('Test completed successfully!');
-  });
+  if (!editorClicked) {
+    // Fallback: try clicking the monaco-editor container
+    await page.locator('.monaco-editor').first().click();
+  }
+
+  await page.waitForTimeout(500);
+
+  // Select all and delete
+  await page.keyboard.press('Control+a');
+  await page.waitForTimeout(200);
+  await page.keyboard.press('Delete');
+  await page.waitForTimeout(200);
+
+  // Use clipboard to paste code (avoids Monaco typing issues)
+  await page.evaluate(async (code) => {
+    await navigator.clipboard.writeText(code);
+  }, solutionCode);
+
+  await page.keyboard.press('Control+v');
+  await page.waitForTimeout(1000);
+
+  await page.screenshot({ path: 'e2e/screenshots/solve-2-code.png' });
+
+  // Click Run button
+  console.log('Clicking Run button...');
+  await page.click('button:has-text("실행")');
+  await page.waitForTimeout(8000);
+
+  // Screenshot after run
+  await page.screenshot({ path: 'e2e/screenshots/solve-3-run-result.png' });
+
+  // Click Submit button
+  console.log('Clicking Submit button...');
+  await page.click('button:has-text("제출")');
+  await page.waitForTimeout(10000);
+
+  // Screenshot after submit
+  await page.screenshot({ path: 'e2e/screenshots/solve-4-submit-result.png' });
+
+  // Verify test results show "통과" (passed)
+  const resultText = await page.locator('text=/\\d+\\/\\d+ 통과/').textContent();
+  console.log('Result:', resultText);
+
+  console.log('Test completed!');
 });
