@@ -89,7 +89,7 @@ export function PatternDetailPage() {
       </Link>
 
       {/* Header */}
-      <div className="bg-white rounded-xl shadow-sm border border-neutral-200 p-8 mb-6">
+      <div className="bg-white rounded-xl shadow-soft border border-neutral-100 p-8 mb-6">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
             <h1 className="text-3xl font-bold text-neutral-900 mb-2">
@@ -133,7 +133,7 @@ export function PatternDetailPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Use Cases */}
-        <div className="bg-white rounded-xl shadow-sm border border-neutral-200 p-6">
+        <div className="bg-white rounded-xl shadow-soft border border-neutral-100 p-6">
           <h2 className="text-xl font-bold text-neutral-900 mb-4 flex items-center gap-2">
             <CheckCircle className="h-5 w-5 text-green-600" />
             언제 사용하나요?
@@ -151,7 +151,7 @@ export function PatternDetailPage() {
         </div>
 
         {/* Pattern Tips */}
-        <div className="bg-white rounded-xl shadow-sm border border-neutral-200 p-6">
+        <div className="bg-white rounded-xl shadow-soft border border-neutral-100 p-6">
           <h2 className="text-xl font-bold text-neutral-900 mb-4 flex items-center gap-2">
             <BookOpen className="h-5 w-5 text-blue-600" />
             핵심 포인트
@@ -181,7 +181,7 @@ export function PatternDetailPage() {
 
       {/* Example Code */}
       {pattern.example_code && (
-        <div className="mt-6 bg-white rounded-xl shadow-sm border border-neutral-200 p-6">
+        <div className="mt-6 bg-white rounded-xl shadow-soft border border-neutral-100 p-6">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-bold text-neutral-900">템플릿 코드</h2>
             <button
@@ -208,7 +208,7 @@ export function PatternDetailPage() {
       )}
 
       {/* Related Problems CTA */}
-      <div className="mt-6 bg-gradient-to-r from-purple-600 to-blue-600 rounded-xl p-6 text-white">
+      <div className="mt-6 bg-gradient-to-r from-purple-600 to-blue-600 rounded-xl shadow-lg shadow-purple-500/20 p-6 text-white">
         <h2 className="text-xl font-bold mb-2">이 패턴으로 문제를 풀어보세요!</h2>
         <p className="text-purple-100 mb-4">
           {pattern.name_ko} 패턴을 활용하는 연습 문제를 풀어보세요.

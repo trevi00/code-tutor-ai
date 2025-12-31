@@ -25,36 +25,38 @@ const CATEGORY_LABELS: Partial<Record<Category, string>> = {
   linked_list: '연결 리스트',
   stack: '스택',
   queue: '큐',
-  heap: '힙',
   tree: '트리',
   graph: '그래프',
   dp: '동적 프로그래밍',
   greedy: '그리디',
   binary_search: '이진 탐색',
   sorting: '정렬',
-  backtracking: '백트래킹',
 };
 
 export function ProblemsPage() {
   const [searchParams, setSearchParams] = useSearchParams();
+  // Initialize patternFilter directly from URL to avoid race condition
+  const initialPattern = searchParams.get('pattern') || '';
   const [problems, setProblems] = useState<ProblemSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [difficultyFilter, setDifficultyFilter] = useState<Difficulty | ''>('');
   const [categoryFilter, setCategoryFilter] = useState<Category | ''>('');
-  const [patternFilter, setPatternFilter] = useState<string>('');
+  const [patternFilter, setPatternFilter] = useState<string>(initialPattern);
   const [patternInfo, setPatternInfo] = useState<Pattern | null>(null);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
-  // Read pattern from URL on mount
+  // Read pattern from URL on mount and when URL changes
   useEffect(() => {
-    const patternParam = searchParams.get('pattern');
+    const patternParam = searchParams.get('pattern') || '';
+    setPatternFilter(patternParam);
     if (patternParam) {
-      setPatternFilter(patternParam);
       // Fetch pattern info for display
       patternsApi.get(patternParam).then(setPatternInfo).catch(console.error);
+    } else {
+      setPatternInfo(null);
     }
   }, [searchParams]);
 
@@ -108,7 +110,7 @@ export function ProblemsPage() {
 
       {/* Active Pattern Filter Banner */}
       {patternInfo && (
-        <div className="mb-6 bg-purple-50 border border-purple-200 rounded-lg p-4 flex items-center justify-between">
+        <div className="mb-6 bg-purple-50/80 border border-purple-200 rounded-xl shadow-sm p-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <span className="text-purple-600 font-medium">패턴 필터:</span>
             <span className="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-sm font-medium">
@@ -137,7 +139,7 @@ export function ProblemsPage() {
             placeholder="문제 검색..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-10 pr-4 py-3 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="w-full pl-10 pr-4 py-3 border border-neutral-200 rounded-lg focus:ring-2 focus:ring-blue-500 shadow-sm focus:border-transparent"
           />
         </div>
 
@@ -147,7 +149,7 @@ export function ProblemsPage() {
             <select
               value={difficultyFilter}
               onChange={(e) => setDifficultyFilter(e.target.value as Difficulty | '')}
-              className="pl-10 pr-8 py-3 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-blue-500 appearance-none bg-white"
+              className="pl-10 pr-8 py-3 border border-neutral-200 rounded-lg focus:ring-2 focus:ring-blue-500 shadow-sm appearance-none bg-white"
             >
               <option value="">전체 난이도</option>
               <option value="easy">쉬움</option>
@@ -159,7 +161,7 @@ export function ProblemsPage() {
           <select
             value={categoryFilter}
             onChange={(e) => setCategoryFilter(e.target.value as Category | '')}
-            className="px-4 py-3 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-blue-500 appearance-none bg-white"
+            className="px-4 py-3 border border-neutral-200 rounded-lg focus:ring-2 focus:ring-blue-500 shadow-sm appearance-none bg-white"
           >
             <option value="">전체 카테고리</option>
             {Object.entries(CATEGORY_LABELS).map(([value, label]) => (
@@ -172,7 +174,7 @@ export function ProblemsPage() {
       </div>
 
       {/* Problem List */}
-      <div className="bg-white rounded-xl shadow-sm border border-neutral-200 overflow-hidden">
+      <div className="bg-white rounded-xl shadow-soft border border-neutral-100 overflow-hidden">
         <table className="w-full">
           <thead className="bg-neutral-50 border-b border-neutral-200">
             <tr>
@@ -184,11 +186,11 @@ export function ProblemsPage() {
           </thead>
           <tbody className="divide-y divide-neutral-200">
             {problems.map((problem) => (
-              <tr key={problem.id} className="hover:bg-neutral-50 transition-colors">
+              <tr key={problem.id} className="hover:bg-blue-50/50 transition-all duration-200">
                 <td className="py-4 px-6">
                   <Link
                     to={`/problems/${problem.id}/solve`}
-                    className="text-blue-600 hover:text-blue-700 font-medium"
+                    className="text-blue-600 hover:text-blue-700 font-medium hover:underline decoration-blue-300 underline-offset-4"
                   >
                     {problem.title}
                   </Link>

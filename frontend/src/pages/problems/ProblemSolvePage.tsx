@@ -12,6 +12,9 @@ import {
   Loader2,
   Sparkles,
   Lightbulb,
+  Eye,
+  EyeOff,
+  Code2,
   Box,
 } from 'lucide-react';
 import type { Problem, ExecutionStatus, SubmissionStatus } from '@/types';
@@ -64,6 +67,7 @@ export function ProblemSolvePage() {
   const [executionResult, setExecutionResult] = useState<ExecutionResult | null>(null);
   const [submissionResult, setSubmissionResult] = useState<SubmissionResult | null>(null);
   const [showHintIndex, setShowHintIndex] = useState(-1);
+  const [showSolution, setShowSolution] = useState(false);
 
   useEffect(() => {
     const fetchProblem = async () => {
@@ -375,6 +379,7 @@ export function ProblemSolvePage() {
             )}
             {activeTab === 'hints' && (
               <div className="space-y-4">
+                {/* Hints */}
                 {(problem.hints || []).map((hint, index) => (
                   <div
                     key={index}
@@ -396,6 +401,48 @@ export function ProblemSolvePage() {
                     )}
                   </div>
                 ))}
+
+                {/* Solution */}
+                {problem.reference_solution && (
+                  <div className="border border-orange-200 rounded-lg overflow-hidden mt-6">
+                    <button
+                      onClick={() => setShowSolution(!showSolution)}
+                      className="w-full px-4 py-3 flex items-center justify-between bg-orange-50 hover:bg-orange-100 transition-colors"
+                    >
+                      <span className="font-medium text-orange-800 flex items-center gap-2">
+                        <Code2 className="h-4 w-4" />
+                        정답 코드 보기
+                      </span>
+                      <span className="text-sm text-orange-600 flex items-center gap-1">
+                        {showSolution ? (
+                          <>
+                            <EyeOff className="h-4 w-4" />
+                            숨기기
+                          </>
+                        ) : (
+                          <>
+                            <Eye className="h-4 w-4" />
+                            보기
+                          </>
+                        )}
+                      </span>
+                    </button>
+                    {showSolution && (
+                      <div className="bg-neutral-900 p-4 overflow-x-auto">
+                        <pre className="text-sm text-neutral-100 font-mono whitespace-pre">
+                          {problem.reference_solution}
+                        </pre>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Warning message */}
+                {problem.reference_solution && !showSolution && (
+                  <p className="text-sm text-neutral-500 text-center mt-4">
+                    먼저 힌트를 활용해 직접 풀어보세요!
+                  </p>
+                )}
               </div>
             )}
           </div>

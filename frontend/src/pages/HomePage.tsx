@@ -6,14 +6,14 @@ export function HomePage() {
   const { isAuthenticated } = useAuthStore();
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen overflow-hidden">
       {/* Hero Section */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 text-white">
+      <section className="relative overflow-hidden bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-700 animate-gradient text-white">
         <div className="absolute inset-0 bg-[url('data:image/svg+xml,...')] opacity-10" />
-        <div className="container mx-auto px-4 py-24 relative">
-          <div className="max-w-3xl mx-auto text-center">
-            <h1 className="text-4xl md:text-6xl font-bold mb-6">
-              <span className="text-yellow-300">AI 튜터</span>와 함께하는{' '}
+        <div className="container mx-auto px-4 py-28 relative z-10">
+          <div className="max-w-4xl mx-auto text-center">
+            <h1 className="text-5xl md:text-7xl font-bold mb-6">
+              <span className="gradient-text-gold">AI 튜터</span>와 함께하는{' '}
               알고리즘 마스터
             </h1>
             <p className="text-xl md:text-2xl text-blue-100 mb-8">
@@ -24,7 +24,7 @@ export function HomePage() {
               {isAuthenticated ? (
                 <Link
                   to="/problems"
-                  className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-white text-blue-600 rounded-xl font-semibold hover:bg-blue-50 transition-colors"
+                  className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-white text-blue-600 rounded-xl font-semibold hover:bg-blue-50 transition-all duration-300 shadow-lg hover:shadow-xl hover:-translate-y-1"
                 >
                   학습 시작하기
                   <ArrowRight className="h-5 w-5" />
@@ -33,14 +33,14 @@ export function HomePage() {
                 <>
                   <Link
                     to="/register"
-                    className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-white text-blue-600 rounded-xl font-semibold hover:bg-blue-50 transition-colors"
+                    className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-white text-blue-600 rounded-xl font-semibold hover:bg-blue-50 transition-all duration-300 shadow-lg hover:shadow-xl hover:-translate-y-1"
                   >
                     무료로 시작하기
                     <ArrowRight className="h-5 w-5" />
                   </Link>
                   <Link
                     to="/login"
-                    className="inline-flex items-center justify-center px-8 py-4 border-2 border-white text-white rounded-xl font-semibold hover:bg-white/10 transition-colors"
+                    className="inline-flex items-center justify-center px-8 py-4 border-2 border-white/50 text-white backdrop-blur-sm rounded-xl font-semibold hover:bg-white/10 hover:border-white transition-all duration-300"
                   >
                     로그인
                   </Link>
@@ -61,16 +61,16 @@ export function HomePage() {
       </section>
 
       {/* Features Section */}
-      <section className="py-20 bg-neutral-50">
+      <section className="py-24 bg-neutral-50">
         <div className="container mx-auto px-4">
-          <h2 className="text-3xl md:text-4xl font-bold text-center mb-4">
+          <h2 className="text-3xl md:text-5xl font-bold text-center mb-4 gradient-text">
             왜 Code Tutor AI인가요?
           </h2>
           <p className="text-xl text-neutral-600 text-center mb-12 max-w-2xl mx-auto">
             나만의 속도로 알고리즘을 마스터할 수 있도록 설계된 지능형 학습 플랫폼입니다.
           </p>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
             <FeatureCard
               icon={<BookOpen className="h-8 w-8" />}
               title="엄선된 문제"
@@ -122,7 +122,7 @@ export function HomePage() {
             ].map((pattern) => (
               <div
                 key={pattern}
-                className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-4 text-center border border-blue-100"
+                className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-5 text-center border border-blue-100/50 group cursor-pointer card-hover"
               >
                 <span className="text-sm font-medium text-blue-700">{pattern}</span>
               </div>
@@ -131,7 +131,7 @@ export function HomePage() {
           <div className="text-center mt-8">
             <Link
               to="/patterns"
-              className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-700 font-medium"
+              className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl hover:shadow-lg hover:shadow-blue-500/25 transition-all duration-300 hover:-translate-y-1 font-medium"
             >
               모든 패턴 보기
               <ArrowRight className="h-4 w-4" />
@@ -141,7 +141,7 @@ export function HomePage() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 bg-neutral-50">
+      <section className="py-24 bg-neutral-50">
         <div className="container mx-auto px-4 text-center">
           <h2 className="text-3xl md:text-4xl font-bold mb-4">
             지금 바로 학습을 시작하세요
@@ -152,7 +152,7 @@ export function HomePage() {
           {!isAuthenticated && (
             <Link
               to="/register"
-              className="inline-flex items-center gap-2 px-8 py-4 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 transition-colors"
+              className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl font-bold text-lg hover:shadow-lg hover:shadow-blue-500/25 transition-all duration-300 hover:-translate-y-1"
             >
               무료 계정 만들기
               <ArrowRight className="h-5 w-5" />
@@ -174,11 +174,11 @@ function FeatureCard({
   description: string;
 }) {
   return (
-    <div className="bg-white rounded-2xl p-6 shadow-sm border border-neutral-200 hover:shadow-md transition-shadow">
-      <div className="w-14 h-14 bg-blue-100 text-blue-600 rounded-xl flex items-center justify-center mb-4">
+    <div className="card-hover bg-white rounded-2xl p-7 shadow-soft border border-neutral-100">
+      <div className="w-14 h-14 bg-blue-100 text-blue-600 rounded-xl flex items-center justify-center mb-5 shadow-lg">
         {icon}
       </div>
-      <h3 className="text-xl font-semibold mb-2">{title}</h3>
+      <h3 className="text-xl font-bold mb-3 text-neutral-800">{title}</h3>
       <p className="text-neutral-600">{description}</p>
     </div>
   );

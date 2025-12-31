@@ -155,7 +155,7 @@ export function PatternsPage() {
             <Link
               key={pattern.id}
               to={`/patterns/${pattern.id}`}
-              className="bg-white rounded-xl shadow-sm border border-neutral-200 p-6 hover:shadow-md hover:border-purple-300 transition-all group"
+              className="card-hover bg-white rounded-xl shadow-soft border border-neutral-100 p-6 hover:border-purple-300 group"
             >
               <div className="flex items-start justify-between mb-4">
                 <div>

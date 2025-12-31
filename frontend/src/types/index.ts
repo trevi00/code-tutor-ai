@@ -67,6 +67,7 @@ export interface Problem {
   constraints: string;
   hints: string[];
   solution_template: string;
+  reference_solution?: string;
   time_limit_ms: number;
   memory_limit_mb: number;
   is_published: boolean;
