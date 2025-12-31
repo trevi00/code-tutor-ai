@@ -10,31 +10,28 @@ dependencies = [
     "fastapi>=0.109.0",
     "uvicorn[standard]>=0.27.0",
     "python-multipart>=0.0.6",
-
     # Database
     "sqlalchemy>=2.0.25",
     "alembic>=1.13.1",
     "asyncpg>=0.29.0",
     "redis>=5.0.1",
-
     # Auth
     "bcrypt>=4.0.0",
     "python-jose[cryptography]>=3.3.0",
-
     # Validation
     "pydantic>=2.5.0",
     "pydantic-settings>=2.1.0",
     "email-validator>=2.1.0",
-
     # DI & Utils
     "dependency-injector>=4.41.0",
     "structlog>=24.1.0",
-
     # ML/AI (optional, for later phases)
     # "torch>=2.1.0",
     # "transformers>=4.36.0",
     # "langchain>=0.1.0",
     # "faiss-cpu>=1.7.4",
+    "httpx>=0.28.1",
+    "aiosqlite>=0.22.1",
 ]
 
 [project.optional-dependencies]

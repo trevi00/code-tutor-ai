@@ -372,12 +372,14 @@ name = "code-tutor-ai"
 version = "1.0.0"
 source = { editable = "." }
 dependencies = [
+    { name = "aiosqlite" },
     { name = "alembic" },
     { name = "asyncpg" },
     { name = "bcrypt" },
     { name = "dependency-injector" },
     { name = "email-validator" },
     { name = "fastapi" },
+    { name = "httpx" },
     { name = "pydantic" },
     { name = "pydantic-settings" },
     { name = "python-jose", extra = ["cryptography"] },
@@ -412,6 +414,7 @@ ml = [
 
 [package.metadata]
 requires-dist = [
+    { name = "aiosqlite", specifier = ">=0.22.1" },
     { name = "aiosqlite", marker = "extra == 'dev'", specifier = ">=0.19.0" },
     { name = "alembic", specifier = ">=1.13.1" },
     { name = "asyncpg", specifier = ">=0.29.0" },
@@ -421,6 +424,7 @@ requires-dist = [
     { name = "email-validator", specifier = ">=2.1.0" },
     { name = "faiss-cpu", marker = "extra == 'ml'", specifier = ">=1.7.4" },
     { name = "fastapi", specifier = ">=0.109.0" },
+    { name = "httpx", specifier = ">=0.28.1" },
     { name = "httpx", marker = "extra == 'dev'", specifier = ">=0.26.0" },
     { name = "langchain", marker = "extra == 'ml'", specifier = ">=0.1.0" },
     { name = "mypy", marker = "extra == 'dev'", specifier = ">=1.8.0" },
