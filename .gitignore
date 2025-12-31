@@ -63,3 +63,6 @@ backend/data/
 # ML Models (large files)
 backend/models/
 backend/data/
+
+# E2E test screenshots
+frontend/e2e/screenshots/
