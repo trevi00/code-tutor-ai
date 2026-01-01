@@ -1,5 +1,9 @@
 # Code Tutor AI
 
+[![CI](https://github.com/trevi00/code-tutor-ai/actions/workflows/ci.yml/badge.svg)](https://github.com/trevi00/code-tutor-ai/actions/workflows/ci.yml)
+[![PR Check](https://github.com/trevi00/code-tutor-ai/actions/workflows/pr-check.yml/badge.svg)](https://github.com/trevi00/code-tutor-ai/actions/workflows/pr-check.yml)
+[![E2E Tests](https://github.com/trevi00/code-tutor-ai/actions/workflows/e2e-full.yml/badge.svg)](https://github.com/trevi00/code-tutor-ai/actions/workflows/e2e-full.yml)
+
 > **AI 기반 Python 알고리즘 & 자료구조 학습 플랫폼**
 
 한국어 AI 튜터와 함께하는 맞춤형 코딩 교육 웹 애플리케이션
@@ -19,7 +23,7 @@
 | 대시보드 (통계/스트릭/히트맵) | ✅ 완료 |
 | 패턴 학습 (24개 알고리즘 패턴) | ✅ 완료 |
 | 전체 UI 한글화 | ✅ 완료 |
-| E2E 테스트 (35개) | ✅ 통과 |
+| E2E 테스트 (41개) | ✅ 통과 |
 
 ---
 
@@ -69,7 +73,7 @@
 - **State**: Zustand + TanStack Query
 
 ### Testing
-- **E2E**: Playwright (35개 테스트)
+- **E2E**: Playwright (41개 테스트)
 - **API**: pytest
 
 ---
@@ -214,8 +218,8 @@ npx playwright test
 
 ### 테스트 결과
 ```
-Running 35 tests using 10 workers
-35 passed (1.0m)
+Running 41 tests using 10 workers
+41 passed (2.2m)
 ```
 
 ---
