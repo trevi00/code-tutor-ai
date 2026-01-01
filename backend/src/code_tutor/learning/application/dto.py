@@ -5,12 +5,16 @@ from uuid import UUID
 
 from pydantic import BaseModel, Field
 
-from code_tutor.learning.domain.value_objects import Category, Difficulty, SubmissionStatus
+from code_tutor.learning.domain.value_objects import (
+    Category,
+    Difficulty,
+)
 
 
 # Request DTOs
 class CreateTestCaseRequest(BaseModel):
     """Create test case request"""
+
     input_data: str
     expected_output: str
     is_sample: bool = False
@@ -18,6 +22,7 @@ class CreateTestCaseRequest(BaseModel):
 
 class CreateProblemRequest(BaseModel):
     """Create problem request"""
+
     title: str = Field(..., min_length=1, max_length=255)
     description: str
     difficulty: Difficulty
@@ -39,6 +44,7 @@ class CreateProblemRequest(BaseModel):
 
 class UpdateProblemRequest(BaseModel):
     """Update problem request"""
+
     title: str | None = None
     description: str | None = None
     constraints: str | None = None
@@ -47,6 +53,7 @@ class UpdateProblemRequest(BaseModel):
 
 class CreateSubmissionRequest(BaseModel):
     """Create submission request"""
+
     problem_id: UUID
     code: str = Field(..., min_length=1)
     language: str = Field(default="python", pattern="^(python)$")
@@ -54,6 +61,7 @@ class CreateSubmissionRequest(BaseModel):
 
 class ProblemFilterParams(BaseModel):
     """Problem filter parameters"""
+
     category: Category | None = None
     difficulty: Difficulty | None = None
     pattern_id: str | None = None
@@ -64,6 +72,7 @@ class ProblemFilterParams(BaseModel):
 # Response DTOs
 class TestCaseResponse(BaseModel):
     """Test case response"""
+
     id: UUID
     input_data: str
     expected_output: str
@@ -76,6 +85,7 @@ class TestCaseResponse(BaseModel):
 
 class ProblemResponse(BaseModel):
     """Full problem response"""
+
     id: UUID
     title: str
     description: str
@@ -104,6 +114,7 @@ class ProblemResponse(BaseModel):
 
 class ProblemSummaryResponse(BaseModel):
     """Problem summary for list views"""
+
     id: UUID
     title: str
     difficulty: str
@@ -115,6 +126,7 @@ class ProblemSummaryResponse(BaseModel):
 
 class ProblemListResponse(BaseModel):
     """Paginated problem list response"""
+
     items: list[ProblemSummaryResponse]
     total: int
     page: int
@@ -124,6 +136,7 @@ class ProblemListResponse(BaseModel):
 
 class TestResultResponse(BaseModel):
     """Test result response"""
+
     test_case_id: UUID
     input_data: str
     expected_output: str
@@ -135,6 +148,7 @@ class TestResultResponse(BaseModel):
 
 class SubmissionResponse(BaseModel):
     """Submission response"""
+
     id: UUID
     user_id: UUID
     problem_id: UUID
@@ -156,6 +170,7 @@ class SubmissionResponse(BaseModel):
 
 class SubmissionSummaryResponse(BaseModel):
     """Submission summary for list views"""
+
     id: UUID
     problem_id: UUID
     status: str
@@ -166,6 +181,7 @@ class SubmissionSummaryResponse(BaseModel):
 
 class HintsResponse(BaseModel):
     """Problem hints response"""
+
     problem_id: UUID
     hints: list[str]
     total_hints: int
@@ -173,6 +189,7 @@ class HintsResponse(BaseModel):
 
 class RecommendedProblemResponse(BaseModel):
     """Recommended problem with reason"""
+
     id: UUID
     title: str
     difficulty: str

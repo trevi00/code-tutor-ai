@@ -1,13 +1,12 @@
 """Problem Recommender using NCF and content-based features"""
 
-from pathlib import Path
-from typing import List, Dict, Optional, Any, Set
-from uuid import UUID
 import logging
+from uuid import UUID
+
 import numpy as np
 
-from code_tutor.ml.recommendation.ncf_model import NCFModel
 from code_tutor.ml.config import get_ml_config
+from code_tutor.ml.recommendation.ncf_model import NCFModel
 
 logger = logging.getLogger(__name__)
 
@@ -29,21 +28,21 @@ class ProblemRecommender:
     def __init__(self, config=None):
         self.config = config or get_ml_config()
 
-        self._ncf_model: Optional[NCFModel] = None
-        self._user_id_map: Dict[UUID, int] = {}
-        self._item_id_map: Dict[UUID, int] = {}
-        self._reverse_item_map: Dict[int, UUID] = {}
+        self._ncf_model: NCFModel | None = None
+        self._user_id_map: dict[UUID, int] = {}
+        self._item_id_map: dict[UUID, int] = {}
+        self._reverse_item_map: dict[int, UUID] = {}
 
-        self._problem_features: Dict[UUID, Dict] = {}
-        self._user_history: Dict[UUID, Set[UUID]] = {}
+        self._problem_features: dict[UUID, dict] = {}
+        self._user_history: dict[UUID, set[UUID]] = {}
 
         self._is_initialized = False
 
     def initialize(
         self,
-        problems: List[Dict],
-        interactions: List[Dict],
-        force_retrain: bool = False
+        problems: list[dict],
+        interactions: list[dict],
+        force_retrain: bool = False,
     ):
         """
         Initialize recommender with problem and interaction data.
@@ -78,7 +77,7 @@ class ProblemRecommender:
         self._train_model(interactions)
         self._is_initialized = True
 
-    def _build_id_mappings(self, problems: List[Dict], interactions: List[Dict]):
+    def _build_id_mappings(self, problems: list[dict], interactions: list[dict]):
         """Build user and item ID mappings"""
         # Collect unique IDs
         user_ids = set()
@@ -92,13 +91,19 @@ class ProblemRecommender:
             item_ids.add(problem["id"])
 
         # Create mappings
-        self._user_id_map = {uid: idx for idx, uid in enumerate(sorted(user_ids, key=str))}
-        self._item_id_map = {iid: idx for idx, iid in enumerate(sorted(item_ids, key=str))}
+        self._user_id_map = {
+            uid: idx for idx, uid in enumerate(sorted(user_ids, key=str))
+        }
+        self._item_id_map = {
+            iid: idx for idx, iid in enumerate(sorted(item_ids, key=str))
+        }
         self._reverse_item_map = {idx: iid for iid, idx in self._item_id_map.items()}
 
-        logger.info(f"Built mappings: {len(self._user_id_map)} users, {len(self._item_id_map)} items")
+        logger.info(
+            f"Built mappings: {len(self._user_id_map)} users, {len(self._item_id_map)} items"
+        )
 
-    def _store_problem_features(self, problems: List[Dict]):
+    def _store_problem_features(self, problems: list[dict]):
         """Store problem features for content-based filtering"""
         for problem in problems:
             self._problem_features[problem["id"]] = {
@@ -106,10 +111,10 @@ class ProblemRecommender:
                 "category": problem.get("category", "unknown"),
                 "patterns": problem.get("patterns", []),
                 "title": problem.get("title", ""),
-                "acceptance_rate": problem.get("acceptance_rate", 0.5)
+                "acceptance_rate": problem.get("acceptance_rate", 0.5),
             }
 
-    def _build_user_history(self, interactions: List[Dict]):
+    def _build_user_history(self, interactions: list[dict]):
         """Build user interaction history"""
         self._user_history = {}
 
@@ -121,7 +126,7 @@ class ProblemRecommender:
             if interaction.get("is_solved", False):
                 self._user_history[user_id].add(interaction["problem_id"])
 
-    def _train_model(self, interactions: List[Dict]):
+    def _train_model(self, interactions: list[dict]):
         """Train NCF model on interaction data"""
         logger.info("Training NCF model...")
 
@@ -153,14 +158,14 @@ class ProblemRecommender:
             num_users=len(self._user_id_map),
             num_items=len(self._item_id_map),
             embedding_dim=self.config.NCF_EMBEDDING_DIM,
-            hidden_layers=self.config.NCF_HIDDEN_LAYERS
+            hidden_layers=self.config.NCF_HIDDEN_LAYERS,
         )
 
         history = self._ncf_model.train(
             train_data=train_split,
             val_data=val_split if val_split else None,
             epochs=20,
-            batch_size=256
+            batch_size=256,
         )
 
         # Save model
@@ -169,10 +174,8 @@ class ProblemRecommender:
         logger.info(f"NCF model trained. Final loss: {history['train_loss'][-1]:.4f}")
 
     def _add_negative_samples(
-        self,
-        positive_samples: List,
-        negative_ratio: int = 4
-    ) -> List:
+        self, positive_samples: list, negative_ratio: int = 4
+    ) -> list:
         """Add negative samples for training"""
         user_positive_items = {}
         for user_idx, item_idx, _ in positive_samples:
@@ -200,7 +203,7 @@ class ProblemRecommender:
             num_users=len(self._user_id_map),
             num_items=len(self._item_id_map),
             embedding_dim=self.config.NCF_EMBEDDING_DIM,
-            hidden_layers=self.config.NCF_HIDDEN_LAYERS
+            hidden_layers=self.config.NCF_HIDDEN_LAYERS,
         )
         self._ncf_model.load(self.config.NCF_MODEL_PATH)
         logger.info("Loaded pre-trained NCF model")
@@ -210,9 +213,9 @@ class ProblemRecommender:
         user_id: UUID,
         top_k: int = 10,
         strategy: str = "hybrid",
-        difficulty_filter: Optional[str] = None,
-        category_filter: Optional[str] = None
-    ) -> List[Dict]:
+        difficulty_filter: str | None = None,
+        category_filter: str | None = None,
+    ) -> list[dict]:
         """
         Recommend problems for a user.
 
@@ -228,7 +231,9 @@ class ProblemRecommender:
         """
         if not self._is_initialized:
             logger.warning("Recommender not initialized")
-            return self._cold_start_recommendations(top_k, difficulty_filter, category_filter)
+            return self._cold_start_recommendations(
+                top_k, difficulty_filter, category_filter
+            )
 
         # Get user's solved problems
         solved_problems = self._user_history.get(user_id, set())
@@ -241,28 +246,28 @@ class ProblemRecommender:
 
         # Get recommendations based on strategy
         if strategy == "collaborative":
-            recommendations = self._collaborative_recommend(user_id, solved_problems, top_k * 2)
+            recommendations = self._collaborative_recommend(
+                user_id, solved_problems, top_k * 2
+            )
         elif strategy == "content":
-            recommendations = self._content_based_recommend(user_id, solved_problems, top_k * 2)
+            recommendations = self._content_based_recommend(
+                user_id, solved_problems, top_k * 2
+            )
         else:  # hybrid
-            recommendations = self._hybrid_recommend(user_id, solved_problems, top_k * 2)
+            recommendations = self._hybrid_recommend(
+                user_id, solved_problems, top_k * 2
+            )
 
         # Apply filters
         filtered = self._apply_filters(
-            recommendations,
-            difficulty_filter,
-            category_filter,
-            solved_problems
+            recommendations, difficulty_filter, category_filter, solved_problems
         )
 
         return filtered[:top_k]
 
     def _collaborative_recommend(
-        self,
-        user_id: UUID,
-        solved: Set[UUID],
-        top_k: int
-    ) -> List[Dict]:
+        self, user_id: UUID, solved: set[UUID], top_k: int
+    ) -> list[dict]:
         """Collaborative filtering recommendations using NCF"""
         if self._ncf_model is None:
             return []
@@ -272,13 +277,13 @@ class ProblemRecommender:
             return []
 
         # Exclude solved problems
-        exclude_indices = {self._item_id_map[pid] for pid in solved if pid in self._item_id_map}
+        exclude_indices = {
+            self._item_id_map[pid] for pid in solved if pid in self._item_id_map
+        }
 
         # Get NCF recommendations
         ncf_recs = self._ncf_model.recommend(
-            user_idx,
-            top_k=top_k,
-            exclude_items=exclude_indices
+            user_idx, top_k=top_k, exclude_items=exclude_indices
         )
 
         recommendations = []
@@ -286,21 +291,20 @@ class ProblemRecommender:
             problem_id = self._reverse_item_map.get(item_idx)
             if problem_id and problem_id in self._problem_features:
                 features = self._problem_features[problem_id]
-                recommendations.append({
-                    "problem_id": problem_id,
-                    "score": score,
-                    "reason": "similar_users",
-                    **features
-                })
+                recommendations.append(
+                    {
+                        "problem_id": problem_id,
+                        "score": score,
+                        "reason": "similar_users",
+                        **features,
+                    }
+                )
 
         return recommendations
 
     def _content_based_recommend(
-        self,
-        user_id: UUID,
-        solved: Set[UUID],
-        top_k: int
-    ) -> List[Dict]:
+        self, user_id: UUID, solved: set[UUID], top_k: int
+    ) -> list[dict]:
         """Content-based recommendations based on user profile"""
         # Analyze user's solved problem patterns
         user_profile = self._analyze_user_profile(solved)
@@ -312,23 +316,22 @@ class ProblemRecommender:
                 continue
 
             score = self._content_similarity_score(user_profile, features)
-            candidates.append({
-                "problem_id": problem_id,
-                "score": score,
-                "reason": "content_match",
-                **features
-            })
+            candidates.append(
+                {
+                    "problem_id": problem_id,
+                    "score": score,
+                    "reason": "content_match",
+                    **features,
+                }
+            )
 
         # Sort by score
         candidates.sort(key=lambda x: x["score"], reverse=True)
         return candidates[:top_k]
 
     def _hybrid_recommend(
-        self,
-        user_id: UUID,
-        solved: Set[UUID],
-        top_k: int
-    ) -> List[Dict]:
+        self, user_id: UUID, solved: set[UUID], top_k: int
+    ) -> list[dict]:
         """Hybrid recommendations combining collaborative and content-based"""
         collab_recs = self._collaborative_recommend(user_id, solved, top_k)
         content_recs = self._content_based_recommend(user_id, solved, top_k)
@@ -343,7 +346,7 @@ class ProblemRecommender:
             combined[pid] = {
                 **rec,
                 "score": rec["score"] * collab_weight,
-                "reason": "hybrid"
+                "reason": "hybrid",
             }
 
         for rec in content_recs:
@@ -354,20 +357,20 @@ class ProblemRecommender:
                 combined[pid] = {
                     **rec,
                     "score": rec["score"] * content_weight,
-                    "reason": "hybrid"
+                    "reason": "hybrid",
                 }
 
         # Sort and return
         result = sorted(combined.values(), key=lambda x: x["score"], reverse=True)
         return result[:top_k]
 
-    def _analyze_user_profile(self, solved: Set[UUID]) -> Dict:
+    def _analyze_user_profile(self, solved: set[UUID]) -> dict:
         """Analyze user's solved problems to build profile"""
         profile = {
             "difficulties": {"easy": 0, "medium": 0, "hard": 0},
             "categories": {},
             "patterns": {},
-            "avg_acceptance_rate": 0.5
+            "avg_acceptance_rate": 0.5,
         }
 
         if not solved:
@@ -398,7 +401,7 @@ class ProblemRecommender:
 
         return profile
 
-    def _content_similarity_score(self, profile: Dict, features: Dict) -> float:
+    def _content_similarity_score(self, profile: dict, features: dict) -> float:
         """Calculate content-based similarity score"""
         score = 0.0
 
@@ -444,10 +447,10 @@ class ProblemRecommender:
     def _cold_start_recommendations(
         self,
         top_k: int,
-        difficulty: Optional[str] = None,
-        category: Optional[str] = None,
-        solved: Optional[Set[UUID]] = None
-    ) -> List[Dict]:
+        difficulty: str | None = None,
+        category: str | None = None,
+        solved: set[UUID] | None = None,
+    ) -> list[dict]:
         """Recommendations for new users or when no model"""
         solved = solved or set()
 
@@ -462,12 +465,14 @@ class ProblemRecommender:
             if features.get("difficulty") == "easy":
                 score += 0.3
 
-            candidates.append({
-                "problem_id": problem_id,
-                "score": score,
-                "reason": "popular",
-                **features
-            })
+            candidates.append(
+                {
+                    "problem_id": problem_id,
+                    "score": score,
+                    "reason": "popular",
+                    **features,
+                }
+            )
 
         # Apply filters
         filtered = self._apply_filters(candidates, difficulty, category, solved)
@@ -476,11 +481,11 @@ class ProblemRecommender:
 
     def _apply_filters(
         self,
-        recommendations: List[Dict],
-        difficulty: Optional[str],
-        category: Optional[str],
-        solved: Set[UUID]
-    ) -> List[Dict]:
+        recommendations: list[dict],
+        difficulty: str | None,
+        category: str | None,
+        solved: set[UUID],
+    ) -> list[dict]:
         """Apply difficulty and category filters"""
         filtered = []
 
@@ -501,7 +506,7 @@ class ProblemRecommender:
 
         return filtered
 
-    def get_skill_gaps(self, user_id: UUID) -> List[Dict]:
+    def get_skill_gaps(self, user_id: UUID) -> list[dict]:
         """
         Identify skill gaps for a user.
 
@@ -520,25 +525,26 @@ class ProblemRecommender:
         for cat in all_categories:
             solved_count = profile["categories"].get(cat, 0)
             total_in_cat = sum(
-                1 for f in self._problem_features.values()
-                if f.get("category") == cat
+                1 for f in self._problem_features.values() if f.get("category") == cat
             )
 
             if total_in_cat > 0:
                 coverage = solved_count / total_in_cat
                 if coverage < 0.3:  # Less than 30% solved
-                    gaps.append({
-                        "type": "category",
-                        "name": cat,
-                        "solved": solved_count,
-                        "total": total_in_cat,
-                        "coverage": coverage
-                    })
+                    gaps.append(
+                        {
+                            "type": "category",
+                            "name": cat,
+                            "solved": solved_count,
+                            "total": total_in_cat,
+                            "coverage": coverage,
+                        }
+                    )
 
         gaps.sort(key=lambda x: x["coverage"])
         return gaps[:5]
 
-    def get_next_challenge(self, user_id: UUID) -> Optional[Dict]:
+    def get_next_challenge(self, user_id: UUID) -> dict | None:
         """
         Get next challenge problem for user.
 
@@ -565,10 +571,7 @@ class ProblemRecommender:
             if pid in solved:
                 continue
             if features.get("difficulty") == target_diff:
-                candidates.append({
-                    "problem_id": pid,
-                    **features
-                })
+                candidates.append({"problem_id": pid, **features})
 
         if candidates:
             # Return random from candidates

@@ -17,7 +17,10 @@ from code_tutor.learning.application.dto import (
     TestResultResponse,
 )
 from code_tutor.learning.domain.entities import Problem, Submission
-from code_tutor.learning.domain.repository import ProblemRepository, SubmissionRepository
+from code_tutor.learning.domain.repository import (
+    ProblemRepository,
+    SubmissionRepository,
+)
 from code_tutor.shared.exceptions import NotFoundError
 from code_tutor.shared.infrastructure.logging import get_logger
 
@@ -60,7 +63,9 @@ class ProblemService:
 
         saved_problem = await self._problem_repo.add(problem)
 
-        logger.info("Problem created", problem_id=str(saved_problem.id), title=request.title)
+        logger.info(
+            "Problem created", problem_id=str(saved_problem.id), title=request.title
+        )
 
         return self._to_response(saved_problem)
 
@@ -119,7 +124,9 @@ class ProblemService:
             logger.info("Problem deleted", problem_id=str(problem_id))
         return deleted
 
-    async def get_hints(self, problem_id: UUID, hint_index: int | None = None) -> HintsResponse:
+    async def get_hints(
+        self, problem_id: UUID, hint_index: int | None = None
+    ) -> HintsResponse:
         """Get hints for a problem"""
         problem = await self._problem_repo.get_by_id(problem_id)
         if problem is None:
@@ -128,7 +135,7 @@ class ProblemService:
         hints = problem.hints
         if hint_index is not None:
             # Return hints up to the specified index (progressive reveal)
-            hints = hints[:min(hint_index + 1, len(hints))]
+            hints = hints[: min(hint_index + 1, len(hints))]
 
         return HintsResponse(
             problem_id=problem_id,

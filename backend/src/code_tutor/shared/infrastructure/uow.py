@@ -13,8 +13,7 @@ class UnitOfWork(ABC):
     """Abstract Unit of Work interface"""
 
     @abstractmethod
-    async def __aenter__(self) -> Self:
-        ...
+    async def __aenter__(self) -> Self: ...
 
     @abstractmethod
     async def __aexit__(
@@ -22,8 +21,7 @@ class UnitOfWork(ABC):
         exc_type: type[BaseException] | None,
         exc_val: BaseException | None,
         exc_tb: TracebackType | None,
-    ) -> None:
-        ...
+    ) -> None: ...
 
     @abstractmethod
     async def commit(self) -> None:
@@ -49,7 +47,9 @@ class SQLAlchemyUnitOfWork(UnitOfWork):
     def session(self) -> AsyncSession:
         """Get current session"""
         if self._session is None:
-            raise RuntimeError("UnitOfWork not started. Use 'async with' context manager.")
+            raise RuntimeError(
+                "UnitOfWork not started. Use 'async with' context manager."
+            )
         return self._session
 
     async def __aenter__(self) -> Self:

@@ -77,7 +77,10 @@ class DockerSandbox:
                         # Check for specific error types
                         stderr_text = stderr.decode("utf-8", errors="replace")
 
-                        if "MemoryError" in stderr_text or "killed" in stderr_text.lower():
+                        if (
+                            "MemoryError" in stderr_text
+                            or "killed" in stderr_text.lower()
+                        ):
                             status = ExecutionStatus.MEMORY_EXCEEDED
                         else:
                             status = ExecutionStatus.RUNTIME_ERROR
@@ -92,7 +95,7 @@ class DockerSandbox:
                             error_message=stderr_text[:500] if stderr_text else None,
                         )
 
-                except asyncio.TimeoutError:
+                except TimeoutError:
                     execution_time = (time.perf_counter() - start_time) * 1000
 
                     # Kill the container if still running
@@ -168,6 +171,7 @@ class MockSandbox:
     async def execute(self, request: ExecutionRequest) -> ExecutionResult:
         """Execute code using subprocess (for development only)"""
         import subprocess
+
         start_time = time.perf_counter()
 
         try:
@@ -205,7 +209,9 @@ class MockSandbox:
                             stderr=result.stderr,
                             exit_code=result.returncode,
                             execution_time_ms=execution_time,
-                            error_message=result.stderr[:500] if result.stderr else None,
+                            error_message=result.stderr[:500]
+                            if result.stderr
+                            else None,
                         )
 
                 except subprocess.TimeoutExpired:
@@ -218,6 +224,7 @@ class MockSandbox:
 
         except Exception as e:
             import traceback
+
             error_detail = f"{type(e).__name__}: {str(e)}\n{traceback.format_exc()}"
             logger.error(f"MockSandbox execution error: {error_detail}")
             return ExecutionResult(

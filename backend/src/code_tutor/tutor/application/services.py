@@ -44,7 +44,9 @@ class TutorService:
 
         # Get or create conversation
         if request.conversation_id:
-            conversation = await self._conversation_repo.get_by_id(request.conversation_id)
+            conversation = await self._conversation_repo.get_by_id(
+                request.conversation_id
+            )
             if conversation is None:
                 raise NotFoundError("Conversation", str(request.conversation_id))
             if conversation.user_id != user_id:
@@ -122,7 +124,9 @@ class TutorService:
         offset: int = 0,
     ) -> list[ConversationSummaryResponse]:
         """List user's conversations"""
-        conversations = await self._conversation_repo.get_by_user(user_id, limit, offset)
+        conversations = await self._conversation_repo.get_by_user(
+            user_id, limit, offset
+        )
         return [self._to_summary(c) for c in conversations]
 
     async def close_conversation(
@@ -256,16 +260,22 @@ class TutorService:
         if "try:" not in code and len(code) > 100:
             improvements.append("Consider adding error handling for robustness")
         if ": " not in code and "def " in code and "from typing" not in code:
-            improvements.append("Consider adding type hints for better code documentation")
+            improvements.append(
+                "Consider adding type hints for better code documentation"
+            )
         if "__name__" not in code and "def main" in code:
-            improvements.append("Add if __name__ == '__main__': guard for module reusability")
+            improvements.append(
+                "Add if __name__ == '__main__': guard for module reusability"
+            )
 
         if not improvements:
             improvements.append("Code looks good! Keep up the good practices")
 
         return improvements
 
-    def _generate_review_summary(self, score: int, issue_count: int, strength_count: int) -> str:
+    def _generate_review_summary(
+        self, score: int, issue_count: int, strength_count: int
+    ) -> str:
         """Generate review summary"""
         if score >= 90:
             return "Excellent code quality! Your code follows best practices."

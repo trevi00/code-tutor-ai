@@ -1,9 +1,8 @@
 """Algorithm Pattern Knowledge Base for RAG System"""
 
 import json
-from pathlib import Path
-from typing import List, Dict, Optional
 import logging
+from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
@@ -16,10 +15,14 @@ ALGORITHM_PATTERNS = [
         "name_ko": "투 포인터",
         "description": "Use two pointers to traverse array from different positions",
         "description_ko": "배열을 두 포인터로 다른 위치에서 순회하는 기법",
-        "use_cases": ["정렬된 배열에서 두 수의 합 찾기", "중복 제거하기", "가장 많은 물을 담는 컨테이너"],
+        "use_cases": [
+            "정렬된 배열에서 두 수의 합 찾기",
+            "중복 제거하기",
+            "가장 많은 물을 담는 컨테이너",
+        ],
         "time_complexity": "O(n)",
         "space_complexity": "O(1)",
-        "example_code": '''def two_sum_sorted(nums, target):
+        "example_code": """def two_sum_sorted(nums, target):
     left, right = 0, len(nums) - 1
     while left < right:
         current_sum = nums[left] + nums[right]
@@ -29,8 +32,8 @@ ALGORITHM_PATTERNS = [
             left += 1
         else:
             right -= 1
-    return []''',
-        "keywords": ["pointer", "sorted", "pair", "sum", "opposite direction"]
+    return []""",
+        "keywords": ["pointer", "sorted", "pair", "sum", "opposite direction"],
     },
     {
         "id": "sliding-window",
@@ -38,17 +41,21 @@ ALGORITHM_PATTERNS = [
         "name_ko": "슬라이딩 윈도우",
         "description": "Maintain a window that slides through the array",
         "description_ko": "배열을 통해 슬라이딩하는 윈도우를 유지하는 기법",
-        "use_cases": ["최대 합 부분배열", "가장 긴 부분 문자열", "최소 윈도우 부분 문자열"],
+        "use_cases": [
+            "최대 합 부분배열",
+            "가장 긴 부분 문자열",
+            "최소 윈도우 부분 문자열",
+        ],
         "time_complexity": "O(n)",
         "space_complexity": "O(k) where k is window size",
-        "example_code": '''def max_sum_subarray(nums, k):
+        "example_code": """def max_sum_subarray(nums, k):
     window_sum = sum(nums[:k])
     max_sum = window_sum
     for i in range(k, len(nums)):
         window_sum = window_sum - nums[i-k] + nums[i]
         max_sum = max(max_sum, window_sum)
-    return max_sum''',
-        "keywords": ["window", "subarray", "substring", "consecutive", "contiguous"]
+    return max_sum""",
+        "keywords": ["window", "subarray", "substring", "consecutive", "contiguous"],
     },
     {
         "id": "fast-slow-pointers",
@@ -59,15 +66,15 @@ ALGORITHM_PATTERNS = [
         "use_cases": ["순환 감지", "연결 리스트 중간 노드 찾기", "행복한 숫자"],
         "time_complexity": "O(n)",
         "space_complexity": "O(1)",
-        "example_code": '''def has_cycle(head):
+        "example_code": """def has_cycle(head):
     slow = fast = head
     while fast and fast.next:
         slow = slow.next
         fast = fast.next.next
         if slow == fast:
             return True
-    return False''',
-        "keywords": ["cycle", "linked list", "middle", "tortoise", "hare"]
+    return False""",
+        "keywords": ["cycle", "linked list", "middle", "tortoise", "hare"],
     },
     {
         "id": "merge-intervals",
@@ -78,7 +85,7 @@ ALGORITHM_PATTERNS = [
         "use_cases": ["구간 병합하기", "구간 삽입하기", "회의실 배정"],
         "time_complexity": "O(n log n)",
         "space_complexity": "O(n)",
-        "example_code": '''def merge_intervals(intervals):
+        "example_code": """def merge_intervals(intervals):
     intervals.sort(key=lambda x: x[0])
     merged = [intervals[0]]
     for current in intervals[1:]:
@@ -86,8 +93,8 @@ ALGORITHM_PATTERNS = [
             merged[-1][1] = max(merged[-1][1], current[1])
         else:
             merged.append(current)
-    return merged''',
-        "keywords": ["interval", "overlap", "merge", "range", "meeting"]
+    return merged""",
+        "keywords": ["interval", "overlap", "merge", "range", "meeting"],
     },
     {
         "id": "cyclic-sort",
@@ -98,7 +105,7 @@ ALGORITHM_PATTERNS = [
         "use_cases": ["누락된 숫자 찾기", "중복 숫자 찾기", "모든 중복 숫자 찾기"],
         "time_complexity": "O(n)",
         "space_complexity": "O(1)",
-        "example_code": '''def cyclic_sort(nums):
+        "example_code": """def cyclic_sort(nums):
     i = 0
     while i < len(nums):
         correct_idx = nums[i] - 1
@@ -106,8 +113,8 @@ ALGORITHM_PATTERNS = [
             nums[i], nums[correct_idx] = nums[correct_idx], nums[i]
         else:
             i += 1
-    return nums''',
-        "keywords": ["missing", "duplicate", "range", "1 to n", "in-place"]
+    return nums""",
+        "keywords": ["missing", "duplicate", "range", "1 to n", "in-place"],
     },
     {
         "id": "linked-list-reversal",
@@ -118,15 +125,15 @@ ALGORITHM_PATTERNS = [
         "use_cases": ["연결 리스트 뒤집기", "부분 리스트 뒤집기", "리스트 회전"],
         "time_complexity": "O(n)",
         "space_complexity": "O(1)",
-        "example_code": '''def reverse_list(head):
+        "example_code": """def reverse_list(head):
     prev, current = None, head
     while current:
         next_node = current.next
         current.next = prev
         prev = current
         current = next_node
-    return prev''',
-        "keywords": ["reverse", "linked list", "in-place", "sublist"]
+    return prev""",
+        "keywords": ["reverse", "linked list", "in-place", "sublist"],
     },
     {
         "id": "bfs",
@@ -137,7 +144,7 @@ ALGORITHM_PATTERNS = [
         "use_cases": ["레벨 순서 순회", "최단 경로", "최소 깊이"],
         "time_complexity": "O(V + E)",
         "space_complexity": "O(V)",
-        "example_code": '''from collections import deque
+        "example_code": """from collections import deque
 def bfs(root):
     if not root:
         return []
@@ -151,8 +158,8 @@ def bfs(root):
             if node.left: queue.append(node.left)
             if node.right: queue.append(node.right)
         result.append(level)
-    return result''',
-        "keywords": ["queue", "level", "shortest path", "tree", "graph"]
+    return result""",
+        "keywords": ["queue", "level", "shortest path", "tree", "graph"],
     },
     {
         "id": "dfs",
@@ -163,7 +170,7 @@ def bfs(root):
         "use_cases": ["트리 순회", "경로 찾기", "연결 요소"],
         "time_complexity": "O(V + E)",
         "space_complexity": "O(V)",
-        "example_code": '''def dfs(root):
+        "example_code": """def dfs(root):
     if not root:
         return []
     result = []
@@ -173,8 +180,8 @@ def bfs(root):
         result.append(node.val)
         if node.right: stack.append(node.right)
         if node.left: stack.append(node.left)
-    return result''',
-        "keywords": ["stack", "recursion", "backtrack", "tree", "graph"]
+    return result""",
+        "keywords": ["stack", "recursion", "backtrack", "tree", "graph"],
     },
     {
         "id": "two-heaps",
@@ -185,7 +192,7 @@ def bfs(root):
         "use_cases": ["중앙값 찾기", "슬라이딩 윈도우 중앙값", "IPO 문제"],
         "time_complexity": "O(log n) per operation",
         "space_complexity": "O(n)",
-        "example_code": '''import heapq
+        "example_code": """import heapq
 class MedianFinder:
     def __init__(self):
         self.small = []  # max heap (negated)
@@ -195,8 +202,8 @@ class MedianFinder:
         heapq.heappush(self.small, -num)
         heapq.heappush(self.large, -heapq.heappop(self.small))
         if len(self.large) > len(self.small):
-            heapq.heappush(self.small, -heapq.heappop(self.large))''',
-        "keywords": ["heap", "median", "priority queue", "stream"]
+            heapq.heappush(self.small, -heapq.heappop(self.large))""",
+        "keywords": ["heap", "median", "priority queue", "stream"],
     },
     {
         "id": "subsets",
@@ -207,12 +214,12 @@ class MedianFinder:
         "use_cases": ["모든 부분집합", "중복 포함 부분집합", "문자 조합"],
         "time_complexity": "O(2^n)",
         "space_complexity": "O(2^n)",
-        "example_code": '''def subsets(nums):
+        "example_code": """def subsets(nums):
     result = [[]]
     for num in nums:
         result += [curr + [num] for curr in result]
-    return result''',
-        "keywords": ["subset", "power set", "combination", "backtracking"]
+    return result""",
+        "keywords": ["subset", "power set", "combination", "backtracking"],
     },
     {
         "id": "binary-search",
@@ -223,7 +230,7 @@ class MedianFinder:
         "use_cases": ["정렬된 배열에서 검색", "범위 검색", "피크 요소 찾기"],
         "time_complexity": "O(log n)",
         "space_complexity": "O(1)",
-        "example_code": '''def binary_search(nums, target):
+        "example_code": """def binary_search(nums, target):
     left, right = 0, len(nums) - 1
     while left <= right:
         mid = (left + right) // 2
@@ -233,8 +240,8 @@ class MedianFinder:
             left = mid + 1
         else:
             right = mid - 1
-    return -1''',
-        "keywords": ["sorted", "search", "divide", "half", "logarithmic"]
+    return -1""",
+        "keywords": ["sorted", "search", "divide", "half", "logarithmic"],
     },
     {
         "id": "top-k-elements",
@@ -245,13 +252,13 @@ class MedianFinder:
         "use_cases": ["K번째 큰 수", "상위 K개 빈출 요소", "K개의 가장 가까운 점"],
         "time_complexity": "O(n log k)",
         "space_complexity": "O(k)",
-        "example_code": '''import heapq
+        "example_code": """import heapq
 def top_k_frequent(nums, k):
     count = {}
     for num in nums:
         count[num] = count.get(num, 0) + 1
-    return heapq.nlargest(k, count.keys(), key=count.get)''',
-        "keywords": ["heap", "kth", "top", "frequent", "priority"]
+    return heapq.nlargest(k, count.keys(), key=count.get)""",
+        "keywords": ["heap", "kth", "top", "frequent", "priority"],
     },
     {
         "id": "k-way-merge",
@@ -259,10 +266,14 @@ def top_k_frequent(nums, k):
         "name_ko": "K-방향 병합",
         "description": "Merge K sorted lists using heap",
         "description_ko": "힙을 사용해 K개의 정렬된 리스트 병합",
-        "use_cases": ["K개의 정렬된 리스트 병합", "행렬에서 K번째 작은 수", "가장 작은 범위"],
+        "use_cases": [
+            "K개의 정렬된 리스트 병합",
+            "행렬에서 K번째 작은 수",
+            "가장 작은 범위",
+        ],
         "time_complexity": "O(n log k)",
         "space_complexity": "O(k)",
-        "example_code": '''import heapq
+        "example_code": """import heapq
 def merge_k_lists(lists):
     heap = []
     for i, lst in enumerate(lists):
@@ -274,8 +285,8 @@ def merge_k_lists(lists):
         result.append(val)
         if elem_idx + 1 < len(lists[list_idx]):
             heapq.heappush(heap, (lists[list_idx][elem_idx+1], list_idx, elem_idx+1))
-    return result''',
-        "keywords": ["merge", "sorted lists", "heap", "matrix"]
+    return result""",
+        "keywords": ["merge", "sorted lists", "heap", "matrix"],
     },
     {
         "id": "dp",
@@ -286,7 +297,7 @@ def merge_k_lists(lists):
         "use_cases": ["피보나치", "배낭 문제", "최장 부분 수열"],
         "time_complexity": "Problem dependent",
         "space_complexity": "Problem dependent",
-        "example_code": '''def longest_common_subsequence(text1, text2):
+        "example_code": """def longest_common_subsequence(text1, text2):
     m, n = len(text1), len(text2)
     dp = [[0] * (n + 1) for _ in range(m + 1)]
     for i in range(1, m + 1):
@@ -295,8 +306,8 @@ def merge_k_lists(lists):
                 dp[i][j] = dp[i-1][j-1] + 1
             else:
                 dp[i][j] = max(dp[i-1][j], dp[i][j-1])
-    return dp[m][n]''',
-        "keywords": ["memoization", "tabulation", "optimal", "subproblem", "state"]
+    return dp[m][n]""",
+        "keywords": ["memoization", "tabulation", "optimal", "subproblem", "state"],
     },
     {
         "id": "topological-sort",
@@ -307,7 +318,7 @@ def merge_k_lists(lists):
         "use_cases": ["수강 순서", "빌드 순서", "외계인 사전"],
         "time_complexity": "O(V + E)",
         "space_complexity": "O(V)",
-        "example_code": '''from collections import deque
+        "example_code": """from collections import deque
 def topological_sort(n, edges):
     graph = {i: [] for i in range(n)}
     in_degree = {i: 0 for i in range(n)}
@@ -323,8 +334,8 @@ def topological_sort(n, edges):
             in_degree[neighbor] -= 1
             if in_degree[neighbor] == 0:
                 queue.append(neighbor)
-    return result if len(result) == n else []''',
-        "keywords": ["DAG", "dependency", "order", "course", "prerequisite"]
+    return result if len(result) == n else []""",
+        "keywords": ["DAG", "dependency", "order", "course", "prerequisite"],
     },
     {
         "id": "union-find",
@@ -335,7 +346,7 @@ def topological_sort(n, edges):
         "use_cases": ["연결 요소", "중복 연결", "계정 병합"],
         "time_complexity": "O(α(n)) per operation",
         "space_complexity": "O(n)",
-        "example_code": '''class UnionFind:
+        "example_code": """class UnionFind:
     def __init__(self, n):
         self.parent = list(range(n))
         self.rank = [0] * n
@@ -353,8 +364,8 @@ def topological_sort(n, edges):
         self.parent[py] = px
         if self.rank[px] == self.rank[py]:
             self.rank[px] += 1
-        return True''',
-        "keywords": ["disjoint", "connected", "component", "group", "cluster"]
+        return True""",
+        "keywords": ["disjoint", "connected", "component", "group", "cluster"],
     },
     {
         "id": "trie",
@@ -365,7 +376,7 @@ def topological_sort(n, edges):
         "use_cases": ["자동완성", "단어 검색", "접두사 매칭"],
         "time_complexity": "O(m) where m is word length",
         "space_complexity": "O(n * m)",
-        "example_code": '''class TrieNode:
+        "example_code": """class TrieNode:
     def __init__(self):
         self.children = {}
         self.is_end = False
@@ -388,8 +399,8 @@ class Trie:
             if char not in node.children:
                 return False
             node = node.children[char]
-        return node.is_end''',
-        "keywords": ["prefix", "autocomplete", "word", "dictionary", "string"]
+        return node.is_end""",
+        "keywords": ["prefix", "autocomplete", "word", "dictionary", "string"],
     },
     {
         "id": "backtracking",
@@ -400,7 +411,7 @@ class Trie:
         "use_cases": ["N-퀸", "스도쿠 풀이", "순열"],
         "time_complexity": "Problem dependent (often exponential)",
         "space_complexity": "O(n)",
-        "example_code": '''def permutations(nums):
+        "example_code": """def permutations(nums):
     result = []
     def backtrack(path, remaining):
         if not remaining:
@@ -411,8 +422,8 @@ class Trie:
             backtrack(path, remaining[:i] + remaining[i+1:])
             path.pop()
     backtrack([], nums)
-    return result''',
-        "keywords": ["permutation", "combination", "constraint", "explore", "prune"]
+    return result""",
+        "keywords": ["permutation", "combination", "constraint", "explore", "prune"],
     },
     {
         "id": "greedy",
@@ -423,14 +434,14 @@ class Trie:
         "use_cases": ["활동 선택", "허프만 코딩", "점프 게임"],
         "time_complexity": "Problem dependent",
         "space_complexity": "Problem dependent",
-        "example_code": '''def jump_game(nums):
+        "example_code": """def jump_game(nums):
     max_reach = 0
     for i, jump in enumerate(nums):
         if i > max_reach:
             return False
         max_reach = max(max_reach, i + jump)
-    return True''',
-        "keywords": ["optimal", "local", "choice", "minimum", "maximum"]
+    return True""",
+        "keywords": ["optimal", "local", "choice", "minimum", "maximum"],
     },
     {
         "id": "monotonic-stack",
@@ -441,7 +452,7 @@ class Trie:
         "use_cases": ["다음 큰 요소", "가장 큰 직사각형", "일일 온도"],
         "time_complexity": "O(n)",
         "space_complexity": "O(n)",
-        "example_code": '''def next_greater_element(nums):
+        "example_code": """def next_greater_element(nums):
     result = [-1] * len(nums)
     stack = []
     for i, num in enumerate(nums):
@@ -449,8 +460,8 @@ class Trie:
             idx = stack.pop()
             result[idx] = num
         stack.append(i)
-    return result''',
-        "keywords": ["stack", "next greater", "previous smaller", "histogram"]
+    return result""",
+        "keywords": ["stack", "next greater", "previous smaller", "histogram"],
     },
     {
         "id": "bit-manipulation",
@@ -461,15 +472,15 @@ class Trie:
         "use_cases": ["단일 숫자", "2의 거듭제곱", "비트 세기"],
         "time_complexity": "O(1) or O(log n)",
         "space_complexity": "O(1)",
-        "example_code": '''def single_number(nums):
+        "example_code": """def single_number(nums):
     result = 0
     for num in nums:
         result ^= num
     return result
 
 def is_power_of_two(n):
-    return n > 0 and (n & (n - 1)) == 0''',
-        "keywords": ["xor", "and", "or", "shift", "binary"]
+    return n > 0 and (n & (n - 1)) == 0""",
+        "keywords": ["xor", "and", "or", "shift", "binary"],
     },
     {
         "id": "graph-coloring",
@@ -480,7 +491,7 @@ def is_power_of_two(n):
         "use_cases": ["이분 그래프 확인", "M-색칠", "스도쿠 검증"],
         "time_complexity": "O(V + E)",
         "space_complexity": "O(V)",
-        "example_code": '''def is_bipartite(graph):
+        "example_code": """def is_bipartite(graph):
     n = len(graph)
     color = [-1] * n
     for start in range(n):
@@ -496,8 +507,8 @@ def is_power_of_two(n):
                     queue.append(neighbor)
                 elif color[neighbor] == color[node]:
                     return False
-    return True''',
-        "keywords": ["bipartite", "color", "partition", "chromatic"]
+    return True""",
+        "keywords": ["bipartite", "color", "partition", "chromatic"],
     },
     {
         "id": "segment-tree",
@@ -508,7 +519,7 @@ def is_power_of_two(n):
         "use_cases": ["범위 합 쿼리", "범위 최솟값", "범위 업데이트"],
         "time_complexity": "O(log n) per query/update",
         "space_complexity": "O(n)",
-        "example_code": '''class SegmentTree:
+        "example_code": """class SegmentTree:
     def __init__(self, nums):
         self.n = len(nums)
         self.tree = [0] * (2 * self.n)
@@ -537,8 +548,8 @@ def is_power_of_two(n):
                 result += self.tree[r]
             l //= 2
             r //= 2
-        return result''',
-        "keywords": ["range", "query", "update", "sum", "minimum"]
+        return result""",
+        "keywords": ["range", "query", "update", "sum", "minimum"],
     },
     {
         "id": "matrix-traversal",
@@ -549,7 +560,7 @@ def is_power_of_two(n):
         "use_cases": ["나선형 순회", "대각선 순회", "섬 문제"],
         "time_complexity": "O(m * n)",
         "space_complexity": "O(1) to O(m * n)",
-        "example_code": '''def spiral_order(matrix):
+        "example_code": """def spiral_order(matrix):
     if not matrix:
         return []
     result = []
@@ -570,9 +581,9 @@ def is_power_of_two(n):
             for row in range(bottom, top - 1, -1):
                 result.append(matrix[row][left])
             left += 1
-    return result''',
-        "keywords": ["matrix", "spiral", "diagonal", "island", "flood fill"]
-    }
+    return result""",
+        "keywords": ["matrix", "spiral", "diagonal", "island", "flood fill"],
+    },
 ]
 
 
@@ -582,7 +593,7 @@ class PatternKnowledgeBase:
     Provides pattern lookup, embedding, and search functionality.
     """
 
-    def __init__(self, data_path: Optional[Path] = None):
+    def __init__(self, data_path: Path | None = None):
         self.data_path = Path(data_path) if data_path else None
         self._patterns = ALGORITHM_PATTERNS.copy()
         self._embeddings = None
@@ -590,18 +601,18 @@ class PatternKnowledgeBase:
         self._code_embedder = None
 
     @property
-    def patterns(self) -> List[Dict]:
+    def patterns(self) -> list[dict]:
         """Get all patterns"""
         return self._patterns
 
-    def get_pattern(self, pattern_id: str) -> Optional[Dict]:
+    def get_pattern(self, pattern_id: str) -> dict | None:
         """Get a pattern by ID"""
         for pattern in self._patterns:
             if pattern["id"] == pattern_id:
                 return pattern
         return None
 
-    def get_patterns_by_keyword(self, keyword: str) -> List[Dict]:
+    def get_patterns_by_keyword(self, keyword: str) -> list[dict]:
         """Find patterns containing a keyword"""
         keyword = keyword.lower()
         results = []
@@ -619,7 +630,7 @@ class PatternKnowledgeBase:
             text_embedder: TextEmbedder instance for text embeddings
             code_embedder: CodeEmbedder instance for code embeddings
         """
-        from code_tutor.ml.embeddings import TextEmbedder, CodeEmbedder
+        from code_tutor.ml.embeddings import CodeEmbedder, TextEmbedder
 
         self._text_embedder = text_embedder or TextEmbedder()
         self._code_embedder = code_embedder or CodeEmbedder()
@@ -627,26 +638,25 @@ class PatternKnowledgeBase:
         # Build text embeddings from descriptions
         texts = []
         for pattern in self._patterns:
-            text = f"{pattern['name']}. {pattern['description']}. " \
-                   f"Use cases: {', '.join(pattern['use_cases'])}. " \
-                   f"Keywords: {', '.join(pattern['keywords'])}"
+            text = (
+                f"{pattern['name']}. {pattern['description']}. "
+                f"Use cases: {', '.join(pattern['use_cases'])}. "
+                f"Keywords: {', '.join(pattern['keywords'])}"
+            )
             texts.append(text)
 
         self._embeddings = {
             "text": self._text_embedder.embed_batch(texts),
             "code": self._code_embedder.embed_batch(
                 [p["example_code"] for p in self._patterns]
-            )
+            ),
         }
 
         logger.info(f"Built embeddings for {len(self._patterns)} patterns")
 
     def find_similar_by_text(
-        self,
-        query: str,
-        top_k: int = 3,
-        threshold: float = 0.5
-    ) -> List[Dict]:
+        self, query: str, top_k: int = 3, threshold: float = 0.5
+    ) -> list[dict]:
         """
         Find similar patterns by text query.
 
@@ -670,10 +680,7 @@ class PatternKnowledgeBase:
         for idx in top_indices:
             score = float(similarities[idx])
             if score >= threshold:
-                results.append({
-                    **self._patterns[idx],
-                    "similarity": score
-                })
+                results.append({**self._patterns[idx], "similarity": score})
 
         return results
 
@@ -682,8 +689,8 @@ class PatternKnowledgeBase:
         code: str,
         language: str = "python",
         top_k: int = 3,
-        threshold: float = 0.5
-    ) -> List[Dict]:
+        threshold: float = 0.5,
+    ) -> list[dict]:
         """
         Find similar patterns by code similarity.
 
@@ -708,14 +715,11 @@ class PatternKnowledgeBase:
         for idx in top_indices:
             score = float(similarities[idx])
             if score >= threshold:
-                results.append({
-                    **self._patterns[idx],
-                    "similarity": score
-                })
+                results.append({**self._patterns[idx], "similarity": score})
 
         return results
 
-    def save(self, path: Optional[Path] = None):
+    def save(self, path: Path | None = None):
         """Save patterns to JSON file"""
         save_path = Path(path) if path else self.data_path
         if save_path is None:
@@ -728,19 +732,19 @@ class PatternKnowledgeBase:
 
         logger.info(f"Saved {len(self._patterns)} patterns to {save_path}")
 
-    def load(self, path: Optional[Path] = None):
+    def load(self, path: Path | None = None):
         """Load patterns from JSON file"""
         load_path = Path(path) if path else self.data_path
         if load_path is None or not load_path.exists():
             logger.warning(f"Pattern file not found: {load_path}")
             return
 
-        with open(load_path, "r", encoding="utf-8") as f:
+        with open(load_path, encoding="utf-8") as f:
             self._patterns = json.load(f)
 
         logger.info(f"Loaded {len(self._patterns)} patterns from {load_path}")
 
-    def to_documents(self) -> List[Dict]:
+    def to_documents(self) -> list[dict]:
         """
         Convert patterns to document format for vector store.
 
@@ -751,26 +755,28 @@ class PatternKnowledgeBase:
         for pattern in self._patterns:
             # Create comprehensive document content with Korean emphasis
             # Put Korean name first for better Korean query matching
-            content = f"""{pattern['name_ko']} {pattern['name']} 알고리즘 패턴
+            content = f"""{pattern["name_ko"]} {pattern["name"]} 알고리즘 패턴
 
-{pattern['description_ko']}
-{pattern['description']}
+{pattern["description_ko"]}
+{pattern["description"]}
 
-사용 사례: {', '.join(pattern['use_cases'])}
+사용 사례: {", ".join(pattern["use_cases"])}
 
-시간 복잡도: {pattern['time_complexity']}
-공간 복잡도: {pattern['space_complexity']}
+시간 복잡도: {pattern["time_complexity"]}
+공간 복잡도: {pattern["space_complexity"]}
 
-키워드: {pattern['name_ko']}, {pattern['name']}, {', '.join(pattern['keywords'])}
+키워드: {pattern["name_ko"]}, {pattern["name"]}, {", ".join(pattern["keywords"])}
 """
-            documents.append({
-                "id": pattern["id"],
-                "content": content,
-                "metadata": {
-                    "name": pattern["name"],
-                    "name_ko": pattern["name_ko"],
-                    "type": "algorithm_pattern"
+            documents.append(
+                {
+                    "id": pattern["id"],
+                    "content": content,
+                    "metadata": {
+                        "name": pattern["name"],
+                        "name_ko": pattern["name_ko"],
+                        "type": "algorithm_pattern",
+                    },
                 }
-            })
+            )
 
         return documents

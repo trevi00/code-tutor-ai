@@ -8,7 +8,7 @@ from sqlalchemy.orm import selectinload
 
 from code_tutor.tutor.domain.entities import Conversation, Message
 from code_tutor.tutor.domain.repository import ConversationRepository
-from code_tutor.tutor.domain.value_objects import CodeContext, MessageRole
+from code_tutor.tutor.domain.value_objects import CodeContext
 from code_tutor.tutor.infrastructure.models import ConversationModel, MessageModel
 
 
@@ -26,7 +26,9 @@ class SQLAlchemyConversationRepository(ConversationRepository):
                 conversation_id=msg.conversation_id,
                 role=msg.role,
                 content=msg.content,
-                code_context=CodeContext(**msg.code_context) if msg.code_context else None,
+                code_context=CodeContext(**msg.code_context)
+                if msg.code_context
+                else None,
                 tokens_used=msg.tokens_used,
             )
             for msg in model.messages

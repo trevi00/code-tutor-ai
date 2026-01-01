@@ -7,7 +7,7 @@ from uuid import UUID
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from code_tutor.shared.domain.base import AggregateRoot, Entity
+from code_tutor.shared.domain.base import Entity
 from code_tutor.shared.infrastructure.database import Base
 
 # Type variables for generic repository

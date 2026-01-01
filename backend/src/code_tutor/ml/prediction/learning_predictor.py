@@ -1,14 +1,12 @@
 """Learning Success Predictor using LSTM"""
 
-from pathlib import Path
-from datetime import datetime, timedelta
-from typing import List, Dict, Optional, Any
-from uuid import UUID
-import numpy as np
 import logging
+from typing import Any
 
-from code_tutor.ml.prediction.lstm_model import LSTMPredictor
+import numpy as np
+
 from code_tutor.ml.config import get_ml_config
+from code_tutor.ml.prediction.lstm_model import LSTMPredictor
 
 logger = logging.getLogger(__name__)
 
@@ -35,20 +33,18 @@ class LearningPredictor:
         "difficulty_hard",
         "categories_attempted",
         "streak_days",
-        "total_study_minutes"
+        "total_study_minutes",
     ]
 
     def __init__(self, config=None):
         self.config = config or get_ml_config()
 
-        self._lstm_model: Optional[LSTMPredictor] = None
+        self._lstm_model: LSTMPredictor | None = None
         self._is_initialized = False
-        self._feature_scalers: Dict[str, tuple] = {}  # (mean, std) for normalization
+        self._feature_scalers: dict[str, tuple] = {}  # (mean, std) for normalization
 
     def initialize(
-        self,
-        user_histories: Optional[List[Dict]] = None,
-        force_retrain: bool = False
+        self, user_histories: list[dict] | None = None, force_retrain: bool = False
     ):
         """
         Initialize predictor with historical data.
@@ -80,11 +76,11 @@ class LearningPredictor:
             input_size=len(self.FEATURES),
             hidden_size=self.config.LSTM_HIDDEN_SIZE,
             num_layers=self.config.LSTM_NUM_LAYERS,
-            sequence_length=self.config.LSTM_SEQUENCE_LENGTH
+            sequence_length=self.config.LSTM_SEQUENCE_LENGTH,
         )
         self._lstm_model.load(self.config.LSTM_MODEL_PATH)
 
-    def _train_model(self, user_histories: List[Dict]):
+    def _train_model(self, user_histories: list[dict]):
         """Train LSTM model on user histories"""
         logger.info("Training LSTM model...")
 
@@ -114,7 +110,7 @@ class LearningPredictor:
                 input_size=len(self.FEATURES),
                 hidden_size=self.config.LSTM_HIDDEN_SIZE,
                 num_layers=self.config.LSTM_NUM_LAYERS,
-                sequence_length=self.config.LSTM_SEQUENCE_LENGTH
+                sequence_length=self.config.LSTM_SEQUENCE_LENGTH,
             )
             return
 
@@ -126,21 +122,17 @@ class LearningPredictor:
             input_size=len(self.FEATURES),
             hidden_size=self.config.LSTM_HIDDEN_SIZE,
             num_layers=self.config.LSTM_NUM_LAYERS,
-            sequence_length=self.config.LSTM_SEQUENCE_LENGTH
+            sequence_length=self.config.LSTM_SEQUENCE_LENGTH,
         )
 
-        history = self._lstm_model.train(
-            X_train, y_train,
-            epochs=50,
-            batch_size=32
-        )
+        history = self._lstm_model.train(X_train, y_train, epochs=50, batch_size=32)
 
         # Save model
         self._lstm_model.save(self.config.LSTM_MODEL_PATH)
 
         logger.info(f"LSTM model trained. Final loss: {history['train_loss'][-1]:.4f}")
 
-    def _extract_features(self, daily_stats: List[Dict]) -> np.ndarray:
+    def _extract_features(self, daily_stats: list[dict]) -> np.ndarray:
         """Extract features from daily stats"""
         features = []
 
@@ -155,7 +147,7 @@ class LearningPredictor:
                 day.get("difficulty_hard", 0),
                 day.get("categories_attempted", 0),
                 day.get("streak_days", 0),
-                day.get("total_study_minutes", 0)
+                day.get("total_study_minutes", 0),
             ]
             features.append(day_features)
 
@@ -193,16 +185,14 @@ class LearningPredictor:
         target_col = 2
 
         for i in range(len(features) - seq_len):
-            X.append(features[i:i + seq_len])
+            X.append(features[i : i + seq_len])
             y.append(features[i + seq_len, target_col])
 
         return np.array(X), np.array(y)
 
     def predict_success_rate(
-        self,
-        user_history: List[Dict],
-        days_ahead: int = 7
-    ) -> Dict[str, Any]:
+        self, user_history: list[dict], days_ahead: int = 7
+    ) -> dict[str, Any]:
         """
         Predict future success rate.
 
@@ -225,16 +215,13 @@ class LearningPredictor:
         features = self._normalize_features(features, fit=False)
 
         # Get last sequence
-        sequence = features[-self.config.LSTM_SEQUENCE_LENGTH:]
+        sequence = features[-self.config.LSTM_SEQUENCE_LENGTH :]
 
         # Predict
         predictions = self._lstm_model.predict_next(sequence, steps=days_ahead)
 
         # Denormalize predictions
-        denormalized = [
-            self._denormalize_value(p, "success_rate")
-            for p in predictions
-        ]
+        denormalized = [self._denormalize_value(p, "success_rate") for p in predictions]
 
         # Clip to valid range
         denormalized = np.clip(denormalized, 0, 100)
@@ -248,14 +235,12 @@ class LearningPredictor:
             "daily_predictions": [float(p) for p in denormalized],
             "prediction_period": f"next_{days_ahead}_days",
             "confidence": confidence,
-            "trend": self._determine_trend(denormalized)
+            "trend": self._determine_trend(denormalized),
         }
 
     def _simple_prediction(
-        self,
-        user_history: List[Dict],
-        days_ahead: int
-    ) -> Dict[str, Any]:
+        self, user_history: list[dict], days_ahead: int
+    ) -> dict[str, Any]:
         """Simple fallback prediction without LSTM"""
         if not user_history:
             return {
@@ -263,10 +248,10 @@ class LearningPredictor:
                 "predicted_success_rate": 50,
                 "prediction_period": f"next_{days_ahead}_days",
                 "confidence": 0.3,
-                "trend": "neutral"
+                "trend": "neutral",
             }
 
-        recent = user_history[-min(7, len(user_history)):]
+        recent = user_history[-min(7, len(user_history)) :]
         current_rate = user_history[-1].get("success_rate", 0)
 
         # Simple moving average prediction
@@ -287,13 +272,11 @@ class LearningPredictor:
             "predicted_success_rate": float(predicted),
             "prediction_period": f"next_{days_ahead}_days",
             "confidence": 0.5,
-            "trend": "improving" if predicted > current_rate else "declining"
+            "trend": "improving" if predicted > current_rate else "declining",
         }
 
     def _calculate_confidence(
-        self,
-        features: np.ndarray,
-        predictions: np.ndarray
+        self, features: np.ndarray, predictions: np.ndarray
     ) -> float:
         """Calculate prediction confidence"""
         # Base confidence
@@ -312,7 +295,7 @@ class LearningPredictor:
 
         return max(0.3, min(0.95, confidence))
 
-    def _determine_trend(self, predictions: List[float]) -> str:
+    def _determine_trend(self, predictions: list[float]) -> str:
         """Determine trend from predictions"""
         if len(predictions) < 2:
             return "neutral"
@@ -330,10 +313,7 @@ class LearningPredictor:
         else:
             return "stable"
 
-    def analyze_learning_velocity(
-        self,
-        user_history: List[Dict]
-    ) -> Dict[str, Any]:
+    def analyze_learning_velocity(self, user_history: list[dict]) -> dict[str, Any]:
         """
         Analyze learning velocity and trends.
 
@@ -348,7 +328,7 @@ class LearningPredictor:
                 "velocity": "unknown",
                 "problems_per_day": 0,
                 "improvement_rate": 0,
-                "consistency_score": 0
+                "consistency_score": 0,
             }
 
         recent = user_history[-30:] if len(user_history) >= 30 else user_history
@@ -386,14 +366,12 @@ class LearningPredictor:
             "improvement_rate": float(improvement_rate),
             "consistency_score": float(consistency_score),
             "active_days": active_days,
-            "total_days": len(recent)
+            "total_days": len(recent),
         }
 
     def recommend_study_schedule(
-        self,
-        user_history: List[Dict],
-        target_success_rate: float = 80
-    ) -> Dict[str, Any]:
+        self, user_history: list[dict], target_success_rate: float = 80
+    ) -> dict[str, Any]:
         """
         Recommend optimal study schedule.
 
@@ -416,35 +394,45 @@ class LearningPredictor:
         gap = target_success_rate - current_rate
 
         if gap > 20:
-            recommendations.append({
-                "type": "intensity",
-                "message": "목표 달성을 위해 학습 강도를 높이세요.",
-                "suggested_problems_per_day": max(5, velocity["problems_per_day"] + 2)
-            })
+            recommendations.append(
+                {
+                    "type": "intensity",
+                    "message": "목표 달성을 위해 학습 강도를 높이세요.",
+                    "suggested_problems_per_day": max(
+                        5, velocity["problems_per_day"] + 2
+                    ),
+                }
+            )
 
         if velocity["consistency_score"] < 50:
-            recommendations.append({
-                "type": "consistency",
-                "message": "일관된 학습이 중요합니다. 매일 조금씩 공부하세요.",
-                "suggested_active_days": "5-7일/주"
-            })
+            recommendations.append(
+                {
+                    "type": "consistency",
+                    "message": "일관된 학습이 중요합니다. 매일 조금씩 공부하세요.",
+                    "suggested_active_days": "5-7일/주",
+                }
+            )
 
         if velocity["velocity"] == "inactive":
-            recommendations.append({
-                "type": "engagement",
-                "message": "학습을 다시 시작하세요. 쉬운 문제부터 시작하는 것을 권장합니다.",
-                "suggested_difficulty": "easy"
-            })
+            recommendations.append(
+                {
+                    "type": "engagement",
+                    "message": "학습을 다시 시작하세요. 쉬운 문제부터 시작하는 것을 권장합니다.",
+                    "suggested_difficulty": "easy",
+                }
+            )
 
         # Estimate days to reach target
         if velocity["improvement_rate"] > 0:
             days_to_target = int(gap / velocity["improvement_rate"])
             if days_to_target > 0 and days_to_target < 365:
-                recommendations.append({
-                    "type": "timeline",
-                    "message": f"현재 속도로 약 {days_to_target}일 후 목표 달성 예상",
-                    "estimated_days": days_to_target
-                })
+                recommendations.append(
+                    {
+                        "type": "timeline",
+                        "message": f"현재 속도로 약 {days_to_target}일 후 목표 달성 예상",
+                        "estimated_days": days_to_target,
+                    }
+                )
 
         return {
             "current_success_rate": current_rate,
@@ -452,10 +440,10 @@ class LearningPredictor:
             "predicted_success_rate": predicted_rate,
             "gap_to_target": gap,
             "velocity": velocity["velocity"],
-            "recommendations": recommendations
+            "recommendations": recommendations,
         }
 
-    def get_insights(self, user_history: List[Dict]) -> List[Dict]:
+    def get_insights(self, user_history: list[dict]) -> list[dict]:
         """
         Generate learning insights.
 
@@ -468,10 +456,12 @@ class LearningPredictor:
         insights = []
 
         if not user_history or len(user_history) < 3:
-            insights.append({
-                "type": "getting_started",
-                "message": "더 많은 문제를 풀어보세요. 충분한 데이터가 쌓이면 맞춤 분석을 제공합니다."
-            })
+            insights.append(
+                {
+                    "type": "getting_started",
+                    "message": "더 많은 문제를 풀어보세요. 충분한 데이터가 쌓이면 맞춤 분석을 제공합니다.",
+                }
+            )
             return insights
 
         velocity = self.analyze_learning_velocity(user_history)
@@ -480,46 +470,58 @@ class LearningPredictor:
         # Trend insight
         trend = prediction.get("trend", "neutral")
         if trend in ["strongly_improving", "improving"]:
-            insights.append({
-                "type": "trend",
-                "message": "실력이 꾸준히 향상되고 있습니다! 이 페이스를 유지하세요.",
-                "sentiment": "positive"
-            })
+            insights.append(
+                {
+                    "type": "trend",
+                    "message": "실력이 꾸준히 향상되고 있습니다! 이 페이스를 유지하세요.",
+                    "sentiment": "positive",
+                }
+            )
         elif trend in ["strongly_declining", "declining"]:
-            insights.append({
-                "type": "trend",
-                "message": "최근 성공률이 다소 하락했습니다. 어려운 문제에 도전하고 있다면 정상입니다.",
-                "sentiment": "neutral"
-            })
+            insights.append(
+                {
+                    "type": "trend",
+                    "message": "최근 성공률이 다소 하락했습니다. 어려운 문제에 도전하고 있다면 정상입니다.",
+                    "sentiment": "neutral",
+                }
+            )
 
         # Velocity insight
         if velocity["velocity"] == "accelerating":
-            insights.append({
-                "type": "velocity",
-                "message": "학습 속도가 빨라지고 있습니다. 훌륭합니다!",
-                "sentiment": "positive"
-            })
+            insights.append(
+                {
+                    "type": "velocity",
+                    "message": "학습 속도가 빨라지고 있습니다. 훌륭합니다!",
+                    "sentiment": "positive",
+                }
+            )
 
         # Consistency insight
         if velocity["consistency_score"] >= 80:
-            insights.append({
-                "type": "consistency",
-                "message": f"지난 기간 동안 {velocity['consistency_score']:.0f}%의 일관성을 보였습니다. 꾸준함이 성공의 열쇠입니다!",
-                "sentiment": "positive"
-            })
+            insights.append(
+                {
+                    "type": "consistency",
+                    "message": f"지난 기간 동안 {velocity['consistency_score']:.0f}%의 일관성을 보였습니다. 꾸준함이 성공의 열쇠입니다!",
+                    "sentiment": "positive",
+                }
+            )
         elif velocity["consistency_score"] < 40:
-            insights.append({
-                "type": "consistency",
-                "message": "학습 일관성을 높이면 더 빠른 실력 향상이 가능합니다.",
-                "sentiment": "suggestion"
-            })
+            insights.append(
+                {
+                    "type": "consistency",
+                    "message": "학습 일관성을 높이면 더 빠른 실력 향상이 가능합니다.",
+                    "sentiment": "suggestion",
+                }
+            )
 
         # Achievement insight
         if prediction["current_success_rate"] >= 80:
-            insights.append({
-                "type": "achievement",
-                "message": "80% 이상의 높은 성공률을 유지하고 있습니다. 더 어려운 문제에 도전해보세요!",
-                "sentiment": "positive"
-            })
+            insights.append(
+                {
+                    "type": "achievement",
+                    "message": "80% 이상의 높은 성공률을 유지하고 있습니다. 더 어려운 문제에 도전해보세요!",
+                    "sentiment": "positive",
+                }
+            )
 
         return insights

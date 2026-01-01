@@ -37,14 +37,18 @@ def create_access_token(
     if expires_delta:
         expire = datetime.utcnow() + expires_delta
     else:
-        expire = datetime.utcnow() + timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+        expire = datetime.utcnow() + timedelta(
+            minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES
+        )
 
-    to_encode.update({
-        "exp": expire,
-        "iat": datetime.utcnow(),
-        "jti": str(uuid4()),
-        "type": "access",
-    })
+    to_encode.update(
+        {
+            "exp": expire,
+            "iat": datetime.utcnow(),
+            "jti": str(uuid4()),
+            "type": "access",
+        }
+    )
 
     return jwt.encode(
         to_encode,
@@ -66,12 +70,14 @@ def create_refresh_token(
     else:
         expire = datetime.utcnow() + timedelta(days=settings.REFRESH_TOKEN_EXPIRE_DAYS)
 
-    to_encode.update({
-        "exp": expire,
-        "iat": datetime.utcnow(),
-        "jti": str(uuid4()),
-        "type": "refresh",
-    })
+    to_encode.update(
+        {
+            "exp": expire,
+            "iat": datetime.utcnow(),
+            "jti": str(uuid4()),
+            "type": "refresh",
+        }
+    )
 
     return jwt.encode(
         to_encode,

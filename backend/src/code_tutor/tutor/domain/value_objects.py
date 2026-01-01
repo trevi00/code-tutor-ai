@@ -10,6 +10,7 @@ from code_tutor.shared.exceptions import ValidationError
 
 class MessageRole(str, Enum):
     """Message sender role"""
+
     USER = "user"
     ASSISTANT = "assistant"
     SYSTEM = "system"
@@ -17,10 +18,11 @@ class MessageRole(str, Enum):
 
 class ConversationType(str, Enum):
     """Type of tutoring conversation"""
-    GENERAL = "general"           # General Q&A
-    PROBLEM_HELP = "problem_help" # Help with specific problem
-    CODE_REVIEW = "code_review"   # Code review request
-    CONCEPT = "concept"           # Concept explanation
+
+    GENERAL = "general"  # General Q&A
+    PROBLEM_HELP = "problem_help"  # Help with specific problem
+    CODE_REVIEW = "code_review"  # Code review request
+    CONCEPT = "concept"  # Concept explanation
 
 
 @dataclass(frozen=True)

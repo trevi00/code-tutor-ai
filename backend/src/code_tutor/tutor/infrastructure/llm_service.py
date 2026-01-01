@@ -1,9 +1,10 @@
 """LLM Service for AI Tutor responses"""
 
-import httpx
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
+
+import httpx
 
 from code_tutor.shared.config import get_settings
 from code_tutor.shared.infrastructure.logging import get_logger
@@ -39,6 +40,7 @@ def _get_rag_engine():
     if _rag_engine is None:
         try:
             from code_tutor.ml import get_rag_engine
+
             _rag_engine = get_rag_engine()
             _rag_engine.initialize()
         except Exception as e:
@@ -51,6 +53,7 @@ def _get_code_analyzer():
     """Get code analyzer with lazy loading"""
     try:
         from code_tutor.ml import get_code_analyzer
+
         return get_code_analyzer()
     except Exception as e:
         logger.warning(f"Failed to get code analyzer: {e}")
@@ -163,7 +166,9 @@ class PatternBasedLLMService(LLMService):
         if relevant_patterns:
             # Extract key information from the first matching pattern
             pattern_name, pattern_content = relevant_patterns[0]
-            return self._format_pattern_response(pattern_name, pattern_content, user_message)
+            return self._format_pattern_response(
+                pattern_name, pattern_content, user_message
+            )
 
         # Default response when no pattern is found
         return self._generate_default_response(user_message, context)
@@ -200,10 +205,10 @@ class PatternBasedLLMService(LLMService):
 
         response = f"""## {title}
 
-{sections.get('개요', '').strip()[:500]}
+{sections.get("개요", "").strip()[:500]}
 
 ### 언제 사용하나요?
-{sections.get('언제 사용', '').strip()[:300] or '이 패턴은 특정 조건에서 효율적인 솔루션을 제공합니다.'}
+{sections.get("언제 사용", "").strip()[:300] or "이 패턴은 특정 조건에서 효율적인 솔루션을 제공합니다."}
 
 더 자세한 설명이 필요하시면 말씀해주세요! 템플릿 코드나 예제 문제도 보여드릴 수 있습니다."""
 
@@ -245,7 +250,7 @@ class PatternBasedLLMService(LLMService):
         if context and "code" in lower_msg:
             return f"""코드를 분석해보겠습니다.
 
-{context[:200] if context else ''}
+{context[:200] if context else ""}
 
 **리뷰 포인트:**
 1. 변수명이 명확한지 확인하세요
@@ -285,15 +290,21 @@ class PatternBasedLLMService(LLMService):
 
         # Basic analysis
         if num_lines > 50:
-            analysis["suggestions"].append("함수를 더 작은 단위로 분리하는 것을 고려해보세요.")
+            analysis["suggestions"].append(
+                "함수를 더 작은 단위로 분리하는 것을 고려해보세요."
+            )
 
         # Check for common patterns
-        if "for" in code and "for" in code[code.index("for") + 3:]:
+        if "for" in code and "for" in code[code.index("for") + 3 :]:
             analysis["complexity"]["time"] = "O(n²)"
-            analysis["suggestions"].append("이중 루프를 발견했습니다. 더 효율적인 방법이 있는지 확인해보세요.")
+            analysis["suggestions"].append(
+                "이중 루프를 발견했습니다. 더 효율적인 방법이 있는지 확인해보세요."
+            )
 
         if "while True" in code:
-            analysis["issues"].append("무한 루프 가능성이 있습니다. 종료 조건을 확인하세요.")
+            analysis["issues"].append(
+                "무한 루프 가능성이 있습니다. 종료 조건을 확인하세요."
+            )
 
         if "pass" in code:
             analysis["issues"].append("구현되지 않은 부분(pass)이 있습니다.")
@@ -362,9 +373,7 @@ class RAGBasedLLMService(LLMService):
 
             # Generate response using RAG
             response = rag.generate(
-                query=user_message,
-                context=patterns,
-                max_tokens=1024
+                query=user_message, context=patterns, max_tokens=1024
             )
 
             return response
@@ -373,7 +382,7 @@ class RAGBasedLLMService(LLMService):
             logger.error(f"RAG generation failed: {e}")
             return await self._generate_fallback_response(user_message, context)
 
-    async def _analyze_code_context(self, context: str) -> Optional[dict]:
+    async def _analyze_code_context(self, context: str) -> dict | None:
         """Analyze code in context"""
         analyzer = self._ensure_code_analyzer()
         if analyzer is None:
@@ -381,6 +390,7 @@ class RAGBasedLLMService(LLMService):
 
         # Extract code from markdown code block
         import re
+
         code_match = re.search(r"```(\w*)\n(.*?)```", context, re.DOTALL)
         if not code_match:
             return None
@@ -395,10 +405,7 @@ class RAGBasedLLMService(LLMService):
             return None
 
     def _format_code_analysis_response(
-        self,
-        user_message: str,
-        patterns: list,
-        analysis: dict
+        self, user_message: str, patterns: list, analysis: dict
     ) -> str:
         """Format response with code analysis"""
         response_parts = []
@@ -414,7 +421,9 @@ class RAGBasedLLMService(LLMService):
         # Quality score
         quality = analysis.get("quality", {})
         if quality.get("score"):
-            response_parts.append(f"\n**코드 품질 점수**: {quality['score']}/100 ({quality.get('grade', 'N/A')})")
+            response_parts.append(
+                f"\n**코드 품질 점수**: {quality['score']}/100 ({quality.get('grade', 'N/A')})"
+            )
 
         # Complexity
         complexity = analysis.get("complexity", {})
@@ -537,7 +546,7 @@ class RAGBasedLLMService(LLMService):
             "quality": {"score": 70, "grade": "C"},
             "complexity": {"cyclomatic": 1, "nesting_depth": 0},
             "suggestions": [],
-            "code_smells": []
+            "code_smells": [],
         }
 
         lines = code.split("\n")
@@ -545,14 +554,15 @@ class RAGBasedLLMService(LLMService):
         # Check for nested loops
         if "for" in code and code.count("for") > 1:
             analysis["complexity"]["cyclomatic"] = 5
-            analysis["suggestions"].append("이중 루프를 발견했습니다. 더 효율적인 방법을 고려해보세요.")
+            analysis["suggestions"].append(
+                "이중 루프를 발견했습니다. 더 효율적인 방법을 고려해보세요."
+            )
 
         # Check for common issues
         if "import *" in code:
-            analysis["code_smells"].append({
-                "type": "wildcard_import",
-                "message": "와일드카드 import는 피하세요."
-            })
+            analysis["code_smells"].append(
+                {"type": "wildcard_import", "message": "와일드카드 import는 피하세요."}
+            )
             analysis["quality"]["score"] -= 10
 
         if len(lines) > 50:
@@ -560,10 +570,15 @@ class RAGBasedLLMService(LLMService):
             analysis["quality"]["score"] -= 5
 
         analysis["quality"]["grade"] = (
-            "A" if analysis["quality"]["score"] >= 90 else
-            "B" if analysis["quality"]["score"] >= 80 else
-            "C" if analysis["quality"]["score"] >= 70 else
-            "D" if analysis["quality"]["score"] >= 60 else "F"
+            "A"
+            if analysis["quality"]["score"] >= 90
+            else "B"
+            if analysis["quality"]["score"] >= 80
+            else "C"
+            if analysis["quality"]["score"] >= 70
+            else "D"
+            if analysis["quality"]["score"] >= 60
+            else "F"
         )
 
         return analysis
@@ -597,10 +612,12 @@ class OllamaLLMService(LLMService):
             # Add conversation history
             if conversation_history:
                 for msg in conversation_history[-5:]:  # Last 5 messages for context
-                    messages.append({
-                        "role": msg.get("role", "user"),
-                        "content": msg.get("content", "")
-                    })
+                    messages.append(
+                        {
+                            "role": msg.get("role", "user"),
+                            "content": msg.get("content", ""),
+                        }
+                    )
 
             # Add context if available
             user_content = user_message
@@ -620,13 +637,15 @@ class OllamaLLMService(LLMService):
                         "temperature": 0.7,
                         "top_p": 0.9,
                         "num_predict": self._settings.LLM_MAX_TOKENS,
-                    }
-                }
+                    },
+                },
             )
             response.raise_for_status()
 
             result = response.json()
-            return result.get("message", {}).get("content", "응답을 생성할 수 없습니다.")
+            return result.get("message", {}).get(
+                "content", "응답을 생성할 수 없습니다."
+            )
 
         except httpx.TimeoutException:
             logger.error("Ollama request timed out")
@@ -685,7 +704,7 @@ class OllamaLLMService(LLMService):
                     "model": self._model,
                     "prompt": prompt,
                     "stream": False,
-                }
+                },
             )
             response.raise_for_status()
 
@@ -729,5 +748,7 @@ def get_llm_service() -> LLMService:
 
     # Fallback to pattern-based service
     logger.info("Using pattern-based LLM service")
-    patterns_dir = Path(__file__).parent.parent.parent.parent.parent.parent / "docs" / "patterns"
+    patterns_dir = (
+        Path(__file__).parent.parent.parent.parent.parent.parent / "docs" / "patterns"
+    )
     return PatternBasedLLMService(patterns_dir)

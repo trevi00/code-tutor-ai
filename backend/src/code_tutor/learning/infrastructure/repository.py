@@ -2,13 +2,21 @@
 
 from uuid import UUID
 
-from sqlalchemy import and_, select, func
+from sqlalchemy import and_, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from code_tutor.learning.domain.entities import Problem, Submission, TestCase
-from code_tutor.learning.domain.repository import ProblemRepository, SubmissionRepository
-from code_tutor.learning.domain.value_objects import Category, Difficulty, SubmissionStatus, TestResult
+from code_tutor.learning.domain.repository import (
+    ProblemRepository,
+    SubmissionRepository,
+)
+from code_tutor.learning.domain.value_objects import (
+    Category,
+    Difficulty,
+    SubmissionStatus,
+    TestResult,
+)
 from code_tutor.learning.infrastructure.models import (
     ProblemModel,
     SubmissionModel,

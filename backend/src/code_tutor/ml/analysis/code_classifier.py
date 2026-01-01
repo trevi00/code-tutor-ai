@@ -1,8 +1,8 @@
 """CodeBERT-based Code Quality Classifier (Transformer)"""
 
-import numpy as np
-from typing import List, Dict, Optional, Tuple
 import logging
+
+import numpy as np
 
 logger = logging.getLogger(__name__)
 
@@ -27,8 +27,8 @@ class CodeQualityClassifier:
         self,
         model_name: str = "microsoft/codebert-base",
         num_labels: int = 4,
-        device: Optional[str] = None,
-        cache_dir: Optional[str] = None
+        device: str | None = None,
+        cache_dir: str | None = None,
     ):
         self.model_name = model_name
         self.num_labels = num_labels
@@ -44,23 +44,23 @@ class CodeQualityClassifier:
             return
 
         try:
-            from transformers import AutoModel, AutoTokenizer
             import torch
             import torch.nn as nn
+            from transformers import AutoModel, AutoTokenizer
 
             if self._device is None:
                 self._device = "cuda" if torch.cuda.is_available() else "cpu"
 
-            logger.info(f"Loading CodeBERT classifier: {self.model_name} on {self._device}")
+            logger.info(
+                f"Loading CodeBERT classifier: {self.model_name} on {self._device}"
+            )
 
             # Load base model
             self._tokenizer = AutoTokenizer.from_pretrained(
-                self.model_name,
-                cache_dir=self.cache_dir
+                self.model_name, cache_dir=self.cache_dir
             )
             self._model = AutoModel.from_pretrained(
-                self.model_name,
-                cache_dir=self.cache_dir
+                self.model_name, cache_dir=self.cache_dir
             ).to(self._device)
             self._model.eval()
 
@@ -72,16 +72,18 @@ class CodeQualityClassifier:
 
                 def __init__(self, hidden_size, num_labels, num_dimensions):
                     super().__init__()
-                    self.classifiers = nn.ModuleList([
-                        nn.Sequential(
-                            nn.Dropout(0.1),
-                            nn.Linear(hidden_size, hidden_size // 2),
-                            nn.ReLU(),
-                            nn.Dropout(0.1),
-                            nn.Linear(hidden_size // 2, num_labels)
-                        )
-                        for _ in range(num_dimensions)
-                    ])
+                    self.classifiers = nn.ModuleList(
+                        [
+                            nn.Sequential(
+                                nn.Dropout(0.1),
+                                nn.Linear(hidden_size, hidden_size // 2),
+                                nn.ReLU(),
+                                nn.Dropout(0.1),
+                                nn.Linear(hidden_size // 2, num_labels),
+                            )
+                            for _ in range(num_dimensions)
+                        ]
+                    )
                     self.softmax = nn.Softmax(dim=-1)
 
                 def forward(self, x):
@@ -93,9 +95,7 @@ class CodeQualityClassifier:
                     return torch.stack(outputs, dim=1)
 
             self._classification_head = MultiDimensionClassifier(
-                hidden_size,
-                self.num_labels,
-                len(self.QUALITY_DIMENSIONS)
+                hidden_size, self.num_labels, len(self.QUALITY_DIMENSIONS)
             ).to(self._device)
             self._classification_head.eval()
 
@@ -119,11 +119,7 @@ class CodeQualityClassifier:
         self._lazy_load()
         return self._tokenizer
 
-    def classify(
-        self,
-        code: str,
-        language: str = "python"
-    ) -> Dict:
+    def classify(self, code: str, language: str = "python") -> dict:
         """
         Classify code quality across multiple dimensions.
 
@@ -143,11 +139,7 @@ class CodeQualityClassifier:
 
         # Tokenize
         inputs = self.tokenizer(
-            code,
-            padding=True,
-            truncation=True,
-            max_length=512,
-            return_tensors="pt"
+            code, padding=True, truncation=True, max_length=512, return_tensors="pt"
         ).to(self._device)
 
         with torch.no_grad():
@@ -160,11 +152,7 @@ class CodeQualityClassifier:
             probs = probs.cpu().numpy()[0]
 
         # Build result
-        result = {
-            "overall_score": 0,
-            "overall_grade": "",
-            "dimensions": {}
-        }
+        result = {"overall_score": 0, "overall_grade": "", "dimensions": {}}
 
         total_score = 0
         for i, dim in enumerate(self.QUALITY_DIMENSIONS):
@@ -173,10 +161,7 @@ class CodeQualityClassifier:
             predicted_label = self.QUALITY_LABELS[predicted_label_idx]
 
             # Score: 0-100 based on weighted probabilities
-            score = sum(
-                prob * (j + 1) * 25
-                for j, prob in enumerate(dim_probs)
-            )
+            score = sum(prob * (j + 1) * 25 for j, prob in enumerate(dim_probs))
 
             result["dimensions"][dim] = {
                 "label": predicted_label,
@@ -184,7 +169,7 @@ class CodeQualityClassifier:
                 "probabilities": {
                     label: float(prob)
                     for label, prob in zip(self.QUALITY_LABELS, dim_probs)
-                }
+                },
             }
             total_score += score
 
@@ -194,11 +179,7 @@ class CodeQualityClassifier:
 
         return result
 
-    def classify_batch(
-        self,
-        codes: List[str],
-        language: str = "python"
-    ) -> List[Dict]:
+    def classify_batch(self, codes: list[str], language: str = "python") -> list[dict]:
         """
         Classify multiple code snippets.
 
@@ -211,10 +192,7 @@ class CodeQualityClassifier:
         """
         return [self.classify(code, language) for code in codes]
 
-    def get_improvement_suggestions(
-        self,
-        classification_result: Dict
-    ) -> List[Dict]:
+    def get_improvement_suggestions(self, classification_result: dict) -> list[dict]:
         """
         Generate improvement suggestions based on classification.
 
@@ -238,28 +216,20 @@ class CodeQualityClassifier:
 
         return suggestions
 
-    def _get_suggestion_for_dimension(
-        self,
-        dimension: str,
-        label: str
-    ) -> Optional[Dict]:
+    def _get_suggestion_for_dimension(self, dimension: str, label: str) -> dict | None:
         """Get improvement suggestion for a specific dimension"""
         suggestions_map = {
             "correctness": {
                 "poor": {
                     "message": "코드의 정확성이 낮습니다. 엣지 케이스와 예외 처리를 확인하세요.",
-                    "tips": [
-                        "입력 검증 추가",
-                        "경계 조건 테스트",
-                        "예외 처리 구현"
-                    ],
-                    "priority": 1
+                    "tips": ["입력 검증 추가", "경계 조건 테스트", "예외 처리 구현"],
+                    "priority": 1,
                 },
                 "fair": {
                     "message": "일부 케이스에서 오류가 발생할 수 있습니다.",
                     "tips": ["단위 테스트 추가", "엣지 케이스 검토"],
-                    "priority": 2
-                }
+                    "priority": 2,
+                },
             },
             "efficiency": {
                 "poor": {
@@ -267,31 +237,27 @@ class CodeQualityClassifier:
                     "tips": [
                         "불필요한 중첩 루프 제거",
                         "적절한 자료구조 사용",
-                        "메모이제이션 고려"
+                        "메모이제이션 고려",
                     ],
-                    "priority": 2
+                    "priority": 2,
                 },
                 "fair": {
                     "message": "효율성 개선의 여지가 있습니다.",
                     "tips": ["캐싱 적용", "조기 종료 조건 추가"],
-                    "priority": 3
-                }
+                    "priority": 3,
+                },
             },
             "readability": {
                 "poor": {
                     "message": "코드 가독성이 낮습니다. 리팩토링을 권장합니다.",
-                    "tips": [
-                        "의미 있는 변수명 사용",
-                        "함수로 분리",
-                        "주석 추가"
-                    ],
-                    "priority": 3
+                    "tips": ["의미 있는 변수명 사용", "함수로 분리", "주석 추가"],
+                    "priority": 3,
                 },
                 "fair": {
                     "message": "가독성을 높일 수 있습니다.",
                     "tips": ["일관된 포맷팅", "docstring 추가"],
-                    "priority": 4
-                }
+                    "priority": 4,
+                },
             },
             "best_practices": {
                 "poor": {
@@ -299,23 +265,23 @@ class CodeQualityClassifier:
                     "tips": [
                         "PEP 8 스타일 가이드 준수",
                         "타입 힌트 추가",
-                        "에러 처리 패턴 적용"
+                        "에러 처리 패턴 적용",
                     ],
-                    "priority": 4
+                    "priority": 4,
                 },
                 "fair": {
                     "message": "일부 베스트 프랙티스가 누락되었습니다.",
                     "tips": ["린터 적용", "코드 리뷰 수행"],
-                    "priority": 5
-                }
-            }
+                    "priority": 5,
+                },
+            },
         }
 
         if dimension in suggestions_map and label in suggestions_map[dimension]:
             return {
                 "dimension": dimension,
                 "dimension_ko": self._dimension_to_korean(dimension),
-                **suggestions_map[dimension][label]
+                **suggestions_map[dimension][label],
             }
         return None
 
@@ -325,7 +291,7 @@ class CodeQualityClassifier:
             "correctness": "정확성",
             "efficiency": "효율성",
             "readability": "가독성",
-            "best_practices": "베스트 프랙티스"
+            "best_practices": "베스트 프랙티스",
         }
         return translations.get(dimension, dimension)
 
@@ -343,11 +309,8 @@ class CodeQualityClassifier:
             return "F"
 
     def compare_solutions(
-        self,
-        code1: str,
-        code2: str,
-        language: str = "python"
-    ) -> Dict:
+        self, code1: str, code2: str, language: str = "python"
+    ) -> dict:
         """
         Compare quality of two solutions.
 
@@ -365,8 +328,10 @@ class CodeQualityClassifier:
         comparison = {
             "solution1_score": result1["overall_score"],
             "solution2_score": result2["overall_score"],
-            "overall_winner": 1 if result1["overall_score"] > result2["overall_score"] else 2,
-            "dimension_comparison": {}
+            "overall_winner": 1
+            if result1["overall_score"] > result2["overall_score"]
+            else 2,
+            "dimension_comparison": {},
         }
 
         for dim in self.QUALITY_DIMENSIONS:
@@ -377,7 +342,7 @@ class CodeQualityClassifier:
                 "solution1_score": score1,
                 "solution2_score": score2,
                 "winner": 1 if score1 > score2 else (2 if score2 > score1 else 0),
-                "difference": abs(score1 - score2)
+                "difference": abs(score1 - score2),
             }
 
         return comparison
@@ -393,6 +358,7 @@ class CodeQualityClassifier:
             self._classification_head = None
 
             import torch
+
             if torch.cuda.is_available():
                 torch.cuda.empty_cache()
 

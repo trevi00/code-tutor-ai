@@ -1,9 +1,9 @@
 """LSTM Model for Time-Series Learning Prediction"""
 
-import numpy as np
-from pathlib import Path
-from typing import Optional, List, Tuple
 import logging
+from pathlib import Path
+
+import numpy as np
 
 logger = logging.getLogger(__name__)
 
@@ -32,7 +32,7 @@ class LSTMPredictor:
         output_size: int = 1,
         dropout: float = 0.2,
         bidirectional: bool = True,
-        device: Optional[str] = None
+        device: str | None = None,
     ):
         self.input_size = input_size
         self.hidden_size = hidden_size
@@ -67,7 +67,7 @@ class LSTMPredictor:
                     num_layers,
                     output_size,
                     dropout,
-                    bidirectional
+                    bidirectional,
                 ):
                     super().__init__()
 
@@ -83,7 +83,7 @@ class LSTMPredictor:
                         num_layers=num_layers,
                         batch_first=True,
                         dropout=dropout if num_layers > 1 else 0,
-                        bidirectional=bidirectional
+                        bidirectional=bidirectional,
                     )
 
                     # Attention layer
@@ -91,7 +91,7 @@ class LSTMPredictor:
                         nn.Linear(hidden_size * self.num_directions, hidden_size),
                         nn.Tanh(),
                         nn.Linear(hidden_size, 1),
-                        nn.Softmax(dim=1)
+                        nn.Softmax(dim=1),
                     )
 
                     # Output layers
@@ -100,7 +100,7 @@ class LSTMPredictor:
                         nn.Linear(lstm_output_size, hidden_size),
                         nn.ReLU(),
                         nn.Dropout(dropout),
-                        nn.Linear(hidden_size, output_size)
+                        nn.Linear(hidden_size, output_size),
                     )
 
                 def forward(self, x):
@@ -126,7 +126,7 @@ class LSTMPredictor:
                 self.num_layers,
                 self.output_size,
                 self.dropout,
-                self.bidirectional
+                self.bidirectional,
             ).to(self._device)
 
             self._criterion = nn.MSELoss()
@@ -145,10 +145,8 @@ class LSTMPredictor:
         return self._model
 
     def prepare_sequences(
-        self,
-        data: np.ndarray,
-        target_col: int = -1
-    ) -> Tuple[np.ndarray, np.ndarray]:
+        self, data: np.ndarray, target_col: int = -1
+    ) -> tuple[np.ndarray, np.ndarray]:
         """
         Prepare sequences for training.
 
@@ -162,7 +160,7 @@ class LSTMPredictor:
         X, y = [], []
 
         for i in range(len(data) - self.sequence_length):
-            X.append(data[i:i + self.sequence_length])
+            X.append(data[i : i + self.sequence_length])
             y.append(data[i + self.sequence_length, target_col])
 
         return np.array(X), np.array(y)
@@ -197,7 +195,7 @@ class LSTMPredictor:
         epochs: int = 50,
         batch_size: int = 32,
         validation_split: float = 0.1,
-        early_stopping_patience: int = 10
+        early_stopping_patience: int = 10,
     ) -> dict:
         """
         Train the LSTM model.
@@ -213,7 +211,6 @@ class LSTMPredictor:
         Returns:
             Training history
         """
-        import torch
 
         self._lazy_load()
 
@@ -229,7 +226,7 @@ class LSTMPredictor:
         n_batches = (len(X_train) + batch_size - 1) // batch_size
 
         history = {"train_loss": [], "val_loss": []}
-        best_val_loss = float('inf')
+        best_val_loss = float("inf")
         patience_counter = 0
 
         for epoch in range(epochs):
@@ -243,8 +240,7 @@ class LSTMPredictor:
                 end_idx = min((batch_idx + 1) * batch_size, len(X_train))
 
                 batch_loss = self.train_step(
-                    X_train[start_idx:end_idx],
-                    y_train[start_idx:end_idx]
+                    X_train[start_idx:end_idx], y_train[start_idx:end_idx]
                 )
                 epoch_loss += batch_loss
 
@@ -348,19 +344,22 @@ class LSTMPredictor:
         path = Path(path)
         path.parent.mkdir(parents=True, exist_ok=True)
 
-        torch.save({
-            "model_state_dict": self._model.state_dict(),
-            "optimizer_state_dict": self._optimizer.state_dict(),
-            "config": {
-                "input_size": self.input_size,
-                "hidden_size": self.hidden_size,
-                "num_layers": self.num_layers,
-                "sequence_length": self.sequence_length,
-                "output_size": self.output_size,
-                "dropout": self.dropout,
-                "bidirectional": self.bidirectional
-            }
-        }, path)
+        torch.save(
+            {
+                "model_state_dict": self._model.state_dict(),
+                "optimizer_state_dict": self._optimizer.state_dict(),
+                "config": {
+                    "input_size": self.input_size,
+                    "hidden_size": self.hidden_size,
+                    "num_layers": self.num_layers,
+                    "sequence_length": self.sequence_length,
+                    "output_size": self.output_size,
+                    "dropout": self.dropout,
+                    "bidirectional": self.bidirectional,
+                },
+            },
+            path,
+        )
 
         logger.info(f"Saved LSTM model to {path}")
 

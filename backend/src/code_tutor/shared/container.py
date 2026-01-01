@@ -2,7 +2,7 @@
 
 from dependency_injector import containers, providers
 
-from code_tutor.shared.config import Settings, get_settings
+from code_tutor.shared.config import get_settings
 from code_tutor.shared.infrastructure.database import async_session_factory
 from code_tutor.shared.infrastructure.redis import RedisClient
 

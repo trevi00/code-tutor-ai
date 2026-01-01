@@ -4,6 +4,7 @@ from datetime import datetime
 from uuid import UUID, uuid4
 
 from sqlalchemy import (
+    JSON,
     Boolean,
     DateTime,
     Enum,
@@ -13,10 +14,13 @@ from sqlalchemy import (
     String,
     Text,
 )
-from sqlalchemy import JSON
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from code_tutor.learning.domain.value_objects import Category, Difficulty, SubmissionStatus
+from code_tutor.learning.domain.value_objects import (
+    Category,
+    Difficulty,
+    SubmissionStatus,
+)
 from code_tutor.shared.infrastructure.database import Base
 
 

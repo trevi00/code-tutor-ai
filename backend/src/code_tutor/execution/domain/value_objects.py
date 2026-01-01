@@ -9,6 +9,7 @@ from code_tutor.shared.domain.base import ValueObject
 
 class ExecutionStatus(str, Enum):
     """Code execution status"""
+
     PENDING = "pending"
     RUNNING = "running"
     SUCCESS = "success"

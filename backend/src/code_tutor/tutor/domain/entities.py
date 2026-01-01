@@ -1,6 +1,5 @@
 """AI Tutor domain entities"""
 
-from datetime import datetime
 from uuid import UUID
 
 from code_tutor.shared.domain.base import AggregateRoot, Entity

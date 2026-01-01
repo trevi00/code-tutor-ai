@@ -76,9 +76,7 @@ def register_exception_handlers(app: FastAPI) -> None:
         )
 
     @app.exception_handler(NotFoundError)
-    async def not_found_handler(
-        request: Request, exc: NotFoundError
-    ) -> JSONResponse:
+    async def not_found_handler(request: Request, exc: NotFoundError) -> JSONResponse:
         """Handle not found errors"""
         return JSONResponse(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -154,7 +152,9 @@ def register_exception_handlers(app: FastAPI) -> None:
         }
 
         return JSONResponse(
-            status_code=status_code_map.get(exc.code, status.HTTP_500_INTERNAL_SERVER_ERROR),
+            status_code=status_code_map.get(
+                exc.code, status.HTTP_500_INTERNAL_SERVER_ERROR
+            ),
             content=error_response(
                 code=exc.code,
                 message=exc.message,

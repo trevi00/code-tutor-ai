@@ -26,7 +26,9 @@ class Settings(BaseSettings):
     PORT: int = 8000
 
     # Database
-    DATABASE_URL: str = "postgresql+asyncpg://postgres:postgres@localhost:5432/codetutor"
+    DATABASE_URL: str = (
+        "postgresql+asyncpg://postgres:postgres@localhost:5432/codetutor"
+    )
     DATABASE_ECHO: bool = False
     DATABASE_POOL_SIZE: int = 5
     DATABASE_MAX_OVERFLOW: int = 10

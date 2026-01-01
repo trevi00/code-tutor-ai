@@ -1,9 +1,9 @@
 """Neural Collaborative Filtering Model for Problem Recommendation"""
 
-import numpy as np
-from pathlib import Path
-from typing import Optional, Tuple, List
 import logging
+from pathlib import Path
+
+import numpy as np
 
 logger = logging.getLogger(__name__)
 
@@ -27,9 +27,9 @@ class NCFModel:
         num_users: int,
         num_items: int,
         embedding_dim: int = 32,
-        hidden_layers: List[int] = None,
+        hidden_layers: list[int] = None,
         dropout: float = 0.2,
-        device: Optional[str] = None
+        device: str | None = None,
     ):
         self.num_users = num_users
         self.num_items = num_items
@@ -56,7 +56,9 @@ class NCFModel:
 
             # Define the NCF model
             class NCFNetwork(nn.Module):
-                def __init__(self, num_users, num_items, embedding_dim, hidden_layers, dropout):
+                def __init__(
+                    self, num_users, num_items, embedding_dim, hidden_layers, dropout
+                ):
                     super().__init__()
 
                     # GMF embeddings
@@ -71,11 +73,13 @@ class NCFModel:
                     mlp_layers = []
                     input_size = embedding_dim * 2
                     for hidden_size in hidden_layers:
-                        mlp_layers.extend([
-                            nn.Linear(input_size, hidden_size),
-                            nn.ReLU(),
-                            nn.Dropout(dropout)
-                        ])
+                        mlp_layers.extend(
+                            [
+                                nn.Linear(input_size, hidden_size),
+                                nn.ReLU(),
+                                nn.Dropout(dropout),
+                            ]
+                        )
                         input_size = hidden_size
                     self.mlp = nn.Sequential(*mlp_layers)
 
@@ -120,7 +124,7 @@ class NCFModel:
                 self.num_items,
                 self.embedding_dim,
                 self.hidden_layers,
-                self.dropout
+                self.dropout,
             ).to(self._device)
 
             self._criterion = nn.BCELoss()
@@ -139,10 +143,7 @@ class NCFModel:
         return self._model
 
     def train_step(
-        self,
-        user_ids: np.ndarray,
-        item_ids: np.ndarray,
-        labels: np.ndarray
+        self, user_ids: np.ndarray, item_ids: np.ndarray, labels: np.ndarray
     ) -> float:
         """
         Perform one training step.
@@ -176,11 +177,11 @@ class NCFModel:
 
     def train(
         self,
-        train_data: List[Tuple[int, int, int]],
-        val_data: Optional[List[Tuple[int, int, int]]] = None,
+        train_data: list[tuple[int, int, int]],
+        val_data: list[tuple[int, int, int]] | None = None,
         epochs: int = 20,
         batch_size: int = 256,
-        early_stopping_patience: int = 5
+        early_stopping_patience: int = 5,
     ) -> dict:
         """
         Train the NCF model.
@@ -195,7 +196,6 @@ class NCFModel:
         Returns:
             Training history dict
         """
-        import torch
 
         self._lazy_load()
 
@@ -224,7 +224,7 @@ class NCFModel:
                 batch_loss = self.train_step(
                     user_ids[batch_indices],
                     item_ids[batch_indices],
-                    labels[batch_indices]
+                    labels[batch_indices],
                 )
                 epoch_loss += batch_loss
 
@@ -256,7 +256,7 @@ class NCFModel:
 
         return history
 
-    def _evaluate(self, data: List[Tuple[int, int, int]]) -> Tuple[float, float]:
+    def _evaluate(self, data: list[tuple[int, int, int]]) -> tuple[float, float]:
         """Evaluate model on data"""
         import torch
         from sklearn.metrics import roc_auc_score
@@ -271,23 +271,18 @@ class NCFModel:
         with torch.no_grad():
             predictions = self._model(user_ids, item_ids).cpu().numpy()
 
-        loss = float(self._criterion(
-            torch.FloatTensor(predictions),
-            torch.FloatTensor(labels)
-        ))
+        loss = float(
+            self._criterion(torch.FloatTensor(predictions), torch.FloatTensor(labels))
+        )
 
         try:
             auc = roc_auc_score(labels, predictions)
-        except:
+        except ValueError:
             auc = 0.5
 
         return loss, auc
 
-    def predict(
-        self,
-        user_id: int,
-        item_ids: np.ndarray
-    ) -> np.ndarray:
+    def predict(self, user_id: int, item_ids: np.ndarray) -> np.ndarray:
         """
         Predict scores for items.
 
@@ -314,10 +309,10 @@ class NCFModel:
     def recommend(
         self,
         user_id: int,
-        candidate_items: Optional[np.ndarray] = None,
+        candidate_items: np.ndarray | None = None,
         top_k: int = 10,
-        exclude_items: Optional[set] = None
-    ) -> List[Tuple[int, float]]:
+        exclude_items: set | None = None,
+    ) -> list[tuple[int, float]]:
         """
         Recommend items for a user.
 
@@ -334,10 +329,9 @@ class NCFModel:
             candidate_items = np.arange(self.num_items)
 
         if exclude_items:
-            candidate_items = np.array([
-                item for item in candidate_items
-                if item not in exclude_items
-            ])
+            candidate_items = np.array(
+                [item for item in candidate_items if item not in exclude_items]
+            )
 
         if len(candidate_items) == 0:
             return []
@@ -347,10 +341,7 @@ class NCFModel:
         # Get top-k
         top_indices = np.argsort(scores)[::-1][:top_k]
 
-        return [
-            (int(candidate_items[idx]), float(scores[idx]))
-            for idx in top_indices
-        ]
+        return [(int(candidate_items[idx]), float(scores[idx])) for idx in top_indices]
 
     def save(self, path: Path):
         """Save model to file"""
@@ -361,17 +352,20 @@ class NCFModel:
         path = Path(path)
         path.parent.mkdir(parents=True, exist_ok=True)
 
-        torch.save({
-            "model_state_dict": self._model.state_dict(),
-            "optimizer_state_dict": self._optimizer.state_dict(),
-            "config": {
-                "num_users": self.num_users,
-                "num_items": self.num_items,
-                "embedding_dim": self.embedding_dim,
-                "hidden_layers": self.hidden_layers,
-                "dropout": self.dropout
-            }
-        }, path)
+        torch.save(
+            {
+                "model_state_dict": self._model.state_dict(),
+                "optimizer_state_dict": self._optimizer.state_dict(),
+                "config": {
+                    "num_users": self.num_users,
+                    "num_items": self.num_items,
+                    "embedding_dim": self.embedding_dim,
+                    "hidden_layers": self.hidden_layers,
+                    "dropout": self.dropout,
+                },
+            },
+            path,
+        )
 
         logger.info(f"Saved NCF model to {path}")
 

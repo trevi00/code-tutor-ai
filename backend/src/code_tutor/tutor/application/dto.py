@@ -11,6 +11,7 @@ from code_tutor.tutor.domain.value_objects import ConversationType
 # Request DTOs
 class CodeContextRequest(BaseModel):
     """Code context for chat request"""
+
     code: str
     language: str = "python"
     problem_id: UUID | None = None
@@ -19,6 +20,7 @@ class CodeContextRequest(BaseModel):
 
 class ChatRequest(BaseModel):
     """Chat message request"""
+
     message: str = Field(..., min_length=1, max_length=4000)
     conversation_id: UUID | None = None
     conversation_type: ConversationType = ConversationType.GENERAL
@@ -28,6 +30,7 @@ class ChatRequest(BaseModel):
 
 class CreateConversationRequest(BaseModel):
     """Create new conversation request"""
+
     conversation_type: ConversationType = ConversationType.GENERAL
     problem_id: UUID | None = None
     title: str = ""
@@ -36,6 +39,7 @@ class CreateConversationRequest(BaseModel):
 # Response DTOs
 class MessageResponse(BaseModel):
     """Message response"""
+
     id: UUID
     role: str
     content: str
@@ -49,6 +53,7 @@ class MessageResponse(BaseModel):
 
 class ConversationResponse(BaseModel):
     """Full conversation response"""
+
     id: UUID
     user_id: UUID
     problem_id: UUID | None
@@ -66,6 +71,7 @@ class ConversationResponse(BaseModel):
 
 class ConversationSummaryResponse(BaseModel):
     """Conversation summary for list views"""
+
     id: UUID
     problem_id: UUID | None
     conversation_type: str
@@ -77,6 +83,7 @@ class ConversationSummaryResponse(BaseModel):
 
 class ChatResponse(BaseModel):
     """Chat response"""
+
     conversation_id: UUID
     message: MessageResponse
     is_new_conversation: bool = False
@@ -85,6 +92,7 @@ class ChatResponse(BaseModel):
 # Code Review DTOs
 class CodeReviewRequest(BaseModel):
     """Code review request"""
+
     code: str = Field(..., min_length=1)
     language: str = Field(default="python")
     problem_id: UUID | None = None
@@ -96,6 +104,7 @@ class CodeReviewRequest(BaseModel):
 
 class CodeIssue(BaseModel):
     """A single issue found in code review"""
+
     severity: str  # error, warning, suggestion
     line: int | None = None
     message: str
@@ -104,7 +113,10 @@ class CodeIssue(BaseModel):
 
 class CodeReviewResponse(BaseModel):
     """Code review response"""
-    overall_score: int = Field(..., ge=0, le=100, description="Overall code quality score")
+
+    overall_score: int = Field(
+        ..., ge=0, le=100, description="Overall code quality score"
+    )
     summary: str
     issues: list[CodeIssue]
     strengths: list[str]

@@ -3,17 +3,16 @@
 from datetime import datetime
 from uuid import UUID
 
-from code_tutor.identity.domain.value_objects import (
-    Email,
-    HashedPassword,
-    UserId,
-    UserRole,
-    Username,
-)
 from code_tutor.identity.domain.events import (
     PasswordChanged,
     UserCreated,
     UserLoggedIn,
+)
+from code_tutor.identity.domain.value_objects import (
+    Email,
+    HashedPassword,
+    Username,
+    UserRole,
 )
 from code_tutor.shared.domain.base import AggregateRoot
 from code_tutor.shared.security import hash_password, verify_password
@@ -130,6 +129,7 @@ class User(AggregateRoot):
 
         if not self.verify_password(old_password):
             from code_tutor.shared.exceptions import ValidationError
+
             raise ValidationError("Current password is incorrect")
 
         # Validate new password

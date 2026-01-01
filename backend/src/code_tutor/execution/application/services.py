@@ -6,7 +6,10 @@ from code_tutor.execution.application.dto import ExecuteCodeRequest, ExecuteCode
 from code_tutor.execution.domain.value_objects import ExecutionRequest, ExecutionResult
 from code_tutor.execution.infrastructure.sandbox import DockerSandbox, MockSandbox
 from code_tutor.learning.domain.entities import Problem, Submission, TestCase
-from code_tutor.learning.domain.repository import ProblemRepository, SubmissionRepository
+from code_tutor.learning.domain.repository import (
+    ProblemRepository,
+    SubmissionRepository,
+)
 from code_tutor.learning.domain.value_objects import SubmissionStatus, TestResult
 from code_tutor.shared.config import get_settings
 from code_tutor.shared.exceptions import NotFoundError
@@ -103,10 +106,17 @@ class SubmissionEvaluator:
         # Determine final status
         all_passed = all(r.is_passed for r in test_results)
         has_timeout = any(
-            r.error_message and ("timeout" in r.error_message.lower() or "time limit" in r.error_message.lower())
+            r.error_message
+            and (
+                "timeout" in r.error_message.lower()
+                or "time limit" in r.error_message.lower()
+            )
             for r in test_results
         )
-        has_memory_error = any(r.error_message and "memory" in r.error_message.lower() for r in test_results)
+        has_memory_error = any(
+            r.error_message and "memory" in r.error_message.lower()
+            for r in test_results
+        )
 
         if all_passed:
             status = SubmissionStatus.ACCEPTED
@@ -116,8 +126,14 @@ class SubmissionEvaluator:
             status = SubmissionStatus.MEMORY_LIMIT_EXCEEDED
         else:
             # Check if it's a runtime error or wrong answer
-            has_runtime_error = any(r.error_message for r in test_results if not r.is_passed)
-            status = SubmissionStatus.RUNTIME_ERROR if has_runtime_error else SubmissionStatus.WRONG_ANSWER
+            has_runtime_error = any(
+                r.error_message for r in test_results if not r.is_passed
+            )
+            status = (
+                SubmissionStatus.RUNTIME_ERROR
+                if has_runtime_error
+                else SubmissionStatus.WRONG_ANSWER
+            )
 
         # Complete evaluation
         submission.complete_evaluation(
@@ -125,7 +141,9 @@ class SubmissionEvaluator:
             test_results=test_results,
             execution_time_ms=total_time,
             memory_usage_mb=max_memory,
-            error_message=test_results[0].error_message if not all_passed and test_results else None,
+            error_message=test_results[0].error_message
+            if not all_passed and test_results
+            else None,
         )
 
         saved = await self._submission_repo.update(submission)

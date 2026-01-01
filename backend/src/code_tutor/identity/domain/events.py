@@ -1,7 +1,6 @@
 """Identity domain events"""
 
 from dataclasses import dataclass, field
-from datetime import datetime
 from uuid import UUID, uuid4
 
 from code_tutor.shared.domain.events import DomainEvent

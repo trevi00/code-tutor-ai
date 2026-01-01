@@ -1,6 +1,5 @@
 """Identity application services (use cases)"""
 
-from datetime import timedelta
 from uuid import UUID
 
 from code_tutor.identity.application.dto import (
@@ -19,11 +18,11 @@ from code_tutor.shared.exceptions import ConflictError, NotFoundError, Unauthori
 from code_tutor.shared.infrastructure.logging import get_logger
 from code_tutor.shared.infrastructure.redis import RedisClient
 from code_tutor.shared.security import (
+    TokenPayload,
     create_access_token,
     create_refresh_token,
     decode_token,
     get_token_jti,
-    TokenPayload,
 )
 
 logger = get_logger(__name__)
@@ -209,7 +208,9 @@ class AuthService:
 
         # Blacklist old refresh token
         if self._redis:
-            remaining_time = int((token_payload.exp - token_payload.iat).total_seconds())
+            remaining_time = int(
+                (token_payload.exp - token_payload.iat).total_seconds()
+            )
             await self._redis.blacklist_token(token_payload.jti, remaining_time)
 
         # Create new tokens

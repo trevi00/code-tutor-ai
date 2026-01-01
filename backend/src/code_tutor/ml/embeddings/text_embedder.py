@@ -1,8 +1,8 @@
 """Text Embedder using Sentence Transformers for Korean/English text"""
 
-import numpy as np
-from typing import List, Optional
 import logging
+
+import numpy as np
 
 logger = logging.getLogger(__name__)
 
@@ -21,8 +21,8 @@ class TextEmbedder:
     def __init__(
         self,
         model_name: str = "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
-        device: Optional[str] = None,
-        cache_dir: Optional[str] = None
+        device: str | None = None,
+        cache_dir: str | None = None,
     ):
         self.model_name = model_name
         self.cache_dir = cache_dir
@@ -33,17 +33,17 @@ class TextEmbedder:
         """Lazy load the model to save memory until needed"""
         if self._model is None:
             try:
-                from sentence_transformers import SentenceTransformer
                 import torch
+                from sentence_transformers import SentenceTransformer
 
                 if self._device is None:
                     self._device = "cuda" if torch.cuda.is_available() else "cpu"
 
-                logger.info(f"Loading text embedding model: {self.model_name} on {self._device}")
+                logger.info(
+                    f"Loading text embedding model: {self.model_name} on {self._device}"
+                )
                 self._model = SentenceTransformer(
-                    self.model_name,
-                    cache_folder=self.cache_dir,
-                    device=self._device
+                    self.model_name, cache_folder=self.cache_dir, device=self._device
                 )
                 logger.info("Text embedding model loaded successfully")
             except ImportError as e:
@@ -77,10 +77,10 @@ class TextEmbedder:
 
     def embed_batch(
         self,
-        texts: List[str],
+        texts: list[str],
         batch_size: int = 32,
         show_progress: bool = False,
-        normalize: bool = True
+        normalize: bool = True,
     ) -> np.ndarray:
         """
         Embed a batch of text strings.
@@ -102,7 +102,7 @@ class TextEmbedder:
             batch_size=batch_size,
             show_progress_bar=show_progress,
             normalize_embeddings=normalize,
-            convert_to_numpy=True
+            convert_to_numpy=True,
         )
 
         return embeddings
@@ -125,11 +125,8 @@ class TextEmbedder:
         return float(np.dot(emb1, emb2))
 
     def find_similar(
-        self,
-        query: str,
-        candidates: List[str],
-        top_k: int = 5
-    ) -> List[tuple]:
+        self, query: str, candidates: list[str], top_k: int = 5
+    ) -> list[tuple]:
         """
         Find most similar texts from candidates.
 
@@ -159,6 +156,7 @@ class TextEmbedder:
             self._model = None
 
             import torch
+
             if torch.cuda.is_available():
                 torch.cuda.empty_cache()
 

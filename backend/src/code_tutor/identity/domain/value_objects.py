@@ -11,6 +11,7 @@ from code_tutor.shared.exceptions import ValidationError
 
 class UserRole(str, Enum):
     """User roles in the system"""
+
     STUDENT = "student"
     ADMIN = "admin"
 
@@ -44,9 +45,7 @@ class Email(ValueObject):
 
     value: str
 
-    EMAIL_REGEX = re.compile(
-        r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
-    )
+    EMAIL_REGEX = re.compile(r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$")
 
     def __post_init__(self) -> None:
         if not self.value:

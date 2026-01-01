@@ -1,6 +1,6 @@
 """Dashboard application service"""
 
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from uuid import UUID
 
 from sqlalchemy import and_, case, distinct, func, select
@@ -18,7 +18,11 @@ from code_tutor.learning.application.dashboard_dto import (
     StreakInfo,
     UserStats,
 )
-from code_tutor.learning.domain.value_objects import Category, Difficulty, SubmissionStatus
+from code_tutor.learning.domain.value_objects import (
+    Category,
+    Difficulty,
+    SubmissionStatus,
+)
 from code_tutor.learning.infrastructure.models import ProblemModel, SubmissionModel
 from code_tutor.shared.infrastructure.logging import get_logger
 
@@ -71,7 +75,10 @@ class DashboardService:
             func.count(
                 distinct(
                     case(
-                        (SubmissionModel.status == SubmissionStatus.ACCEPTED, SubmissionModel.problem_id),
+                        (
+                            SubmissionModel.status == SubmissionStatus.ACCEPTED,
+                            SubmissionModel.problem_id,
+                        ),
                         else_=None,
                     )
                 )
@@ -106,7 +113,9 @@ class DashboardService:
         streak = await self._get_streak_info(user_id)
 
         success_rate = (
-            (accepted_submissions / total_submissions * 100) if total_submissions > 0 else 0
+            (accepted_submissions / total_submissions * 100)
+            if total_submissions > 0
+            else 0
         )
 
         return UserStats(
@@ -230,7 +239,7 @@ class DashboardService:
             else:
                 dates.append(d)
 
-        today = datetime.now(timezone.utc).date()
+        today = datetime.now(UTC).date()
         last_activity = dates[0]
 
         # Calculate current streak
@@ -259,13 +268,15 @@ class DashboardService:
             current_streak=current_streak,
             longest_streak=max(longest_streak, current_streak),
             last_activity_date=datetime.combine(
-                last_activity, datetime.min.time(), tzinfo=timezone.utc
+                last_activity, datetime.min.time(), tzinfo=UTC
             ),
         )
 
-    async def _get_heatmap_data(self, user_id: UUID, days: int = 365) -> list[HeatmapData]:
+    async def _get_heatmap_data(
+        self, user_id: UUID, days: int = 365
+    ) -> list[HeatmapData]:
         """Get activity heatmap data for the past year"""
-        end_date = datetime.now(timezone.utc).date()
+        end_date = datetime.now(UTC).date()
         start_date = end_date - timedelta(days=days)
 
         # Get submission counts per day
@@ -336,7 +347,7 @@ class DashboardService:
 
             # Calculate current skill level based on success rate and completion
             completion_rate = progress.solved_problems / progress.total_problems
-            current_level = (progress.success_rate * 0.6 + completion_rate * 100 * 0.4)
+            current_level = progress.success_rate * 0.6 + completion_rate * 100 * 0.4
 
             # Predict future level (simple linear extrapolation)
             # In production, this could use ML models
@@ -436,7 +447,7 @@ class DashboardService:
             insights.append(
                 PredictionInsight(
                     type="trend",
-                    message=f"최근 성공률이 다소 하락했습니다. 기초 문제 복습을 권장합니다.",
+                    message="최근 성공률이 다소 하락했습니다. 기초 문제 복습을 권장합니다.",
                 )
             )
 
@@ -457,7 +468,11 @@ class DashboardService:
             )
 
         # Category insight
-        weak_categories = [cp for cp in category_progress if cp.success_rate < 50 and cp.total_problems >= 3]
+        weak_categories = [
+            cp
+            for cp in category_progress
+            if cp.success_rate < 50 and cp.total_problems >= 3
+        ]
         if weak_categories:
             weak = weak_categories[0]
             remaining = weak.total_problems - weak.solved_problems

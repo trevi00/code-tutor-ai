@@ -1,8 +1,8 @@
 """Code Embedder using CodeBERT/DistilCodeBERT for code similarity"""
 
-import numpy as np
-from typing import List, Optional, Dict
 import logging
+
+import numpy as np
 
 logger = logging.getLogger(__name__)
 
@@ -18,14 +18,23 @@ class CodeEmbedder:
     """
 
     # Supported languages for code processing
-    SUPPORTED_LANGUAGES = ["python", "javascript", "java", "c", "cpp", "go", "ruby", "php"]
+    SUPPORTED_LANGUAGES = [
+        "python",
+        "javascript",
+        "java",
+        "c",
+        "cpp",
+        "go",
+        "ruby",
+        "php",
+    ]
 
     def __init__(
         self,
         model_name: str = "microsoft/codebert-base",
-        device: Optional[str] = None,
-        cache_dir: Optional[str] = None,
-        max_length: int = 512
+        device: str | None = None,
+        cache_dir: str | None = None,
+        max_length: int = 512,
     ):
         self.model_name = model_name
         self.cache_dir = cache_dir
@@ -38,21 +47,21 @@ class CodeEmbedder:
         """Lazy load the model to save memory until needed"""
         if self._model is None:
             try:
-                from transformers import AutoModel, AutoTokenizer
                 import torch
+                from transformers import AutoModel, AutoTokenizer
 
                 if self._device is None:
                     self._device = "cuda" if torch.cuda.is_available() else "cpu"
 
-                logger.info(f"Loading code embedding model: {self.model_name} on {self._device}")
+                logger.info(
+                    f"Loading code embedding model: {self.model_name} on {self._device}"
+                )
 
                 self._tokenizer = AutoTokenizer.from_pretrained(
-                    self.model_name,
-                    cache_dir=self.cache_dir
+                    self.model_name, cache_dir=self.cache_dir
                 )
                 self._model = AutoModel.from_pretrained(
-                    self.model_name,
-                    cache_dir=self.cache_dir
+                    self.model_name, cache_dir=self.cache_dir
                 ).to(self._device)
                 self._model.eval()
 
@@ -92,13 +101,13 @@ class CodeEmbedder:
             Preprocessed code string
         """
         # Remove excessive whitespace while preserving structure
-        lines = code.strip().split('\n')
+        lines = code.strip().split("\n")
         lines = [line.rstrip() for line in lines]
 
         # Add language token for better understanding
         if language.lower() in self.SUPPORTED_LANGUAGES:
-            return f"# {language}\n" + '\n'.join(lines)
-        return '\n'.join(lines)
+            return f"# {language}\n" + "\n".join(lines)
+        return "\n".join(lines)
 
     def embed(self, code: str, language: str = "python") -> np.ndarray:
         """
@@ -115,10 +124,10 @@ class CodeEmbedder:
 
     def embed_batch(
         self,
-        codes: List[str],
-        languages: Optional[List[str]] = None,
+        codes: list[str],
+        languages: list[str] | None = None,
         batch_size: int = 8,
-        normalize: bool = True
+        normalize: bool = True,
     ) -> np.ndarray:
         """
         Embed a batch of code snippets.
@@ -142,15 +151,14 @@ class CodeEmbedder:
 
         # Preprocess all codes
         processed = [
-            self._preprocess_code(code, lang)
-            for code, lang in zip(codes, languages)
+            self._preprocess_code(code, lang) for code, lang in zip(codes, languages)
         ]
 
         all_embeddings = []
 
         with torch.no_grad():
             for i in range(0, len(processed), batch_size):
-                batch = processed[i:i + batch_size]
+                batch = processed[i : i + batch_size]
 
                 # Tokenize
                 inputs = self.tokenizer(
@@ -158,7 +166,7 @@ class CodeEmbedder:
                     padding=True,
                     truncation=True,
                     max_length=self.max_length,
-                    return_tensors="pt"
+                    return_tensors="pt",
                 ).to(self._device)
 
                 # Get embeddings
@@ -197,11 +205,11 @@ class CodeEmbedder:
     def find_similar_patterns(
         self,
         query_code: str,
-        pattern_codes: List[str],
-        pattern_names: List[str],
+        pattern_codes: list[str],
+        pattern_names: list[str],
         language: str = "python",
-        top_k: int = 3
-    ) -> List[Dict]:
+        top_k: int = 3,
+    ) -> list[dict]:
         """
         Find most similar algorithm patterns for given code.
 
@@ -228,7 +236,7 @@ class CodeEmbedder:
             {
                 "pattern": pattern_names[idx],
                 "similarity": float(similarities[idx]),
-                "rank": i + 1
+                "rank": i + 1,
             }
             for i, idx in enumerate(top_indices)
         ]
@@ -242,6 +250,7 @@ class CodeEmbedder:
             self._tokenizer = None
 
             import torch
+
             if torch.cuda.is_available():
                 torch.cuda.empty_cache()
 

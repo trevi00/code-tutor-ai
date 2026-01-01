@@ -2,6 +2,7 @@
 
 from functools import lru_cache
 from pathlib import Path
+
 from pydantic import Field
 from pydantic_settings import BaseSettings
 
@@ -21,7 +22,9 @@ class MLConfig(BaseSettings):
     OPENAI_MODEL: str = Field(default="gpt-3.5-turbo")
 
     # Embedding Settings
-    EMBEDDING_MODEL: str = Field(default="sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2")
+    EMBEDDING_MODEL: str = Field(
+        default="sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
+    )
     EMBEDDING_DIMENSION: int = Field(default=384)
 
     # CodeBERT Settings

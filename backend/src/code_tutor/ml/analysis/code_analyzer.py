@@ -1,13 +1,13 @@
 """Code Analyzer using CodeBERT for semantic code understanding"""
 
-from typing import Dict, List, Optional, Any
-import re
 import ast
 import logging
+import re
+from typing import Any
 
+from code_tutor.ml.config import get_ml_config
 from code_tutor.ml.embeddings import CodeEmbedder
 from code_tutor.ml.rag import PatternKnowledgeBase
-from code_tutor.ml.config import get_ml_config
 
 logger = logging.getLogger(__name__)
 
@@ -30,84 +30,63 @@ class CodeAnalyzer:
             "pattern": r"def\s+\w+\s*\([^)]*\):\s*\n((?:(?!def\s)[\s\S])*)",
             "threshold": 50,  # lines
             "message": "함수가 너무 깁니다. 작은 함수로 분리하는 것을 고려하세요.",
-            "severity": "warning"
+            "severity": "warning",
         },
         "deep_nesting": {
             "pattern": r"^(\s+)",
             "threshold": 4,  # levels
             "message": "중첩 레벨이 너무 깊습니다. 조기 반환(early return)을 사용하세요.",
-            "severity": "warning"
+            "severity": "warning",
         },
         "magic_numbers": {
             "pattern": r"(?<!['\"])\b(?!0\b|1\b|-1\b)[0-9]+(?:\.[0-9]+)?\b(?!['\"])",
             "message": "매직 넘버를 상수로 정의하세요.",
-            "severity": "info"
+            "severity": "info",
         },
         "empty_except": {
             "pattern": r"except\s*(?:\w+\s*)?:\s*(?:pass|\.\.\.)",
             "message": "빈 except 블록은 오류를 숨깁니다. 적절한 에러 처리를 추가하세요.",
-            "severity": "error"
+            "severity": "error",
         },
         "print_debugging": {
             "pattern": r"\bprint\s*\([^)]*\)",
             "message": "디버깅용 print 문이 남아있습니다.",
-            "severity": "info"
-        }
+            "severity": "info",
+        },
     }
 
     # Common algorithm patterns for detection
     ALGORITHM_SIGNATURES = {
-        "two_pointers": [
-            r"left.*right",
-            r"i.*j.*while",
-            r"\[left\].*\[right\]"
-        ],
+        "two_pointers": [r"left.*right", r"i.*j.*while", r"\[left\].*\[right\]"],
         "sliding_window": [
             r"window",
             r"sum\s*\(\s*\w+\s*\[\s*\w+\s*:\s*\w+\s*\]",
-            r"start.*end.*while"
+            r"start.*end.*while",
         ],
-        "binary_search": [
-            r"left.*right.*mid",
-            r"lo.*hi.*mid",
-            r"//\s*2",
-            r"bisect"
-        ],
-        "dfs": [
-            r"def\s+dfs\s*\(",
-            r"stack\s*=\s*\[",
-            r"visited.*add",
-            r"recursive"
-        ],
+        "binary_search": [r"left.*right.*mid", r"lo.*hi.*mid", r"//\s*2", r"bisect"],
+        "dfs": [r"def\s+dfs\s*\(", r"stack\s*=\s*\[", r"visited.*add", r"recursive"],
         "bfs": [
             r"from\s+collections\s+import\s+deque",
             r"queue\s*=.*deque",
             r"queue\.popleft\s*\(\)",
-            r"level.*order"
+            r"level.*order",
         ],
         "dp": [
             r"dp\s*=\s*\[",
             r"memo",
             r"@cache",
             r"@lru_cache",
-            r"dp\s*\[\s*i\s*\]\s*\[\s*j\s*\]"
+            r"dp\s*\[\s*i\s*\]\s*\[\s*j\s*\]",
         ],
-        "greedy": [
-            r"sort\s*\(",
-            r"max\s*\(|min\s*\(",
-            r"for.*in.*sorted"
-        ],
-        "recursion": [
-            r"return\s+\w+\s*\(",
-            r"def\s+(\w+).*\1\s*\("
-        ]
+        "greedy": [r"sort\s*\(", r"max\s*\(|min\s*\(", r"for.*in.*sorted"],
+        "recursion": [r"return\s+\w+\s*\(", r"def\s+(\w+).*\1\s*\("],
     }
 
     def __init__(self, config=None):
         self.config = config or get_ml_config()
 
-        self._code_embedder: Optional[CodeEmbedder] = None
-        self._pattern_kb: Optional[PatternKnowledgeBase] = None
+        self._code_embedder: CodeEmbedder | None = None
+        self._pattern_kb: PatternKnowledgeBase | None = None
 
     @property
     def code_embedder(self) -> CodeEmbedder:
@@ -115,7 +94,7 @@ class CodeAnalyzer:
         if self._code_embedder is None:
             self._code_embedder = CodeEmbedder(
                 model_name=self.config.CODE_EMBEDDING_MODEL,
-                cache_dir=str(self.config.MODEL_CACHE_DIR)
+                cache_dir=str(self.config.MODEL_CACHE_DIR),
             )
         return self._code_embedder
 
@@ -133,8 +112,8 @@ class CodeAnalyzer:
         include_patterns: bool = True,
         include_quality: bool = True,
         include_complexity: bool = True,
-        include_suggestions: bool = True
-    ) -> Dict[str, Any]:
+        include_suggestions: bool = True,
+    ) -> dict[str, Any]:
         """
         Perform comprehensive code analysis.
 
@@ -156,7 +135,7 @@ class CodeAnalyzer:
             "quality": {},
             "complexity": {},
             "suggestions": [],
-            "code_smells": []
+            "code_smells": [],
         }
 
         # Pattern detection
@@ -178,22 +157,17 @@ class CodeAnalyzer:
 
         return result
 
-    def _count_lines(self, code: str) -> Dict[str, int]:
+    def _count_lines(self, code: str) -> dict[str, int]:
         """Count lines of code"""
-        lines = code.split('\n')
+        lines = code.split("\n")
         total = len(lines)
         blank = sum(1 for line in lines if not line.strip())
-        comment = sum(1 for line in lines if line.strip().startswith('#'))
+        comment = sum(1 for line in lines if line.strip().startswith("#"))
         code_lines = total - blank - comment
 
-        return {
-            "total": total,
-            "code": code_lines,
-            "blank": blank,
-            "comment": comment
-        }
+        return {"total": total, "code": code_lines, "blank": blank, "comment": comment}
 
-    def _detect_patterns(self, code: str, language: str) -> List[Dict]:
+    def _detect_patterns(self, code: str, language: str) -> list[dict]:
         """Detect algorithm patterns in code"""
         detected = []
 
@@ -208,13 +182,19 @@ class CodeAnalyzer:
                 confidence = min(0.9, 0.5 + matches * 0.15)
                 pattern_info = self.pattern_kb.get_pattern(pattern_name)
 
-                detected.append({
-                    "pattern": pattern_name,
-                    "pattern_ko": pattern_info["name_ko"] if pattern_info else pattern_name,
-                    "confidence": confidence,
-                    "detection_method": "rule_based",
-                    "description": pattern_info["description_ko"] if pattern_info else ""
-                })
+                detected.append(
+                    {
+                        "pattern": pattern_name,
+                        "pattern_ko": pattern_info["name_ko"]
+                        if pattern_info
+                        else pattern_name,
+                        "confidence": confidence,
+                        "detection_method": "rule_based",
+                        "description": pattern_info["description_ko"]
+                        if pattern_info
+                        else "",
+                    }
+                )
 
         # ML-based pattern detection using CodeBERT
         try:
@@ -222,8 +202,7 @@ class CodeAnalyzer:
             for mp in ml_patterns:
                 # Check if already detected by rules
                 existing = next(
-                    (p for p in detected if p["pattern"] == mp["pattern"]),
-                    None
+                    (p for p in detected if p["pattern"] == mp["pattern"]), None
                 )
                 if existing:
                     # Boost confidence if ML agrees
@@ -239,7 +218,7 @@ class CodeAnalyzer:
 
         return detected[:5]  # Return top 5
 
-    def _detect_patterns_ml(self, code: str, language: str) -> List[Dict]:
+    def _detect_patterns_ml(self, code: str, language: str) -> list[dict]:
         """Detect patterns using ML embeddings"""
         # Build pattern embeddings if needed
         if self._pattern_kb._embeddings is None:
@@ -247,10 +226,7 @@ class CodeAnalyzer:
 
         # Find similar patterns
         similar = self._pattern_kb.find_similar_by_code(
-            code=code,
-            language=language,
-            top_k=3,
-            threshold=0.6
+            code=code, language=language, top_k=3, threshold=0.6
         )
 
         return [
@@ -259,12 +235,12 @@ class CodeAnalyzer:
                 "pattern_ko": p["name_ko"],
                 "confidence": p["similarity"],
                 "detection_method": "ml_embedding",
-                "description": p["description_ko"]
+                "description": p["description_ko"],
             }
             for p in similar
         ]
 
-    def _analyze_quality(self, code: str, language: str) -> Dict:
+    def _analyze_quality(self, code: str, language: str) -> dict:
         """Analyze code quality"""
         smells = []
         score = 100  # Start with perfect score
@@ -275,40 +251,46 @@ class CodeAnalyzer:
 
             if smell_name == "long_function":
                 for match in matches:
-                    lines = match.count('\n') + 1
+                    lines = match.count("\n") + 1
                     if lines > smell_info["threshold"]:
-                        smells.append({
-                            "type": smell_name,
-                            "message": smell_info["message"],
-                            "severity": smell_info["severity"],
-                            "details": f"함수 길이: {lines}줄"
-                        })
+                        smells.append(
+                            {
+                                "type": smell_name,
+                                "message": smell_info["message"],
+                                "severity": smell_info["severity"],
+                                "details": f"함수 길이: {lines}줄",
+                            }
+                        )
                         score -= 10
 
             elif smell_name == "deep_nesting":
                 max_indent = 0
-                for line in code.split('\n'):
+                for line in code.split("\n"):
                     if line.strip():
                         indent = len(line) - len(line.lstrip())
                         spaces = indent // 4  # Assuming 4 spaces per level
                         max_indent = max(max_indent, spaces)
 
                 if max_indent > smell_info["threshold"]:
-                    smells.append({
-                        "type": smell_name,
-                        "message": smell_info["message"],
-                        "severity": smell_info["severity"],
-                        "details": f"최대 중첩 레벨: {max_indent}"
-                    })
+                    smells.append(
+                        {
+                            "type": smell_name,
+                            "message": smell_info["message"],
+                            "severity": smell_info["severity"],
+                            "details": f"최대 중첩 레벨: {max_indent}",
+                        }
+                    )
                     score -= 10
 
             elif matches:
-                smells.append({
-                    "type": smell_name,
-                    "message": smell_info["message"],
-                    "severity": smell_info["severity"],
-                    "occurrences": len(matches)
-                })
+                smells.append(
+                    {
+                        "type": smell_name,
+                        "message": smell_info["message"],
+                        "severity": smell_info["severity"],
+                        "occurrences": len(matches),
+                    }
+                )
                 score -= 5 * len(matches)
 
         # Python-specific checks
@@ -320,10 +302,10 @@ class CodeAnalyzer:
         return {
             "score": max(0, score),
             "grade": self._score_to_grade(score),
-            "smells": smells
+            "smells": smells,
         }
 
-    def _check_python_quality(self, code: str) -> List[Dict]:
+    def _check_python_quality(self, code: str) -> list[dict]:
         """Python-specific quality checks"""
         issues = []
 
@@ -335,11 +317,13 @@ class CodeAnalyzer:
                 if isinstance(node, ast.FunctionDef):
                     for default in node.args.defaults:
                         if isinstance(default, (ast.List, ast.Dict, ast.Set)):
-                            issues.append({
-                                "type": "mutable_default",
-                                "message": f"함수 '{node.name}'에 변경 가능한 기본 인자가 있습니다.",
-                                "severity": "warning"
-                            })
+                            issues.append(
+                                {
+                                    "type": "mutable_default",
+                                    "message": f"함수 '{node.name}'에 변경 가능한 기본 인자가 있습니다.",
+                                    "severity": "warning",
+                                }
+                            )
 
             # Check for unused variables (simple check)
             assigned = set()
@@ -351,31 +335,35 @@ class CodeAnalyzer:
                     elif isinstance(node.ctx, ast.Load):
                         used.add(node.id)
 
-            unused = assigned - used - {'_', '__'}
+            unused = assigned - used - {"_", "__"}
             if unused:
-                issues.append({
-                    "type": "unused_variables",
-                    "message": f"사용되지 않는 변수: {', '.join(list(unused)[:3])}",
-                    "severity": "info"
-                })
+                issues.append(
+                    {
+                        "type": "unused_variables",
+                        "message": f"사용되지 않는 변수: {', '.join(list(unused)[:3])}",
+                        "severity": "info",
+                    }
+                )
 
         except SyntaxError as e:
-            issues.append({
-                "type": "syntax_error",
-                "message": f"구문 오류: {str(e)}",
-                "severity": "error"
-            })
+            issues.append(
+                {
+                    "type": "syntax_error",
+                    "message": f"구문 오류: {str(e)}",
+                    "severity": "error",
+                }
+            )
 
         return issues
 
-    def _analyze_complexity(self, code: str, language: str) -> Dict:
+    def _analyze_complexity(self, code: str, language: str) -> dict:
         """Analyze code complexity"""
         complexity = {
             "cyclomatic": 1,
             "cognitive": 0,
             "nesting_depth": 0,
             "function_count": 0,
-            "class_count": 0
+            "class_count": 0,
         }
 
         if language == "python":
@@ -416,9 +404,13 @@ class CodeAnalyzer:
         complexity = 1  # Base complexity
 
         decision_nodes = (
-            ast.If, ast.While, ast.For,
-            ast.ExceptHandler, ast.With,
-            ast.Assert, ast.comprehension
+            ast.If,
+            ast.While,
+            ast.For,
+            ast.ExceptHandler,
+            ast.With,
+            ast.Assert,
+            ast.comprehension,
         )
 
         for node in ast.walk(tree):
@@ -451,7 +443,7 @@ class CodeAnalyzer:
         max_depth = 0
         current_depth = 0
 
-        for line in code.split('\n'):
+        for line in code.split("\n"):
             stripped = line.lstrip()
             if not stripped:
                 continue
@@ -476,7 +468,7 @@ class CodeAnalyzer:
         else:
             return "F"
 
-    def _generate_suggestions(self, analysis: Dict) -> List[Dict]:
+    def _generate_suggestions(self, analysis: dict) -> list[dict]:
         """Generate improvement suggestions based on analysis"""
         suggestions = []
 
@@ -485,46 +477,58 @@ class CodeAnalyzer:
         if patterns:
             main_pattern = patterns[0]
             if main_pattern["confidence"] < 0.7:
-                suggestions.append({
-                    "type": "pattern_clarity",
-                    "priority": "medium",
-                    "message": "패턴이 명확하지 않습니다. 알고리즘 패턴을 더 명시적으로 구현하세요.",
-                    "pattern": main_pattern["pattern"]
-                })
+                suggestions.append(
+                    {
+                        "type": "pattern_clarity",
+                        "priority": "medium",
+                        "message": "패턴이 명확하지 않습니다. 알고리즘 패턴을 더 명시적으로 구현하세요.",
+                        "pattern": main_pattern["pattern"],
+                    }
+                )
 
         # Quality-based suggestions
         quality = analysis.get("quality", {})
         if quality.get("score", 100) < 70:
-            suggestions.append({
-                "type": "code_quality",
-                "priority": "high",
-                "message": "코드 품질 점수가 낮습니다. 코드 스멜을 수정하세요."
-            })
+            suggestions.append(
+                {
+                    "type": "code_quality",
+                    "priority": "high",
+                    "message": "코드 품질 점수가 낮습니다. 코드 스멜을 수정하세요.",
+                }
+            )
 
         # Complexity-based suggestions
         complexity = analysis.get("complexity", {})
         if complexity.get("cyclomatic", 0) > 10:
-            suggestions.append({
-                "type": "complexity",
-                "priority": "high",
-                "message": "순환 복잡도가 높습니다. 함수를 더 작은 단위로 분리하세요."
-            })
+            suggestions.append(
+                {
+                    "type": "complexity",
+                    "priority": "high",
+                    "message": "순환 복잡도가 높습니다. 함수를 더 작은 단위로 분리하세요.",
+                }
+            )
 
         if complexity.get("nesting_depth", 0) > 4:
-            suggestions.append({
-                "type": "nesting",
-                "priority": "medium",
-                "message": "중첩 깊이가 깊습니다. 조기 반환 패턴을 사용하세요."
-            })
+            suggestions.append(
+                {
+                    "type": "nesting",
+                    "priority": "medium",
+                    "message": "중첩 깊이가 깊습니다. 조기 반환 패턴을 사용하세요.",
+                }
+            )
 
         # Code smell suggestions
         for smell in analysis.get("code_smells", []):
             if smell["severity"] in ["error", "warning"]:
-                suggestions.append({
-                    "type": f"fix_{smell['type']}",
-                    "priority": "high" if smell["severity"] == "error" else "medium",
-                    "message": smell["message"]
-                })
+                suggestions.append(
+                    {
+                        "type": f"fix_{smell['type']}",
+                        "priority": "high"
+                        if smell["severity"] == "error"
+                        else "medium",
+                        "message": smell["message"],
+                    }
+                )
 
         # Sort by priority
         priority_order = {"high": 0, "medium": 1, "low": 2}
@@ -533,11 +537,8 @@ class CodeAnalyzer:
         return suggestions[:5]  # Return top 5 suggestions
 
     def compare_codes(
-        self,
-        code1: str,
-        code2: str,
-        language: str = "python"
-    ) -> Dict[str, Any]:
+        self, code1: str, code2: str, language: str = "python"
+    ) -> dict[str, Any]:
         """
         Compare two code snippets.
 
@@ -555,6 +556,7 @@ class CodeAnalyzer:
 
         # Calculate similarity
         import numpy as np
+
         similarity = float(np.dot(emb1, emb2))
 
         # Analyze both
@@ -568,22 +570,25 @@ class CodeAnalyzer:
             "code2_analysis": analysis2,
             "comparison": {
                 "lines_difference": (
-                    analysis1["lines_of_code"]["code"] -
-                    analysis2["lines_of_code"]["code"]
+                    analysis1["lines_of_code"]["code"]
+                    - analysis2["lines_of_code"]["code"]
                 ),
                 "complexity_difference": (
-                    analysis1["complexity"].get("cyclomatic", 0) -
-                    analysis2["complexity"].get("cyclomatic", 0)
+                    analysis1["complexity"].get("cyclomatic", 0)
+                    - analysis2["complexity"].get("cyclomatic", 0)
                 ),
                 "quality_difference": (
-                    analysis1["quality"].get("score", 0) -
-                    analysis2["quality"].get("score", 0)
+                    analysis1["quality"].get("score", 0)
+                    - analysis2["quality"].get("score", 0)
                 ),
                 "same_patterns": [
-                    p["pattern"] for p in analysis1["patterns"]
-                    if any(p2["pattern"] == p["pattern"] for p2 in analysis2["patterns"])
-                ]
-            }
+                    p["pattern"]
+                    for p in analysis1["patterns"]
+                    if any(
+                        p2["pattern"] == p["pattern"] for p2 in analysis2["patterns"]
+                    )
+                ],
+            },
         }
 
     def _interpret_similarity(self, similarity: float) -> str:
@@ -600,11 +605,8 @@ class CodeAnalyzer:
             return "다른 접근 방식입니다."
 
     def get_pattern_suggestion(
-        self,
-        code: str,
-        problem_description: str,
-        language: str = "python"
-    ) -> Dict[str, Any]:
+        self, code: str, problem_description: str, language: str = "python"
+    ) -> dict[str, Any]:
         """
         Suggest optimal pattern for given problem.
 
@@ -621,8 +623,7 @@ class CodeAnalyzer:
 
         # Find patterns matching problem description
         suggested_patterns = self.pattern_kb.find_similar_by_text(
-            problem_description,
-            top_k=3
+            problem_description, top_k=3
         )
 
         # Compare current vs suggested
@@ -631,17 +632,19 @@ class CodeAnalyzer:
 
         for sp in suggested_patterns:
             if sp["id"] not in current_names:
-                suggestions.append({
-                    "pattern": sp["id"],
-                    "pattern_ko": sp["name_ko"],
-                    "relevance": sp["similarity"],
-                    "description": sp["description_ko"],
-                    "example_code": sp["example_code"],
-                    "reason": f"이 문제는 {sp['name_ko']} 패턴이 효과적일 수 있습니다."
-                })
+                suggestions.append(
+                    {
+                        "pattern": sp["id"],
+                        "pattern_ko": sp["name_ko"],
+                        "relevance": sp["similarity"],
+                        "description": sp["description_ko"],
+                        "example_code": sp["example_code"],
+                        "reason": f"이 문제는 {sp['name_ko']} 패턴이 효과적일 수 있습니다.",
+                    }
+                )
 
         return {
             "current_patterns": current_patterns,
             "suggested_patterns": suggestions,
-            "recommendation": suggestions[0] if suggestions else None
+            "recommendation": suggestions[0] if suggestions else None,
         }

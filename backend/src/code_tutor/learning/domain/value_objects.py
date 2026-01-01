@@ -10,6 +10,7 @@ from code_tutor.shared.exceptions import ValidationError
 
 class Difficulty(str, Enum):
     """Problem difficulty levels"""
+
     EASY = "easy"
     MEDIUM = "medium"
     HARD = "hard"
@@ -17,6 +18,7 @@ class Difficulty(str, Enum):
 
 class SubmissionStatus(str, Enum):
     """Submission evaluation status"""
+
     PENDING = "pending"
     RUNNING = "running"
     ACCEPTED = "accepted"
@@ -29,6 +31,7 @@ class SubmissionStatus(str, Enum):
 
 class Category(str, Enum):
     """Problem categories (algorithm patterns)"""
+
     ARRAY = "array"
     STRING = "string"
     LINKED_LIST = "linked_list"

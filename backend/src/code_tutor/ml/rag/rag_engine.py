@@ -1,13 +1,12 @@
 """RAG Engine for Code Tutor AI - Retrieval-Augmented Generation"""
 
-from pathlib import Path
-from typing import List, Dict, Optional, Any
 import logging
+from typing import Any
 
-from code_tutor.ml.rag.vector_store import FAISSVectorStore
-from code_tutor.ml.rag.pattern_knowledge import PatternKnowledgeBase
-from code_tutor.ml.embeddings import TextEmbedder, CodeEmbedder
 from code_tutor.ml.config import get_ml_config
+from code_tutor.ml.embeddings import CodeEmbedder, TextEmbedder
+from code_tutor.ml.rag.pattern_knowledge import PatternKnowledgeBase
+from code_tutor.ml.rag.vector_store import FAISSVectorStore
 
 logger = logging.getLogger(__name__)
 
@@ -26,8 +25,8 @@ class RAGEngine:
     def __init__(
         self,
         config=None,
-        text_embedder: Optional[TextEmbedder] = None,
-        code_embedder: Optional[CodeEmbedder] = None
+        text_embedder: TextEmbedder | None = None,
+        code_embedder: CodeEmbedder | None = None,
     ):
         self.config = config or get_ml_config()
 
@@ -39,9 +38,7 @@ class RAGEngine:
         self._vector_store = None
 
         # Initialize pattern knowledge base
-        self._pattern_kb = PatternKnowledgeBase(
-            data_path=self.config.PATTERN_DATA_PATH
-        )
+        self._pattern_kb = PatternKnowledgeBase(data_path=self.config.PATTERN_DATA_PATH)
 
         # LLM will be lazily loaded
         self._llm = None
@@ -53,7 +50,7 @@ class RAGEngine:
         if self._text_embedder is None:
             self._text_embedder = TextEmbedder(
                 model_name=self.config.EMBEDDING_MODEL,
-                cache_dir=str(self.config.MODEL_CACHE_DIR)
+                cache_dir=str(self.config.MODEL_CACHE_DIR),
             )
         return self._text_embedder
 
@@ -63,7 +60,7 @@ class RAGEngine:
         if self._code_embedder is None:
             self._code_embedder = CodeEmbedder(
                 model_name=self.config.CODE_EMBEDDING_MODEL,
-                cache_dir=str(self.config.MODEL_CACHE_DIR)
+                cache_dir=str(self.config.MODEL_CACHE_DIR),
             )
         return self._code_embedder
 
@@ -74,7 +71,7 @@ class RAGEngine:
             self._vector_store = FAISSVectorStore(
                 dimension=self.config.EMBEDDING_DIMENSION,
                 metric="cosine",
-                index_path=self.config.FAISS_INDEX_PATH
+                index_path=self.config.FAISS_INDEX_PATH,
             )
         return self._vector_store
 
@@ -134,11 +131,8 @@ class RAGEngine:
         logger.info(f"Built index with {len(documents)} patterns")
 
     def retrieve(
-        self,
-        query: str,
-        top_k: int = None,
-        threshold: float = None
-    ) -> List[Dict]:
+        self, query: str, top_k: int = None, threshold: float = None
+    ) -> list[dict]:
         """
         Retrieve relevant patterns for a query.
 
@@ -169,14 +163,11 @@ class RAGEngine:
         for result in results:
             pattern = self._pattern_kb.get_pattern(result["id"])
             if pattern:
-                enriched_results.append({
-                    **pattern,
-                    "score": result["score"]
-                })
+                enriched_results.append({**pattern, "score": result["score"]})
 
         return enriched_results
 
-    def _match_by_keyword(self, query: str) -> List[Dict]:
+    def _match_by_keyword(self, query: str) -> list[dict]:
         """Match patterns by Korean/English keywords"""
         query_lower = query.lower()
 
@@ -248,8 +239,8 @@ class RAGEngine:
         code: str,
         language: str = "python",
         top_k: int = None,
-        threshold: float = None
-    ) -> List[Dict]:
+        threshold: float = None,
+    ) -> list[dict]:
         """
         Retrieve relevant patterns based on code similarity.
 
@@ -264,16 +255,13 @@ class RAGEngine:
         """
         # Build code embeddings if needed
         if self._pattern_kb._embeddings is None:
-            self._pattern_kb.build_embeddings(
-                self.text_embedder,
-                self.code_embedder
-            )
+            self._pattern_kb.build_embeddings(self.text_embedder, self.code_embedder)
 
         return self._pattern_kb.find_similar_by_code(
             code=code,
             language=language,
             top_k=top_k or self.config.RAG_TOP_K,
-            threshold=threshold or self.config.RAG_SIMILARITY_THRESHOLD
+            threshold=threshold or self.config.RAG_SIMILARITY_THRESHOLD,
         )
 
     def _get_llm(self):
@@ -291,8 +279,12 @@ class RAGEngine:
     def _create_local_llm(self):
         """Create local LLM (EEVE-Korean)"""
         try:
-            from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
             import torch
+            from transformers import (
+                AutoModelForCausalLM,
+                AutoTokenizer,
+                BitsAndBytesConfig,
+            )
 
             logger.info(f"Loading local LLM: {self.config.LOCAL_LLM_MODEL}")
 
@@ -301,19 +293,18 @@ class RAGEngine:
                 load_in_4bit=True,
                 bnb_4bit_compute_dtype=torch.float16,
                 bnb_4bit_use_double_quant=True,
-                bnb_4bit_quant_type="nf4"
+                bnb_4bit_quant_type="nf4",
             )
 
             tokenizer = AutoTokenizer.from_pretrained(
-                self.config.LOCAL_LLM_MODEL,
-                cache_dir=str(self.config.MODEL_CACHE_DIR)
+                self.config.LOCAL_LLM_MODEL, cache_dir=str(self.config.MODEL_CACHE_DIR)
             )
 
             model = AutoModelForCausalLM.from_pretrained(
                 self.config.LOCAL_LLM_MODEL,
                 quantization_config=quantization_config,
                 device_map="auto",
-                cache_dir=str(self.config.MODEL_CACHE_DIR)
+                cache_dir=str(self.config.MODEL_CACHE_DIR),
             )
 
             return {"model": model, "tokenizer": tokenizer, "type": "local"}
@@ -342,9 +333,9 @@ class RAGEngine:
     def generate(
         self,
         query: str,
-        context: Optional[List[Dict]] = None,
-        system_prompt: Optional[str] = None,
-        max_tokens: int = 512
+        context: list[dict] | None = None,
+        system_prompt: str | None = None,
+        max_tokens: int = 512,
     ) -> str:
         """
         Generate response using RAG.
@@ -394,7 +385,7 @@ class RAGEngine:
             # The 2.8B model struggles with context-following
             return self._generate_fallback(query, context)
 
-    def _build_context_string(self, patterns: List[Dict]) -> str:
+    def _build_context_string(self, patterns: list[dict]) -> str:
         """Build context string from patterns"""
         if not patterns:
             return "관련 패턴이 없습니다."
@@ -402,29 +393,31 @@ class RAGEngine:
         parts = []
         for i, pattern in enumerate(patterns, 1):
             parts.append(f"""
-### {i}. {pattern['name']} ({pattern['name_ko']})
-- 설명: {pattern['description_ko']}
-- 시간 복잡도: {pattern['time_complexity']}
-- 공간 복잡도: {pattern['space_complexity']}
-- 활용 사례: {', '.join(pattern['use_cases'])}
+### {i}. {pattern["name"]} ({pattern["name_ko"]})
+- 설명: {pattern["description_ko"]}
+- 시간 복잡도: {pattern["time_complexity"]}
+- 공간 복잡도: {pattern["space_complexity"]}
+- 활용 사례: {", ".join(pattern["use_cases"])}
 
 ```python
-{pattern['example_code']}
+{pattern["example_code"]}
 ```
 """)
         return "\n".join(parts)
 
-    def _generate_openai(self, client, system_prompt: str, query: str, max_tokens: int) -> str:
+    def _generate_openai(
+        self, client, system_prompt: str, query: str, max_tokens: int
+    ) -> str:
         """Generate using OpenAI API"""
         try:
             response = client.chat.completions.create(
                 model=self.config.OPENAI_MODEL,
                 messages=[
                     {"role": "system", "content": system_prompt},
-                    {"role": "user", "content": query}
+                    {"role": "user", "content": query},
                 ],
                 max_tokens=max_tokens,
-                temperature=0.7
+                temperature=0.7,
             )
             return response.choices[0].message.content
 
@@ -432,7 +425,9 @@ class RAGEngine:
             logger.error(f"OpenAI generation failed: {e}")
             return self._generate_fallback(query, [])
 
-    def _generate_local(self, llm: Dict, system_prompt: str, query: str, max_tokens: int) -> str:
+    def _generate_local(
+        self, llm: dict, system_prompt: str, query: str, max_tokens: int
+    ) -> str:
         """Generate using local LLM"""
         try:
             model = llm["model"]
@@ -454,7 +449,7 @@ A: 위 패턴 정보를 바탕으로 설명드리겠습니다.
                 top_p=0.85,
                 top_k=40,
                 repetition_penalty=1.2,
-                pad_token_id=tokenizer.eos_token_id
+                pad_token_id=tokenizer.eos_token_id,
             )
 
             response = tokenizer.decode(outputs[0], skip_special_tokens=True)
@@ -472,7 +467,7 @@ A: 위 패턴 정보를 바탕으로 설명드리겠습니다.
             logger.error(f"Local LLM generation failed: {e}")
             return self._generate_fallback(query, [])
 
-    def _generate_fallback(self, query: str, context: List[Dict]) -> str:
+    def _generate_fallback(self, query: str, context: list[dict]) -> str:
         """Generate response using pattern data directly (more reliable than LLM)"""
         if not context:
             return f"죄송합니다. '{query}'에 대한 관련 패턴을 찾지 못했습니다."
@@ -492,36 +487,37 @@ A: 위 패턴 정보를 바탕으로 설명드리겠습니다.
             "### 언제 사용하나요?",
         ]
 
-        for use_case in pattern['use_cases']:
+        for use_case in pattern["use_cases"]:
             response_parts.append(f"- {use_case}")
 
-        response_parts.extend([
-            "",
-            "### 예제 코드",
-            "```python",
-            pattern['example_code'],
-            "```",
-            "",
-            f"**관련 키워드**: {', '.join(pattern['keywords'])}",
-        ])
+        response_parts.extend(
+            [
+                "",
+                "### 예제 코드",
+                "```python",
+                pattern["example_code"],
+                "```",
+                "",
+                f"**관련 키워드**: {', '.join(pattern['keywords'])}",
+            ]
+        )
 
         # Add related patterns if available
         if len(context) > 1:
-            response_parts.extend([
-                "",
-                "### 관련 패턴",
-            ])
+            response_parts.extend(
+                [
+                    "",
+                    "### 관련 패턴",
+                ]
+            )
             for p in context[1:3]:
                 response_parts.append(f"- **{p['name_ko']}**: {p['description_ko']}")
 
         return "\n".join(response_parts)
 
     def analyze_code(
-        self,
-        code: str,
-        language: str = "python",
-        analysis_type: str = "pattern"
-    ) -> Dict[str, Any]:
+        self, code: str, language: str = "python", analysis_type: str = "pattern"
+    ) -> dict[str, Any]:
         """
         Analyze code and identify patterns.
 
@@ -539,28 +535,28 @@ A: 위 패턴 정보를 바탕으로 설명드리겠습니다.
         result = {
             "detected_patterns": [],
             "suggestions": [],
-            "complexity_estimate": None
+            "complexity_estimate": None,
         }
 
         for pattern in patterns:
             if pattern.get("similarity", 0) > 0.7:
-                result["detected_patterns"].append({
-                    "pattern": pattern["name"],
-                    "pattern_ko": pattern["name_ko"],
-                    "confidence": pattern["similarity"],
-                    "description": pattern["description_ko"]
-                })
+                result["detected_patterns"].append(
+                    {
+                        "pattern": pattern["name"],
+                        "pattern_ko": pattern["name_ko"],
+                        "confidence": pattern["similarity"],
+                        "description": pattern["description_ko"],
+                    }
+                )
 
         # Generate suggestions based on patterns
         if result["detected_patterns"]:
             main_pattern = result["detected_patterns"][0]
-            full_pattern = self._pattern_kb.get_pattern(
-                patterns[0]["id"]
-            )
+            full_pattern = self._pattern_kb.get_pattern(patterns[0]["id"])
             if full_pattern:
                 result["complexity_estimate"] = {
                     "time": full_pattern["time_complexity"],
-                    "space": full_pattern["space_complexity"]
+                    "space": full_pattern["space_complexity"],
                 }
 
                 # Suggest related patterns
@@ -571,10 +567,8 @@ A: 위 패턴 정보를 바탕으로 설명드리겠습니다.
         return result
 
     def get_pattern_explanation(
-        self,
-        pattern_id: str,
-        detail_level: str = "medium"
-    ) -> Dict[str, Any]:
+        self, pattern_id: str, detail_level: str = "medium"
+    ) -> dict[str, Any]:
         """
         Get detailed explanation of a pattern.
 
@@ -596,8 +590,8 @@ A: 위 패턴 정보를 바탕으로 설명드리겠습니다.
             "use_cases": pattern["use_cases"],
             "complexity": {
                 "time": pattern["time_complexity"],
-                "space": pattern["space_complexity"]
-            }
+                "space": pattern["space_complexity"],
+            },
         }
 
         if detail_level in ["medium", "detailed"]:
@@ -608,9 +602,7 @@ A: 위 패턴 정보를 바탕으로 설명드리겠습니다.
             # Generate additional explanation using LLM
             query = f"{pattern['name_ko']} 패턴에 대해 상세히 설명해주세요."
             explanation["detailed_explanation"] = self.generate(
-                query,
-                context=[pattern],
-                max_tokens=1024
+                query, context=[pattern], max_tokens=1024
             )
 
         return explanation
@@ -630,6 +622,7 @@ A: 위 패턴 정보를 바탕으로 설명드리겠습니다.
             del self._llm["tokenizer"]
 
             import torch
+
             if torch.cuda.is_available():
                 torch.cuda.empty_cache()
 

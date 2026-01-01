@@ -3,13 +3,13 @@
 import asyncio
 from uuid import uuid4
 
-from code_tutor.shared.infrastructure.database import get_session_context, init_db
-from code_tutor.learning.infrastructure.models import ProblemModel, TestCaseModel, SubmissionModel
-from code_tutor.learning.domain.value_objects import Category, Difficulty
 # Import all models for proper table creation
-from code_tutor.identity.infrastructure.models import UserModel
-from code_tutor.tutor.infrastructure.models import ConversationModel, MessageModel
-
+from code_tutor.learning.domain.value_objects import Category, Difficulty
+from code_tutor.learning.infrastructure.models import (
+    ProblemModel,
+    TestCaseModel,
+)
+from code_tutor.shared.infrastructure.database import get_session_context, init_db
 
 SEED_PROBLEMS = [
     {
@@ -76,7 +76,11 @@ if __name__ == "__main__":
         "time_limit_ms": 5000,
         "memory_limit_mb": 256,
         "test_cases": [
-            {"input": "[2, 7, 11, 15]\n9", "expected_output": "[0, 1]", "is_sample": True},
+            {
+                "input": "[2, 7, 11, 15]\n9",
+                "expected_output": "[0, 1]",
+                "is_sample": True,
+            },
             {"input": "[3, 2, 4]\n6", "expected_output": "[1, 2]", "is_sample": True},
             {"input": "[3, 3]\n6", "expected_output": "[0, 1]", "is_sample": False},
         ],
@@ -218,8 +222,16 @@ if __name__ == "__main__":
         "time_limit_ms": 5000,
         "memory_limit_mb": 256,
         "test_cases": [
-            {"input": "[-1, 0, 3, 5, 9, 12]\n9", "expected_output": "4", "is_sample": True},
-            {"input": "[-1, 0, 3, 5, 9, 12]\n2", "expected_output": "-1", "is_sample": True},
+            {
+                "input": "[-1, 0, 3, 5, 9, 12]\n9",
+                "expected_output": "4",
+                "is_sample": True,
+            },
+            {
+                "input": "[-1, 0, 3, 5, 9, 12]\n2",
+                "expected_output": "-1",
+                "is_sample": True,
+            },
             {"input": "[5]\n5", "expected_output": "0", "is_sample": False},
         ],
     },
@@ -285,7 +297,11 @@ if __name__ == "__main__":
         "time_limit_ms": 5000,
         "memory_limit_mb": 256,
         "test_cases": [
-            {"input": "[-2, 1, -3, 4, -1, 2, 1, -5, 4]", "expected_output": "6", "is_sample": True},
+            {
+                "input": "[-2, 1, -3, 4, -1, 2, 1, -5, 4]",
+                "expected_output": "6",
+                "is_sample": True,
+            },
             {"input": "[1]", "expected_output": "1", "is_sample": True},
             {"input": "[5, 4, -1, 7, 8]", "expected_output": "23", "is_sample": False},
         ],
@@ -365,8 +381,16 @@ if __name__ == "__main__":
         "time_limit_ms": 5000,
         "memory_limit_mb": 256,
         "test_cases": [
-            {"input": '[[\"1\",\"1\",\"0\",\"0\",\"0\"],[\"1\",\"1\",\"0\",\"0\",\"0\"],[\"0\",\"0\",\"1\",\"0\",\"0\"],[\"0\",\"0\",\"0\",\"1\",\"1\"]]', "expected_output": "3", "is_sample": True},
-            {"input": '[[\"1\",\"1\",\"1\"],[\"0\",\"1\",\"0\"],[\"1\",\"1\",\"1\"]]', "expected_output": "1", "is_sample": True},
+            {
+                "input": '[["1","1","0","0","0"],["1","1","0","0","0"],["0","0","1","0","0"],["0","0","0","1","1"]]',
+                "expected_output": "3",
+                "is_sample": True,
+            },
+            {
+                "input": '[["1","1","1"],["0","1","0"],["1","1","1"]]',
+                "expected_output": "1",
+                "is_sample": True,
+            },
         ],
     },
     {
@@ -432,9 +456,17 @@ if __name__ == "__main__":
         "time_limit_ms": 5000,
         "memory_limit_mb": 256,
         "test_cases": [
-            {"input": "[10, 9, 2, 5, 3, 7, 101, 18]", "expected_output": "4", "is_sample": True},
+            {
+                "input": "[10, 9, 2, 5, 3, 7, 101, 18]",
+                "expected_output": "4",
+                "is_sample": True,
+            },
             {"input": "[0, 1, 0, 3, 2, 3]", "expected_output": "4", "is_sample": True},
-            {"input": "[7, 7, 7, 7, 7, 7, 7]", "expected_output": "1", "is_sample": False},
+            {
+                "input": "[7, 7, 7, 7, 7, 7, 7]",
+                "expected_output": "1",
+                "is_sample": False,
+            },
         ],
     },
     {
@@ -577,7 +609,11 @@ def solution(root: TreeNode) -> list[list[int]]:
         "time_limit_ms": 5000,
         "memory_limit_mb": 256,
         "test_cases": [
-            {"input": "[3, 9, 20, null, null, 15, 7]", "expected_output": "[[3], [9, 20], [15, 7]]", "is_sample": True},
+            {
+                "input": "[3, 9, 20, null, null, 15, 7]",
+                "expected_output": "[[3], [9, 20], [15, 7]]",
+                "is_sample": True,
+            },
             {"input": "[1]", "expected_output": "[[1]]", "is_sample": True},
             {"input": "[]", "expected_output": "[]", "is_sample": False},
         ],
@@ -637,7 +673,11 @@ if __name__ == "__main__":
         "time_limit_ms": 5000,
         "memory_limit_mb": 256,
         "test_cases": [
-            {"input": "[[0, 30], [5, 10], [15, 20]]", "expected_output": "2", "is_sample": True},
+            {
+                "input": "[[0, 30], [5, 10], [15, 20]]",
+                "expected_output": "2",
+                "is_sample": True,
+            },
             {"input": "[[7, 10], [2, 4]]", "expected_output": "2", "is_sample": True},
         ],
     },
@@ -760,7 +800,11 @@ if __name__ == "__main__":
         "time_limit_ms": 5000,
         "memory_limit_mb": 256,
         "test_cases": [
-            {"input": "[2, 1, 5, 1, 3, 2]\n3", "expected_output": "9", "is_sample": True},
+            {
+                "input": "[2, 1, 5, 1, 3, 2]\n3",
+                "expected_output": "9",
+                "is_sample": True,
+            },
             {"input": "[2, 3, 4, 1, 5]\n2", "expected_output": "7", "is_sample": True},
             {"input": "[1]\n1", "expected_output": "1", "is_sample": False},
         ],
@@ -883,8 +927,16 @@ def solution(nums: list[int], k: int) -> int:
         "time_limit_ms": 5000,
         "memory_limit_mb": 256,
         "test_cases": [
-            {"input": "[3, 2, 1, 5, 6, 4]\n2", "expected_output": "5", "is_sample": True},
-            {"input": "[3, 2, 3, 1, 2, 4, 5, 5, 6]\n4", "expected_output": "4", "is_sample": True},
+            {
+                "input": "[3, 2, 1, 5, 6, 4]\n2",
+                "expected_output": "5",
+                "is_sample": True,
+            },
+            {
+                "input": "[3, 2, 3, 1, 2, 4, 5, 5, 6]\n4",
+                "expected_output": "4",
+                "is_sample": True,
+            },
             {"input": "[1]\n1", "expected_output": "1", "is_sample": False},
         ],
     },
@@ -936,7 +988,11 @@ if __name__ == "__main__":
         "time_limit_ms": 5000,
         "memory_limit_mb": 256,
         "test_cases": [
-            {"input": "[1, 2, 3]", "expected_output": "[[], [1], [2], [1, 2], [3], [1, 3], [2, 3], [1, 2, 3]]", "is_sample": True},
+            {
+                "input": "[1, 2, 3]",
+                "expected_output": "[[], [1], [2], [1, 2], [3], [1, 3], [2, 3], [1, 2, 3]]",
+                "is_sample": True,
+            },
             {"input": "[0]", "expected_output": "[[], [0]]", "is_sample": True},
         ],
     },
@@ -988,8 +1044,16 @@ if __name__ == "__main__":
         "time_limit_ms": 5000,
         "memory_limit_mb": 256,
         "test_cases": [
-            {"input": '["h", "e", "l", "l", "o"]', "expected_output": '["o", "l", "l", "e", "h"]', "is_sample": True},
-            {"input": '["H", "a", "n", "n", "a", "h"]', "expected_output": '["h", "a", "n", "n", "a", "H"]', "is_sample": True},
+            {
+                "input": '["h", "e", "l", "l", "o"]',
+                "expected_output": '["o", "l", "l", "e", "h"]',
+                "is_sample": True,
+            },
+            {
+                "input": '["H", "a", "n", "n", "a", "h"]',
+                "expected_output": '["h", "a", "n", "n", "a", "H"]',
+                "is_sample": True,
+            },
         ],
     },
     {
@@ -1041,9 +1105,21 @@ if __name__ == "__main__":
         "time_limit_ms": 5000,
         "memory_limit_mb": 256,
         "test_cases": [
-            {"input": "[4, 5, 2, 25]", "expected_output": "[5, 25, 25, -1]", "is_sample": True},
-            {"input": "[1, 2, 3, 4]", "expected_output": "[2, 3, 4, -1]", "is_sample": True},
-            {"input": "[4, 3, 2, 1]", "expected_output": "[-1, -1, -1, -1]", "is_sample": False},
+            {
+                "input": "[4, 5, 2, 25]",
+                "expected_output": "[5, 25, 25, -1]",
+                "is_sample": True,
+            },
+            {
+                "input": "[1, 2, 3, 4]",
+                "expected_output": "[2, 3, 4, -1]",
+                "is_sample": True,
+            },
+            {
+                "input": "[4, 3, 2, 1]",
+                "expected_output": "[-1, -1, -1, -1]",
+                "is_sample": False,
+            },
         ],
     },
     # === NEW PROBLEMS TO COVER ALL PATTERNS ===
@@ -1154,7 +1230,11 @@ def solution(head: ListNode) -> ListNode:
         "time_limit_ms": 5000,
         "memory_limit_mb": 256,
         "test_cases": [
-            {"input": "[1, 2, 3, 4, 5]", "expected_output": "[5, 4, 3, 2, 1]", "is_sample": True},
+            {
+                "input": "[1, 2, 3, 4, 5]",
+                "expected_output": "[5, 4, 3, 2, 1]",
+                "is_sample": True,
+            },
             {"input": "[1, 2]", "expected_output": "[2, 1]", "is_sample": True},
             {"input": "[]", "expected_output": "[]", "is_sample": False},
         ],
@@ -1214,7 +1294,11 @@ def solution(root: TreeNode) -> int:
         "time_limit_ms": 5000,
         "memory_limit_mb": 256,
         "test_cases": [
-            {"input": "[3, 9, 20, null, null, 15, 7]", "expected_output": "3", "is_sample": True},
+            {
+                "input": "[3, 9, 20, null, null, 15, 7]",
+                "expected_output": "3",
+                "is_sample": True,
+            },
             {"input": "[1, null, 2]", "expected_output": "2", "is_sample": True},
             {"input": "[]", "expected_output": "0", "is_sample": False},
         ],
@@ -1294,7 +1378,11 @@ class MedianFinder:
         "time_limit_ms": 5000,
         "memory_limit_mb": 256,
         "test_cases": [
-            {"input": "[[1,2],[],[3],[]]", "expected_output": "[null,null,1.5,null,2.0]", "is_sample": True},
+            {
+                "input": "[[1,2],[],[3],[]]",
+                "expected_output": "[null,null,1.5,null,2.0]",
+                "is_sample": True,
+            },
         ],
     },
     {
@@ -1364,7 +1452,11 @@ def solution(lists: list[ListNode]) -> ListNode:
         "time_limit_ms": 5000,
         "memory_limit_mb": 256,
         "test_cases": [
-            {"input": "[[1,4,5],[1,3,4],[2,6]]", "expected_output": "[1,1,2,3,4,4,5,6]", "is_sample": True},
+            {
+                "input": "[[1,4,5],[1,3,4],[2,6]]",
+                "expected_output": "[1,1,2,3,4,4,5,6]",
+                "is_sample": True,
+            },
             {"input": "[]", "expected_output": "[]", "is_sample": True},
             {"input": "[[]]", "expected_output": "[]", "is_sample": False},
         ],
@@ -1435,7 +1527,11 @@ def solution(numCourses: int, prerequisites: list[list[int]]) -> list[int]:
         "time_limit_ms": 5000,
         "memory_limit_mb": 256,
         "test_cases": [
-            {"input": "4\n[[1,0],[2,0],[3,1],[3,2]]", "expected_output": "[0, 1, 2, 3]", "is_sample": True},
+            {
+                "input": "4\n[[1,0],[2,0],[3,1],[3,2]]",
+                "expected_output": "[0, 1, 2, 3]",
+                "is_sample": True,
+            },
             {"input": "2\n[[1,0]]", "expected_output": "[0, 1]", "is_sample": True},
             {"input": "2\n[[1,0],[0,1]]", "expected_output": "[]", "is_sample": False},
         ],
@@ -1493,8 +1589,16 @@ if __name__ == "__main__":
         "time_limit_ms": 5000,
         "memory_limit_mb": 256,
         "test_cases": [
-            {"input": "[1, 2, 3]\n[6, 10, 12]\n5", "expected_output": "22", "is_sample": True},
-            {"input": "[1, 3, 4, 5]\n[1, 4, 5, 7]\n7", "expected_output": "9", "is_sample": True},
+            {
+                "input": "[1, 2, 3]\n[6, 10, 12]\n5",
+                "expected_output": "22",
+                "is_sample": True,
+            },
+            {
+                "input": "[1, 3, 4, 5]\n[1, 4, 5, 7]\n7",
+                "expected_output": "9",
+                "is_sample": True,
+            },
         ],
     },
     {
@@ -1787,9 +1891,21 @@ if __name__ == "__main__":
         "time_limit_ms": 5000,
         "memory_limit_mb": 256,
         "test_cases": [
-            {"input": "[-2, 0, 3, -5, 2, -1]\n0\n2", "expected_output": "1", "is_sample": True},
-            {"input": "[-2, 0, 3, -5, 2, -1]\n2\n5", "expected_output": "-1", "is_sample": True},
-            {"input": "[-2, 0, 3, -5, 2, -1]\n0\n5", "expected_output": "-3", "is_sample": False},
+            {
+                "input": "[-2, 0, 3, -5, 2, -1]\n0\n2",
+                "expected_output": "1",
+                "is_sample": True,
+            },
+            {
+                "input": "[-2, 0, 3, -5, 2, -1]\n2\n5",
+                "expected_output": "-1",
+                "is_sample": True,
+            },
+            {
+                "input": "[-2, 0, 3, -5, 2, -1]\n0\n5",
+                "expected_output": "-3",
+                "is_sample": False,
+            },
         ],
     },
     {
@@ -1858,7 +1974,11 @@ def solution(n: int, edges: list[list[int]], start: int) -> list[int]:
         "time_limit_ms": 5000,
         "memory_limit_mb": 256,
         "test_cases": [
-            {"input": "4\n[[0,1,1],[0,2,4],[1,2,2],[1,3,5],[2,3,1]]\n0", "expected_output": "[0, 1, 3, 4]", "is_sample": True},
+            {
+                "input": "4\n[[0,1,1],[0,2,4],[1,2,2],[1,3,5],[2,3,1]]\n0",
+                "expected_output": "[0, 1, 3, 4]",
+                "is_sample": True,
+            },
         ],
     },
     {
@@ -1975,7 +2095,11 @@ if __name__ == "__main__":
         "time_limit_ms": 5000,
         "memory_limit_mb": 256,
         "test_cases": [
-            {"input": "[1,2,3,0,0,0]\n3\n[2,5,6]\n3", "expected_output": "[1, 2, 2, 3, 5, 6]", "is_sample": True},
+            {
+                "input": "[1,2,3,0,0,0]\n3\n[2,5,6]\n3",
+                "expected_output": "[1, 2, 2, 3, 5, 6]",
+                "is_sample": True,
+            },
             {"input": "[1]\n1\n[]\n0", "expected_output": "[1]", "is_sample": True},
         ],
     },
@@ -2176,8 +2300,12 @@ def solution(root: TreeNode) -> list[str]:
         "time_limit_ms": 5000,
         "memory_limit_mb": 256,
         "test_cases": [
-            {"input": "[1, 2, 3, null, 5]", "expected_output": "[\"1->2->5\", \"1->3\"]", "is_sample": True},
-            {"input": "[1]", "expected_output": "[\"1\"]", "is_sample": True},
+            {
+                "input": "[1, 2, 3, null, 5]",
+                "expected_output": '["1->2->5", "1->3"]',
+                "is_sample": True,
+            },
+            {"input": "[1]", "expected_output": '["1"]', "is_sample": True},
         ],
     },
     {
@@ -2296,8 +2424,16 @@ if __name__ == "__main__":
         "time_limit_ms": 5000,
         "memory_limit_mb": 256,
         "test_cases": [
-            {"input": "[[1,3],[2,6],[8,10],[15,18]]", "expected_output": "[[1, 6], [8, 10], [15, 18]]", "is_sample": True},
-            {"input": "[[1,4],[4,5]]", "expected_output": "[[1, 5]]", "is_sample": True},
+            {
+                "input": "[[1,3],[2,6],[8,10],[15,18]]",
+                "expected_output": "[[1, 6], [8, 10], [15, 18]]",
+                "is_sample": True,
+            },
+            {
+                "input": "[[1,4],[4,5]]",
+                "expected_output": "[[1, 5]]",
+                "is_sample": True,
+            },
         ],
     },
     {
@@ -2356,8 +2492,16 @@ if __name__ == "__main__":
         "time_limit_ms": 5000,
         "memory_limit_mb": 256,
         "test_cases": [
-            {"input": "[2,3,6,7]\n7", "expected_output": "[[2, 2, 3], [7]]", "is_sample": True},
-            {"input": "[2,3,5]\n8", "expected_output": "[[2, 2, 2, 2], [2, 3, 3], [3, 5]]", "is_sample": True},
+            {
+                "input": "[2,3,6,7]\n7",
+                "expected_output": "[[2, 2, 3], [7]]",
+                "is_sample": True,
+            },
+            {
+                "input": "[2,3,5]\n8",
+                "expected_output": "[[2, 2, 2, 2], [2, 3, 3], [3, 5]]",
+                "is_sample": True,
+            },
         ],
     },
     {
@@ -2502,7 +2646,11 @@ def solution(root: TreeNode) -> list[list[int]]:
         "time_limit_ms": 5000,
         "memory_limit_mb": 256,
         "test_cases": [
-            {"input": "[3, 9, 20, null, null, 15, 7]", "expected_output": "[[3], [20, 9], [15, 7]]", "is_sample": True},
+            {
+                "input": "[3, 9, 20, null, null, 15, 7]",
+                "expected_output": "[[3], [20, 9], [15, 7]]",
+                "is_sample": True,
+            },
             {"input": "[1]", "expected_output": "[[1]]", "is_sample": True},
             {"input": "[]", "expected_output": "[]", "is_sample": False},
         ],
@@ -2559,7 +2707,11 @@ if __name__ == "__main__":
         "time_limit_ms": 5000,
         "memory_limit_mb": 256,
         "test_cases": [
-            {"input": "[4,3,2,7,8,2,3,1]", "expected_output": "[2, 3]", "is_sample": True},
+            {
+                "input": "[4,3,2,7,8,2,3,1]",
+                "expected_output": "[2, 3]",
+                "is_sample": True,
+            },
             {"input": "[1,1,2]", "expected_output": "[1]", "is_sample": True},
             {"input": "[1]", "expected_output": "[]", "is_sample": False},
         ],
@@ -2629,8 +2781,16 @@ def solution(nums1: list[int], nums2: list[int], k: int) -> list[list[int]]:
         "time_limit_ms": 5000,
         "memory_limit_mb": 256,
         "test_cases": [
-            {"input": "[1,7,11]\n[2,4,6]\n3", "expected_output": "[[1, 2], [1, 4], [1, 6]]", "is_sample": True},
-            {"input": "[1,1,2]\n[1,2,3]\n2", "expected_output": "[[1, 1], [1, 1]]", "is_sample": True},
+            {
+                "input": "[1,7,11]\n[2,4,6]\n3",
+                "expected_output": "[[1, 2], [1, 4], [1, 6]]",
+                "is_sample": True,
+            },
+            {
+                "input": "[1,1,2]\n[1,2,3]\n2",
+                "expected_output": "[[1, 1], [1, 1]]",
+                "is_sample": True,
+            },
         ],
     },
 ]
@@ -2641,7 +2801,7 @@ async def seed_problems(force: bool = False):
     await init_db()
 
     async with get_session_context() as session:
-        from sqlalchemy import select, func, delete
+        from sqlalchemy import delete, func, select
 
         if force:
             # Delete all existing problems and related data
@@ -2698,10 +2858,13 @@ async def seed_problems(force: bool = False):
                 session.add(test_case)
 
         await session.commit()
-        print(f"Successfully seeded {len(SEED_PROBLEMS)} problems with pattern information.")
+        print(
+            f"Successfully seeded {len(SEED_PROBLEMS)} problems with pattern information."
+        )
 
 
 if __name__ == "__main__":
     import sys
+
     force = "--force" in sys.argv
     asyncio.run(seed_problems(force=force))

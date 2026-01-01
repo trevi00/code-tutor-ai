@@ -11,7 +11,6 @@ from code_tutor.identity.domain.value_objects import (
     Email,
     HashedPassword,
     Username,
-    UserRole,
 )
 from code_tutor.identity.infrastructure.models import UserModel
 
@@ -46,7 +45,9 @@ class SQLAlchemyUserRepository(UserRepository):
             id=entity.id,
             email=str(entity.email) if entity.email else "",
             username=str(entity.username) if entity.username else "",
-            hashed_password=entity.hashed_password.value if entity.hashed_password else "",
+            hashed_password=entity.hashed_password.value
+            if entity.hashed_password
+            else "",
             role=entity.role,
             is_active=entity.is_active,
             is_verified=entity.is_verified,

@@ -3,16 +3,16 @@
 from datetime import datetime
 from uuid import UUID
 
+from code_tutor.learning.domain.events import (
+    ProblemCreated,
+    SubmissionCreated,
+    SubmissionEvaluated,
+)
 from code_tutor.learning.domain.value_objects import (
     Category,
     Difficulty,
     SubmissionStatus,
     TestResult,
-)
-from code_tutor.learning.domain.events import (
-    ProblemCreated,
-    SubmissionCreated,
-    SubmissionEvaluated,
 )
 from code_tutor.shared.domain.base import AggregateRoot, Entity
 
@@ -247,6 +247,7 @@ class Problem(AggregateRoot):
         """Publish the problem"""
         if not self._test_cases:
             from code_tutor.shared.exceptions import DomainError
+
             raise DomainError("Problem must have at least one test case")
         self._is_published = True
         self._touch()

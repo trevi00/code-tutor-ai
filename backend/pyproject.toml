@@ -77,11 +77,19 @@ packages = ["src/code_tutor"]
 
 [tool.ruff]
 line-length = 88
-select = ["E", "F", "I", "N", "W", "UP"]
-ignore = ["E501"]
 target-version = "py311"
 
-[tool.ruff.isort]
+[tool.ruff.lint]
+select = ["E", "F", "I", "N", "W", "UP"]
+ignore = [
+    "E501",   # Line too long
+    "E712",   # Comparison to True (needed for SQLAlchemy)
+    "N803",   # Argument name should be lowercase (ML convention: X, y)
+    "N806",   # Variable name should be lowercase (ML convention: X_train)
+    "N818",   # Exception name should end with Error
+]
+
+[tool.ruff.lint.isort]
 known-first-party = ["code_tutor"]
 
 [tool.mypy]
@@ -112,3 +120,8 @@ exclude_lines = [
     "if TYPE_CHECKING:",
 ]
 fail_under = 70
+
+[dependency-groups]
+dev = [
+    "ruff>=0.14.10",
+]

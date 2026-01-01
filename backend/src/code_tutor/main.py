@@ -1,24 +1,24 @@
 """FastAPI main application"""
 
+from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
-from typing import AsyncGenerator
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from code_tutor.shared.config import get_settings
-from code_tutor.shared.middleware import RateLimitMiddleware
-from code_tutor.shared.exception_handlers import register_exception_handlers
-from code_tutor.shared.infrastructure.database import close_db, init_db
-from code_tutor.shared.infrastructure.logging import configure_logging, get_logger
-from code_tutor.shared.infrastructure.redis import close_redis
-from code_tutor.shared.api_response import success_response
+from code_tutor.execution.interface.routes import router as execution_router
 
 # Import routers
 from code_tutor.identity.interface.routes import router as auth_router
 from code_tutor.learning.interface.routes import router as learning_router
+from code_tutor.shared.api_response import success_response
+from code_tutor.shared.config import get_settings
+from code_tutor.shared.exception_handlers import register_exception_handlers
+from code_tutor.shared.infrastructure.database import close_db, init_db
+from code_tutor.shared.infrastructure.logging import configure_logging, get_logger
+from code_tutor.shared.infrastructure.redis import close_redis
+from code_tutor.shared.middleware import RateLimitMiddleware
 from code_tutor.tutor.interface.routes import router as tutor_router
-from code_tutor.execution.interface.routes import router as execution_router
 
 logger = get_logger(__name__)
 
@@ -97,21 +97,25 @@ def create_app() -> FastAPI:
     @app.get("/api/health", tags=["Health"])
     async def health_check() -> dict:
         """Health check endpoint"""
-        return success_response({
-            "status": "healthy",
-            "version": settings.APP_VERSION,
-            "environment": settings.ENVIRONMENT,
-        })
+        return success_response(
+            {
+                "status": "healthy",
+                "version": settings.APP_VERSION,
+                "environment": settings.ENVIRONMENT,
+            }
+        )
 
     # Root endpoint
     @app.get("/", tags=["Root"])
     async def root() -> dict:
         """Root endpoint"""
-        return success_response({
-            "name": settings.APP_NAME,
-            "version": settings.APP_VERSION,
-            "docs": "/docs" if settings.DEBUG else "disabled",
-        })
+        return success_response(
+            {
+                "name": settings.APP_NAME,
+                "version": settings.APP_VERSION,
+                "docs": "/docs" if settings.DEBUG else "disabled",
+            }
+        )
 
     return app
 

@@ -4,7 +4,7 @@ from typing import Annotated, Any
 
 from fastapi import APIRouter, Depends
 
-from code_tutor.execution.application.dto import ExecuteCodeRequest, ExecuteCodeResponse
+from code_tutor.execution.application.dto import ExecuteCodeRequest
 from code_tutor.execution.application.services import ExecutionService
 from code_tutor.identity.application.dto import UserResponse
 from code_tutor.identity.interface.dependencies import get_current_active_user

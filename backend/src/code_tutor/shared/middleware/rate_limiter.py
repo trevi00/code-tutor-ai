@@ -2,12 +2,11 @@
 
 import time
 from collections import defaultdict
-from typing import Callable
+from collections.abc import Callable
 
 from fastapi import HTTPException, Request, Response, status
 from starlette.middleware.base import BaseHTTPMiddleware
 
-from code_tutor.shared.config import get_settings
 from code_tutor.shared.infrastructure.logging import get_logger
 
 logger = get_logger(__name__)
@@ -67,7 +66,9 @@ class InMemoryRateLimiter:
 _rate_limiters: dict[str, InMemoryRateLimiter] = {}
 
 
-def get_rate_limiter(name: str, requests_per_minute: int = 60, burst_size: int = 10) -> InMemoryRateLimiter:
+def get_rate_limiter(
+    name: str, requests_per_minute: int = 60, burst_size: int = 10
+) -> InMemoryRateLimiter:
     """Get or create a rate limiter"""
     if name not in _rate_limiters:
         _rate_limiters[name] = InMemoryRateLimiter(requests_per_minute, burst_size)
@@ -86,7 +87,12 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
     ):
         super().__init__(app)
         self.limiter = InMemoryRateLimiter(requests_per_minute, burst_size)
-        self.exclude_paths = exclude_paths or ["/api/health", "/docs", "/redoc", "/openapi.json"]
+        self.exclude_paths = exclude_paths or [
+            "/api/health",
+            "/docs",
+            "/redoc",
+            "/openapi.json",
+        ]
 
     async def dispatch(self, request: Request, call_next: Callable) -> Response:
         # Skip rate limiting for excluded paths
@@ -146,6 +152,7 @@ def rate_limit(
         async def submit(request: Request):
             ...
     """
+
     def decorator(func: Callable) -> Callable:
         limiter = InMemoryRateLimiter(requests_per_minute, burst_size)
         func._rate_limiter = limiter

@@ -13,7 +13,7 @@ from code_tutor.identity.infrastructure.repository import SQLAlchemyUserReposito
 from code_tutor.shared.exceptions import UnauthorizedError
 from code_tutor.shared.infrastructure.database import get_async_session
 from code_tutor.shared.infrastructure.redis import RedisClient, get_redis_client
-from code_tutor.shared.security import decode_token, TokenPayload
+from code_tutor.shared.security import TokenPayload, decode_token
 
 # Security scheme
 security = HTTPBearer()
@@ -26,8 +26,7 @@ async def get_user_repository(
     return SQLAlchemyUserRepository(session)
 
 
-async def get_redis(
-) -> RedisClient | None:
+async def get_redis() -> RedisClient | None:
     """Get Redis client (optional)"""
     try:
         client = await get_redis_client()
