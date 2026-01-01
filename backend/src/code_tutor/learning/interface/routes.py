@@ -31,6 +31,7 @@ from code_tutor.learning.infrastructure.repository import (
     SQLAlchemyProblemRepository,
     SQLAlchemySubmissionRepository,
 )
+from code_tutor.ml.recommendation import RecommenderService
 from code_tutor.shared.api_response import success_response
 from code_tutor.shared.config import get_settings
 from code_tutor.shared.exceptions import AppException
@@ -56,6 +57,12 @@ async def get_problem_service(
     repo: Annotated[ProblemRepository, Depends(get_problem_repository)],
 ) -> ProblemService:
     return ProblemService(repo)
+
+
+async def get_recommender_service(
+    session: Annotated[AsyncSession, Depends(get_async_session)],
+) -> RecommenderService:
+    return RecommenderService(session)
 
 
 async def get_submission_service(
@@ -145,12 +152,85 @@ async def create_problem(
     summary="Get recommended problems for user",
 )
 async def get_recommended_problems(
-    service: Annotated[ProblemService, Depends(get_problem_service)],
+    recommender: Annotated[RecommenderService, Depends(get_recommender_service)],
     current_user: Annotated[UserResponse, Depends(get_current_active_user)],
     limit: int = Query(default=5, ge=1, le=20),
+    strategy: str = Query(default="hybrid", regex="^(hybrid|collaborative|content)$"),
+    difficulty: str | None = Query(default=None),
+    category: str | None = Query(default=None),
 ) -> list[RecommendedProblemResponse]:
-    """Get personalized problem recommendations based on user's history"""
-    return await service.get_recommended_problems(current_user.id, limit)
+    """Get personalized problem recommendations based on user's history.
+
+    Uses ML-based recommendation system with NCF collaborative filtering.
+
+    Args:
+        limit: Number of recommendations (1-20)
+        strategy: Recommendation strategy (hybrid, collaborative, content)
+        difficulty: Filter by difficulty (easy, medium, hard)
+        category: Filter by category
+    """
+    recommendations = await recommender.get_recommendations(
+        user_id=current_user.id,
+        limit=limit,
+        strategy=strategy,
+        difficulty_filter=difficulty,
+        category_filter=category,
+    )
+
+    return [
+        RecommendedProblemResponse(
+            id=UUID(rec["id"]),
+            title=rec["title"],
+            difficulty=rec["difficulty"],
+            category=rec["category"],
+            reason=_get_recommendation_reason_kr(rec.get("reason", "recommended")),
+            score=rec.get("score", 0.5),
+            pattern_ids=rec.get("pattern_ids", []),
+        )
+        for rec in recommendations
+    ]
+
+
+def _get_recommendation_reason_kr(reason: str) -> str:
+    """Convert recommendation reason to Korean."""
+    reasons = {
+        "similar_users": "비슷한 사용자들이 풀었어요",
+        "content_match": "당신의 학습 패턴에 맞는 문제예요",
+        "hybrid": "AI가 추천하는 문제예요",
+        "popular": "인기 있는 문제예요",
+        "recommended": "추천 문제예요",
+    }
+    return reasons.get(reason, "추천 문제예요")
+
+
+@router.get(
+    "/problems/skill-gaps",
+    summary="Get skill gaps for user",
+)
+async def get_skill_gaps(
+    recommender: Annotated[RecommenderService, Depends(get_recommender_service)],
+    current_user: Annotated[UserResponse, Depends(get_current_active_user)],
+) -> list[dict]:
+    """Get categories/patterns where user has skill gaps.
+
+    Returns categories with less than 30% completion.
+    """
+    return await recommender.get_skill_gaps(current_user.id)
+
+
+@router.get(
+    "/problems/next-challenge",
+    summary="Get next challenge problem",
+)
+async def get_next_challenge(
+    recommender: Annotated[RecommenderService, Depends(get_recommender_service)],
+    current_user: Annotated[UserResponse, Depends(get_current_active_user)],
+) -> dict | None:
+    """Get the next appropriate challenge problem for user.
+
+    Returns a problem at the right difficulty level based on user's progress.
+    """
+    return await recommender.get_next_challenge(current_user.id)
 
 
 @router.get(
@@ -224,6 +304,7 @@ async def submit_and_evaluate(
     request: CreateSubmissionRequest,
     service: Annotated[SubmissionService, Depends(get_submission_service)],
     evaluator: Annotated[SubmissionEvaluator, Depends(get_submission_evaluator)],
+    recommender: Annotated[RecommenderService, Depends(get_recommender_service)],
     current_user: Annotated[UserResponse, Depends(get_current_active_user)],
 ) -> SubmissionResponse:
     """
@@ -242,8 +323,18 @@ async def submit_and_evaluate(
         # Evaluate immediately
         await evaluator.evaluate_submission(submission.id)
 
-        # Return updated submission
-        return await service.get_submission(submission.id)
+        # Get updated submission with results
+        result = await service.get_submission(submission.id)
+
+        # Update recommender with new interaction
+        is_solved = result.status == "accepted"
+        await recommender.update_user_interaction(
+            user_id=current_user.id,
+            problem_id=request.problem_id,
+            is_solved=is_solved,
+        )
+
+        return result
     except AppException as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=e.message)
 

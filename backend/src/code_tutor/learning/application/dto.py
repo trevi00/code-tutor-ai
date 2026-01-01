@@ -195,3 +195,5 @@ class RecommendedProblemResponse(BaseModel):
     difficulty: str
     category: str
     reason: str
+    score: float = 0.5
+    pattern_ids: list[str] = []
