@@ -1,0 +1,155 @@
+name: Full E2E Tests
+
+on:
+  workflow_dispatch:
+    inputs:
+      test_filter:
+        description: 'Test filter (e.g., "auth" or "problem")'
+        required: false
+        default: ''
+  schedule:
+    # Run every Sunday at 00:00 UTC
+    - cron: '0 0 * * 0'
+
+env:
+  PYTHON_VERSION: "3.12"
+  NODE_VERSION: "20"
+
+jobs:
+  e2e-tests:
+    name: Full E2E Test Suite
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    services:
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+        with:
+          version: "latest"
+
+      - name: Set up Python
+        run: uv python install ${{ env.PYTHON_VERSION }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install backend dependencies
+        working-directory: backend
+        run: uv sync --all-extras --dev
+
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Install Playwright browsers
+        working-directory: frontend
+        run: npx playwright install --with-deps chromium
+
+      - name: Initialize database
+        working-directory: backend
+        env:
+          ENVIRONMENT: development
+          DATABASE_URL: sqlite+aiosqlite:///./codetutor.db
+          JWT_SECRET_KEY: test-secret-key-for-ci
+        run: |
+          uv run python -c "
+          import asyncio
+          from sqlalchemy.ext.asyncio import create_async_engine
+          from code_tutor.shared.infrastructure.database import Base
+
+          async def init_db():
+              engine = create_async_engine('sqlite+aiosqlite:///./codetutor.db')
+              async with engine.begin() as conn:
+                  await conn.run_sync(Base.metadata.create_all)
+
+          asyncio.run(init_db())
+          " || echo "DB init skipped"
+
+      - name: Start backend server
+        working-directory: backend
+        env:
+          ENVIRONMENT: development
+          DATABASE_URL: sqlite+aiosqlite:///./codetutor.db
+          REDIS_URL: redis://localhost:6379/0
+          JWT_SECRET_KEY: test-secret-key-for-ci
+          JWT_ALGORITHM: HS256
+          OLLAMA_BASE_URL: http://localhost:11434
+        run: |
+          nohup uv run uvicorn code_tutor.main:app --host 0.0.0.0 --port 8000 > backend.log 2>&1 &
+          echo "Waiting for backend to start..."
+          for i in {1..30}; do
+            if curl -s http://localhost:8000/api/v1/health > /dev/null 2>&1; then
+              echo "Backend is ready!"
+              break
+            fi
+            sleep 1
+          done
+
+      - name: Start frontend server
+        working-directory: frontend
+        env:
+          VITE_API_URL: http://localhost:8000/api/v1
+        run: |
+          nohup npm run dev > frontend.log 2>&1 &
+          echo "Waiting for frontend to start..."
+          for i in {1..30}; do
+            if curl -s http://localhost:5173 > /dev/null 2>&1; then
+              echo "Frontend is ready!"
+              break
+            fi
+            sleep 1
+          done
+
+      - name: Create test user
+        run: |
+          curl -X POST http://localhost:8000/api/v1/auth/register \
+            -H "Content-Type: application/json" \
+            -d '{"email":"e2etest@example.com","password":"TestPassword123!","username":"e2etest"}' || true
+          sleep 2
+
+      - name: Run E2E tests
+        working-directory: frontend
+        run: |
+          if [ -n "${{ github.event.inputs.test_filter }}" ]; then
+            npx playwright test --grep "${{ github.event.inputs.test_filter }}" --reporter=html
+          else
+            npx playwright test --reporter=html
+          fi
+
+      - name: Show backend logs on failure
+        if: failure()
+        working-directory: backend
+        run: cat backend.log || true
+
+      - name: Show frontend logs on failure
+        if: failure()
+        working-directory: frontend
+        run: cat frontend.log || true
+
+      - name: Upload Playwright report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-report
+          path: frontend/playwright-report/
+          retention-days: 14
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-results
+          path: frontend/test-results/
+          retention-days: 14
