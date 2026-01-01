@@ -5,6 +5,7 @@ Provides:
 - NCF (Neural Collaborative Filtering) for problem recommendation
 - LSTM for learning success prediction
 - CodeBERT for code analysis and pattern detection
+- Data Pipeline for ML model training data preparation
 """
 
 from code_tutor.ml.config import MLConfig, get_ml_config
@@ -16,6 +17,27 @@ def get_rag_engine():
     from code_tutor.ml.rag import RAGEngine
 
     return RAGEngine()
+
+
+def get_daily_stats_service(session):
+    """Get daily stats service for a database session"""
+    from code_tutor.ml.pipeline import DailyStatsService
+
+    return DailyStatsService(session)
+
+
+def get_data_aggregator(session):
+    """Get data aggregator for a database session"""
+    from code_tutor.ml.pipeline import DataAggregator
+
+    return DataAggregator(session)
+
+
+async def get_recommendation_cache():
+    """Get recommendation cache singleton"""
+    from code_tutor.ml.pipeline import RecommendationCache
+
+    return await RecommendationCache.create()
 
 
 def get_recommender():
@@ -54,4 +76,7 @@ __all__ = [
     "get_learning_predictor",
     "get_code_analyzer",
     "get_code_classifier",
+    "get_daily_stats_service",
+    "get_data_aggregator",
+    "get_recommendation_cache",
 ]

@@ -6,6 +6,8 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+# Import ML pipeline models for database table creation
+import code_tutor.ml.pipeline.models  # noqa: F401
 from code_tutor.execution.interface.routes import router as execution_router
 
 # Import routers
