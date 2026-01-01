@@ -22,6 +22,7 @@ from code_tutor.learning.interface.routes import router as learning_router
 from code_tutor.collaboration.interface import http_router as collaboration_router
 from code_tutor.collaboration.interface import websocket_router as collaboration_ws_router
 from code_tutor.playground.interface import router as playground_router
+from code_tutor.visualization.interface import router as visualization_router
 from code_tutor.shared.api_response import success_response
 from code_tutor.shared.config import get_settings
 from code_tutor.shared.exception_handlers import register_exception_handlers
@@ -112,6 +113,7 @@ def create_app() -> FastAPI:
     app.include_router(collaboration_router, prefix="/api/v1")
     app.include_router(collaboration_ws_router, prefix="/api/v1")
     app.include_router(playground_router, prefix="/api/v1")
+    app.include_router(visualization_router, prefix="/api/v1")
 
     # Health check endpoint
     @app.get("/api/health", tags=["Health"])

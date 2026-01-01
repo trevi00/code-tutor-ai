@@ -20,6 +20,7 @@ import {
   PlaygroundEditorPage,
   SharedPlaygroundPage,
 } from '@/pages/playground';
+import { VisualizationPage } from '@/pages/visualization';
 import { useAuthStore } from '@/store/authStore';
 
 // Protected Route component
@@ -149,6 +150,9 @@ export default function App() {
             path="/playground/:playgroundId"
             element={<PlaygroundEditorPage />}
           />
+
+          {/* Visualization route */}
+          <Route path="/visualization" element={<VisualizationPage />} />
         </Route>
 
         {/* Full-screen collaboration page (no layout) */}
