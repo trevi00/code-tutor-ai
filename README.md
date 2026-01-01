@@ -12,7 +12,7 @@
 
 ## 프로젝트 상태
 
-**MVP 완료** - 모든 핵심 기능 구현 및 테스트 통과
+**Phase 2 완료** - ML 기반 추천 시스템 및 학습 분석 구현
 
 | 기능 | 상태 |
 |------|------|
@@ -22,6 +22,8 @@
 | 코드 실행 (Docker 샌드박스) | ✅ 완료 |
 | 대시보드 (통계/스트릭/히트맵) | ✅ 완료 |
 | 패턴 학습 (24개 알고리즘 패턴) | ✅ 완료 |
+| **ML 추천 시스템 (NCF)** | ✅ 완료 |
+| **AI 학습 분석 (LSTM)** | ✅ 완료 |
 | 전체 UI 한글화 | ✅ 완료 |
 | E2E 테스트 (41개) | ✅ 통과 |
 
@@ -54,6 +56,21 @@
 - 365일 히트맵
 - 카테고리별 진행률
 
+### ML 추천 시스템 (Phase 2)
+- **NCF (Neural Collaborative Filtering)** 기반 개인화 추천
+- 3가지 추천 전략: hybrid, collaborative, content
+- 스킬 갭 분석 - 보완이 필요한 카테고리 식별
+- 다음 도전 문제 추천 - 적정 난이도 문제 제안
+- Redis 캐싱으로 빠른 응답 (1시간 TTL)
+
+### AI 학습 분석 (Phase 2)
+- **LSTM 기반 성공률 예측** - 7일 후 성공률 예측
+- 학습 속도 분석 (성장 중/안정적/주의 필요)
+- 꾸준함 점수 (0-100)
+- 성장률 분석 (지난 주 대비)
+- 개인화된 학습 추천 메시지
+- 스킬 갭 시각화
+
 ---
 
 ## 기술 스택
@@ -62,6 +79,7 @@
 - **Framework**: FastAPI + Python 3.11
 - **Database**: PostgreSQL 14 + Redis
 - **AI/LLM**: Ollama (llama3)
+- **ML**: PyTorch (NCF, LSTM), NumPy, scikit-learn
 - **코드 실행**: Docker 샌드박스 (python:3.11-slim)
 - **아키텍처**: DDD + 헥사고날 아키텍처
 
@@ -173,10 +191,19 @@ npm run dev
 | GET | `/api/v1/patterns/{id}` | 패턴 상세 |
 | POST | `/api/v1/patterns/search` | 패턴 검색 |
 
-### 대시보드
+### 대시보드 & 분석
 | Method | Endpoint | 설명 |
 |--------|----------|------|
 | GET | `/api/v1/dashboard` | 전체 대시보드 |
+| GET | `/api/v1/dashboard/insights` | AI 학습 분석 (LSTM) |
+| GET | `/api/v1/dashboard/prediction` | 성공률 예측 |
+
+### 추천 시스템
+| Method | Endpoint | 설명 |
+|--------|----------|------|
+| GET | `/api/v1/problems/recommended` | 개인화 문제 추천 |
+| GET | `/api/v1/problems/skill-gaps` | 스킬 갭 분석 |
+| GET | `/api/v1/problems/next-challenge` | 다음 도전 문제 |
 
 ---
 
@@ -186,12 +213,16 @@ npm run dev
 code-tutor-ai/
 ├── backend/
 │   └── src/code_tutor/
-│       ├── auth/           # 인증 도메인
+│       ├── identity/       # 인증 도메인
 │       ├── learning/       # 문제/패턴 도메인
-│       ├── submission/     # 제출 도메인
-│       ├── tutor/          # AI 튜터 도메인
 │       ├── execution/      # 코드 실행 도메인
-│       ├── dashboard/      # 대시보드 도메인
+│       ├── tutor/          # AI 튜터 도메인
+│       ├── ml/             # ML 모듈 (Phase 2)
+│       │   ├── recommendation/  # NCF 추천 시스템
+│       │   ├── prediction/      # LSTM 학습 예측
+│       │   ├── pipeline/        # 데이터 파이프라인
+│       │   ├── rag/             # 패턴 RAG
+│       │   └── transformer/     # CodeBERT 분석
 │       └── shared/         # 공유 모듈
 ├── frontend/
 │   └── src/
@@ -199,7 +230,9 @@ code-tutor-ai/
 │       │   ├── patterns/   # 패턴 학습 페이지
 │       │   ├── problems/   # 문제 풀이 페이지
 │       │   ├── chat/       # AI 튜터 채팅
-│       │   └── dashboard/  # 대시보드
+│       │   └── dashboard/  # 대시보드 + AI 인사이트
+│       ├── components/     # 재사용 컴포넌트
+│       │   └── dashboard/  # 대시보드 컴포넌트
 │       ├── api/            # API 클라이언트
 │       └── e2e/            # E2E 테스트
 ├── docs/                   # 프로젝트 문서
@@ -298,8 +331,8 @@ SANDBOX_MEMORY_LIMIT_MB=256
 |-------|------|------|
 | **Phase 1** | ✅ 완료 | MVP (AI 채팅, 코드 리뷰, 문제 풀이) |
 | **Phase 1.5** | ✅ 완료 | 패턴 학습, 한글화 |
-| **Phase 2** | 예정 | 추천 시스템 (NCF), 학습 분석 |
-| **Phase 3** | 예정 | 코드 분석 (CodeBERT), 성과 예측 (LSTM) |
+| **Phase 2** | ✅ 완료 | 추천 시스템 (NCF), 학습 분석 (LSTM) |
+| **Phase 3** | 예정 | 코드 품질 분석 (CodeBERT), 고급 분석 대시보드 |
 
 ---
 
