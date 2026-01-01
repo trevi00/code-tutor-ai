@@ -10,6 +10,9 @@ from fastapi.middleware.cors import CORSMiddleware
 import code_tutor.ml.pipeline.models  # noqa: F401
 # Import collaboration models for database table creation
 import code_tutor.collaboration.infrastructure.models  # noqa: F401
+# Import playground models for database table creation
+import code_tutor.playground.infrastructure.models  # noqa: F401
+from code_tutor.playground.infrastructure.template_seeder import seed_templates
 
 from code_tutor.execution.interface.routes import router as execution_router
 
@@ -18,10 +21,11 @@ from code_tutor.identity.interface.routes import router as auth_router
 from code_tutor.learning.interface.routes import router as learning_router
 from code_tutor.collaboration.interface import http_router as collaboration_router
 from code_tutor.collaboration.interface import websocket_router as collaboration_ws_router
+from code_tutor.playground.interface import router as playground_router
 from code_tutor.shared.api_response import success_response
 from code_tutor.shared.config import get_settings
 from code_tutor.shared.exception_handlers import register_exception_handlers
-from code_tutor.shared.infrastructure.database import close_db, init_db
+from code_tutor.shared.infrastructure.database import close_db, get_session_context, init_db
 from code_tutor.shared.infrastructure.logging import configure_logging, get_logger
 from code_tutor.shared.infrastructure.redis import close_redis
 from code_tutor.shared.middleware import RateLimitMiddleware
@@ -49,6 +53,12 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     if settings.ENVIRONMENT == "development":
         await init_db()
         logger.info("Database initialized")
+
+        # Seed code templates
+        async with get_session_context() as session:
+            count = await seed_templates(session)
+            if count > 0:
+                logger.info(f"Seeded {count} code templates")
 
     logger.info("Application started successfully")
 
@@ -101,6 +111,7 @@ def create_app() -> FastAPI:
     app.include_router(execution_router, prefix="/api/v1")
     app.include_router(collaboration_router, prefix="/api/v1")
     app.include_router(collaboration_ws_router, prefix="/api/v1")
+    app.include_router(playground_router, prefix="/api/v1")
 
     # Health check endpoint
     @app.get("/api/health", tags=["Health"])

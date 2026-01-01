@@ -15,6 +15,11 @@ import ProfilePage from '@/pages/profile/ProfilePage';
 import SettingsPage from '@/pages/settings/SettingsPage';
 import SessionsPage from '@/pages/collaboration/SessionsPage';
 import CollaborationPage from '@/pages/collaboration/CollaborationPage';
+import {
+  PlaygroundListPage,
+  PlaygroundEditorPage,
+  SharedPlaygroundPage,
+} from '@/pages/playground';
 import { useAuthStore } from '@/store/authStore';
 
 // Protected Route component
@@ -132,6 +137,17 @@ export default function App() {
                 <SessionsPage />
               </ProtectedRoute>
             }
+          />
+
+          {/* Playground routes */}
+          <Route path="/playground" element={<PlaygroundListPage />} />
+          <Route
+            path="/playground/share/:shareCode"
+            element={<SharedPlaygroundPage />}
+          />
+          <Route
+            path="/playground/:playgroundId"
+            element={<PlaygroundEditorPage />}
           />
         </Route>
 
