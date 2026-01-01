@@ -31,6 +31,7 @@ from code_tutor.learning.infrastructure.repository import (
     SQLAlchemyProblemRepository,
     SQLAlchemySubmissionRepository,
 )
+from code_tutor.ml.prediction import InsightsService
 from code_tutor.ml.recommendation import RecommenderService
 from code_tutor.shared.api_response import success_response
 from code_tutor.shared.config import get_settings
@@ -63,6 +64,12 @@ async def get_recommender_service(
     session: Annotated[AsyncSession, Depends(get_async_session)],
 ) -> RecommenderService:
     return RecommenderService(session)
+
+
+async def get_insights_service(
+    session: Annotated[AsyncSession, Depends(get_async_session)],
+) -> InsightsService:
+    return InsightsService(session)
 
 
 async def get_submission_service(
@@ -674,55 +681,31 @@ async def search_patterns(
     summary="Get learning insights",
 )
 async def get_insights(
-    session: Annotated[AsyncSession, Depends(get_async_session)],
+    insights_service: Annotated[InsightsService, Depends(get_insights_service)],
     current_user: Annotated[UserResponse, Depends(get_current_active_user)],
 ) -> dict[str, Any]:
     """
-    Get AI-generated learning insights.
+    Get AI-generated learning insights powered by LSTM predictions.
 
     Returns:
-    - Learning velocity analysis
+    - Learning velocity analysis (learning speed and trends)
+    - Success rate predictions (7-day forecast)
     - Skill gaps identification
-    - Study schedule recommendations
+    - Personalized study schedule recommendations
     """
     try:
-        from code_tutor.ml import get_learning_predictor
-
-        _predictor = get_learning_predictor()  # noqa: F841
-
-        # Get user's daily stats (simplified - would come from DB in production)
-        # For now, return mock insights
-        insights = {
-            "velocity": {
-                "velocity": "steady",
-                "problems_per_day": 2.5,
-                "improvement_rate": 5.0,
-                "consistency_score": 75,
-            },
-            "skill_gaps": [],
-            "study_recommendations": [
-                {
-                    "type": "consistency",
-                    "message": "매일 꾸준히 학습하면 더 빠른 성장이 가능합니다.",
-                }
-            ],
-            "insights": [
-                {
-                    "type": "trend",
-                    "message": "지속적인 학습으로 실력이 향상되고 있습니다!",
-                    "sentiment": "positive",
-                }
-            ],
-        }
-
+        insights = await insights_service.get_full_insights(current_user.id)
         return success_response(insights)
     except Exception as e:
+        # Fallback to empty insights on error
         return success_response(
             {
                 "velocity": None,
+                "prediction": None,
+                "schedule": None,
                 "skill_gaps": [],
-                "study_recommendations": [],
                 "insights": [],
+                "study_recommendations": [],
                 "error": str(e),
             }
         )
