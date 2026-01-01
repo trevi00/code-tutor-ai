@@ -1,10 +1,19 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { dashboardApi } from '@/api';
+import { dashboardApi, qualityApi } from '@/api';
 import { ActivityHeatmap } from '@/components/dashboard/ActivityHeatmap';
+import { CodeQualityCard } from '@/components/dashboard/CodeQualityCard';
 import { LearningInsights } from '@/components/dashboard/LearningInsights';
+import { QualityTrendChart } from '@/components/dashboard/QualityTrendChart';
 import { SkillPredictions } from '@/components/dashboard/SkillPredictions';
-import type { DashboardData, InsightsData, CategoryProgress, RecentSubmission } from '@/types';
+import type {
+  DashboardData,
+  InsightsData,
+  CategoryProgress,
+  RecentSubmission,
+  QualityStats,
+  QualityTrendPoint,
+} from '@/types';
 
 // Status badge styles
 const statusStyles: Record<string, string> = {
@@ -30,19 +39,25 @@ const statusLabels: Record<string, string> = {
 export default function DashboardPage() {
   const [dashboard, setDashboard] = useState<DashboardData | null>(null);
   const [insights, setInsights] = useState<InsightsData | null>(null);
+  const [qualityStats, setQualityStats] = useState<QualityStats | null>(null);
+  const [qualityTrends, setQualityTrends] = useState<QualityTrendPoint[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // Fetch dashboard and insights in parallel
-        const [dashboardData, insightsData] = await Promise.all([
+        // Fetch dashboard, insights, and quality data in parallel
+        const [dashboardData, insightsData, qualityStatsData, qualityTrendsData] = await Promise.all([
           dashboardApi.getDashboard(),
           dashboardApi.getInsights().catch(() => null), // Don't fail if insights fail
+          qualityApi.getQualityStats().catch(() => null), // Don't fail if quality fails
+          qualityApi.getQualityTrends(30).catch(() => ({ trends: [], days: 30 })), // Don't fail if trends fail
         ]);
         setDashboard(dashboardData);
         setInsights(insightsData);
+        setQualityStats(qualityStatsData);
+        setQualityTrends(qualityTrendsData?.trends || []);
       } catch (err) {
         setError('대시보드를 불러오는데 실패했습니다.');
         console.error(err);
@@ -130,6 +145,14 @@ export default function DashboardPage() {
       {insights && (
         <div className="mb-8">
           <LearningInsights insights={insights} />
+        </div>
+      )}
+
+      {/* Code Quality Analysis */}
+      {qualityStats && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+          <CodeQualityCard stats={qualityStats} />
+          <QualityTrendChart trends={qualityTrends} days={30} />
         </div>
       )}
 

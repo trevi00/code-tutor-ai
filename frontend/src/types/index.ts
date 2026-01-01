@@ -316,6 +316,82 @@ export interface InsightsData {
   error?: string;
 }
 
+// Code Quality Analysis types
+export interface CodeSmell {
+  type: string;
+  severity: 'info' | 'warning' | 'error';
+  line?: number;
+  message: string;
+}
+
+export interface QualitySuggestion {
+  type: string;
+  message: string;
+  priority: number;
+  tips?: string[];
+}
+
+export interface QualityDimensions {
+  correctness: number;
+  efficiency: number;
+  readability: number;
+  best_practices: number;
+}
+
+export interface QualityComplexity {
+  cyclomatic: number;
+  cognitive: number;
+  max_nesting: number;
+  lines_of_code: number;
+}
+
+export interface QualityAnalysis {
+  submission_id: string;
+  overall_score: number;
+  overall_grade: 'A' | 'B' | 'C' | 'D' | 'F';
+  dimensions: QualityDimensions;
+  complexity: QualityComplexity;
+  code_smells: CodeSmell[];
+  code_smells_count: number;
+  detected_patterns: string[];
+  suggestions: QualitySuggestion[];
+  suggestions_count: number;
+  analyzed_at: string;
+}
+
+export interface QualityStats {
+  total_analyses: number;
+  avg_overall: number;
+  avg_correctness: number;
+  avg_efficiency: number;
+  avg_readability: number;
+  avg_best_practices: number;
+  avg_cyclomatic: number;
+  total_smells: number;
+  grade_distribution: Record<string, number>;
+}
+
+export interface QualityTrendPoint {
+  date: string;
+  avg_overall: number;
+  avg_correctness: number;
+  avg_efficiency: number;
+  avg_readability: number;
+  avg_best_practices: number;
+  submissions_analyzed: number;
+  improved_count: number;
+}
+
+export interface RecentQualityAnalysis {
+  submission_id: string;
+  problem_id: string;
+  overall_score: number;
+  overall_grade: string;
+  code_smells_count: number;
+  suggestions_count: number;
+  analyzed_at: string;
+}
+
 // Submission summary for list
 export interface SubmissionSummary {
   id: string;
