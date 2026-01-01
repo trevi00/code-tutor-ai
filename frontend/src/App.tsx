@@ -21,6 +21,7 @@ import {
   SharedPlaygroundPage,
 } from '@/pages/playground';
 import { VisualizationPage } from '@/pages/visualization';
+import DebuggerPage from '@/pages/debugger/DebuggerPage';
 import { LeaderboardPage, BadgesPage } from '@/pages/gamification';
 import { useAuthStore } from '@/store/authStore';
 
@@ -154,6 +155,9 @@ export default function App() {
 
           {/* Visualization route */}
           <Route path="/visualization" element={<VisualizationPage />} />
+
+          {/* Debugger route */}
+          <Route path="/debugger" element={<DebuggerPage />} />
 
           {/* Gamification routes */}
           <Route

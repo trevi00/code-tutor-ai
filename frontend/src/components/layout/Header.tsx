@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { BookOpen, MessageSquare, LayoutDashboard, User, LogOut, Settings, FileText, ChevronDown, Sparkles, Code2, PlayCircle, Trophy, Award } from 'lucide-react';
+import { BookOpen, MessageSquare, LayoutDashboard, User, LogOut, Settings, FileText, ChevronDown, Sparkles, Code2, PlayCircle, Trophy, Award, Bug } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
 
 export function Header() {
@@ -79,6 +79,13 @@ export function Header() {
             >
               <PlayCircle className="h-5 w-5" />
               <span>시각화</span>
+            </Link>
+            <Link
+              to="/debugger"
+              className="flex items-center gap-2 text-neutral-600 hover:text-purple-600 transition-all duration-200"
+            >
+              <Bug className="h-5 w-5" />
+              <span>디버거</span>
             </Link>
             <Link
               to="/leaderboard"
