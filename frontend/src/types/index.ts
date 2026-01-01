@@ -270,6 +270,52 @@ export interface PredictionData {
   model_version: string;
 }
 
+// Learning Insights types (LSTM-powered)
+export interface VelocityAnalysis {
+  velocity: 'improving' | 'steady' | 'declining' | 'new_user';
+  problems_per_day: number;
+  improvement_rate: number;
+  consistency_score: number;
+}
+
+export interface SuccessPrediction {
+  current_success_rate: number;
+  predicted_success_rate: number;
+  confidence: number;
+  trend: 'improving' | 'stable' | 'declining';
+  days_ahead: number;
+}
+
+export interface StudySchedule {
+  recommended_problems_per_day: number;
+  recommended_study_time_minutes: number;
+  focus_areas: string[];
+  recommendations: { type: string; message: string }[];
+}
+
+export interface SkillGap {
+  category: string;
+  current_rate: number;
+  target_rate: number;
+  gap: number;
+}
+
+export interface InsightMessage {
+  type: string;
+  message: string;
+  sentiment?: 'positive' | 'neutral' | 'negative';
+}
+
+export interface InsightsData {
+  velocity: VelocityAnalysis | null;
+  prediction: SuccessPrediction | null;
+  schedule: StudySchedule | null;
+  skill_gaps: SkillGap[];
+  insights: InsightMessage[];
+  study_recommendations: { type: string; message: string }[];
+  error?: string;
+}
+
 // Submission summary for list
 export interface SubmissionSummary {
   id: string;

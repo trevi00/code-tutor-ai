@@ -2,8 +2,9 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { dashboardApi } from '@/api';
 import { ActivityHeatmap } from '@/components/dashboard/ActivityHeatmap';
+import { LearningInsights } from '@/components/dashboard/LearningInsights';
 import { SkillPredictions } from '@/components/dashboard/SkillPredictions';
-import type { DashboardData, CategoryProgress, RecentSubmission } from '@/types';
+import type { DashboardData, InsightsData, CategoryProgress, RecentSubmission } from '@/types';
 
 // Status badge styles
 const statusStyles: Record<string, string> = {
@@ -28,14 +29,20 @@ const statusLabels: Record<string, string> = {
 
 export default function DashboardPage() {
   const [dashboard, setDashboard] = useState<DashboardData | null>(null);
+  const [insights, setInsights] = useState<InsightsData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchDashboard = async () => {
+    const fetchData = async () => {
       try {
-        const data = await dashboardApi.getDashboard();
-        setDashboard(data);
+        // Fetch dashboard and insights in parallel
+        const [dashboardData, insightsData] = await Promise.all([
+          dashboardApi.getDashboard(),
+          dashboardApi.getInsights().catch(() => null), // Don't fail if insights fail
+        ]);
+        setDashboard(dashboardData);
+        setInsights(insightsData);
       } catch (err) {
         setError('대시보드를 불러오는데 실패했습니다.');
         console.error(err);
@@ -44,7 +51,7 @@ export default function DashboardPage() {
       }
     };
 
-    fetchDashboard();
+    fetchData();
   }, []);
 
   if (loading) {
@@ -118,6 +125,13 @@ export default function DashboardPage() {
           </div>
         </StatCard>
       </div>
+
+      {/* AI Learning Insights */}
+      {insights && (
+        <div className="mb-8">
+          <LearningInsights insights={insights} />
+        </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
         {/* Category Progress */}

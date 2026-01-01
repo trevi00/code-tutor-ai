@@ -1,4 +1,4 @@
-import type { ApiResponse, DashboardData, PredictionData, SubmissionSummary } from '@/types';
+import type { ApiResponse, DashboardData, InsightsData, PredictionData, SubmissionSummary } from '@/types';
 import apiClient from './client';
 
 /**
@@ -14,6 +14,14 @@ export const getDashboard = async (): Promise<DashboardData> => {
  */
 export const getPrediction = async (): Promise<PredictionData> => {
   const response = await apiClient.get<ApiResponse<PredictionData>>('/dashboard/prediction');
+  return response.data.data;
+};
+
+/**
+ * Get AI-powered learning insights (LSTM predictions)
+ */
+export const getInsights = async (): Promise<InsightsData> => {
+  const response = await apiClient.get<ApiResponse<InsightsData>>('/dashboard/insights');
   return response.data.data;
 };
 
