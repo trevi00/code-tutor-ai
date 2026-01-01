@@ -22,6 +22,7 @@ import {
 } from '@/pages/playground';
 import { VisualizationPage } from '@/pages/visualization';
 import DebuggerPage from '@/pages/debugger/DebuggerPage';
+import PerformancePage from '@/pages/performance/PerformancePage';
 import { LeaderboardPage, BadgesPage } from '@/pages/gamification';
 import { useAuthStore } from '@/store/authStore';
 
@@ -158,6 +159,9 @@ export default function App() {
 
           {/* Debugger route */}
           <Route path="/debugger" element={<DebuggerPage />} />
+
+          {/* Performance route */}
+          <Route path="/performance" element={<PerformancePage />} />
 
           {/* Gamification routes */}
           <Route
