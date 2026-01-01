@@ -31,6 +31,7 @@ from code_tutor.learning.infrastructure.repository import (
     SQLAlchemyProblemRepository,
     SQLAlchemySubmissionRepository,
 )
+from code_tutor.ml.analysis import CodeQualityService
 from code_tutor.ml.prediction import InsightsService
 from code_tutor.ml.recommendation import RecommenderService
 from code_tutor.shared.api_response import success_response
@@ -70,6 +71,12 @@ async def get_insights_service(
     session: Annotated[AsyncSession, Depends(get_async_session)],
 ) -> InsightsService:
     return InsightsService(session)
+
+
+async def get_quality_service(
+    session: Annotated[AsyncSession, Depends(get_async_session)],
+) -> CodeQualityService:
+    return CodeQualityService(session)
 
 
 async def get_submission_service(
@@ -312,6 +319,7 @@ async def submit_and_evaluate(
     service: Annotated[SubmissionService, Depends(get_submission_service)],
     evaluator: Annotated[SubmissionEvaluator, Depends(get_submission_evaluator)],
     recommender: Annotated[RecommenderService, Depends(get_recommender_service)],
+    quality_service: Annotated[CodeQualityService, Depends(get_quality_service)],
     current_user: Annotated[UserResponse, Depends(get_current_active_user)],
 ) -> SubmissionResponse:
     """
@@ -320,6 +328,7 @@ async def submit_and_evaluate(
     This is a convenience endpoint that combines:
     1. POST /submissions (create submission)
     2. POST /submissions/{id}/evaluate (run evaluation)
+    3. Analyze code quality (async, non-blocking)
 
     Returns the evaluated submission with status and test results.
     """
@@ -340,6 +349,18 @@ async def submit_and_evaluate(
             problem_id=request.problem_id,
             is_solved=is_solved,
         )
+
+        # Analyze code quality (best effort, don't fail on error)
+        try:
+            await quality_service.analyze_submission(
+                submission_id=submission.id,
+                user_id=current_user.id,
+                problem_id=request.problem_id,
+                code=request.code,
+                language=request.language,
+            )
+        except Exception:
+            pass  # Quality analysis failure shouldn't affect submission
 
         return result
     except AppException as e:
@@ -709,3 +730,135 @@ async def get_insights(
                 "error": str(e),
             }
         )
+
+
+# Code Quality Analysis endpoints
+@router.get(
+    "/submissions/{submission_id}/quality",
+    summary="Get code quality analysis for submission",
+)
+async def get_submission_quality(
+    submission_id: UUID,
+    quality_service: Annotated[CodeQualityService, Depends(get_quality_service)],
+    current_user: Annotated[UserResponse, Depends(get_current_active_user)],
+) -> dict[str, Any]:
+    """
+    Get code quality analysis for a specific submission.
+
+    Returns:
+    - Multi-dimensional quality scores (correctness, efficiency, readability, best practices)
+    - Code smells detected
+    - Complexity metrics
+    - Improvement suggestions
+    """
+    analysis = await quality_service.get_submission_quality(submission_id)
+
+    if not analysis:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Quality analysis not found for this submission",
+        )
+
+    return success_response(
+        {
+            "submission_id": str(analysis.submission_id),
+            "overall_score": analysis.overall_score,
+            "overall_grade": analysis.overall_grade,
+            "dimensions": {
+                "correctness": analysis.correctness_score,
+                "efficiency": analysis.efficiency_score,
+                "readability": analysis.readability_score,
+                "best_practices": analysis.best_practices_score,
+            },
+            "complexity": {
+                "cyclomatic": analysis.cyclomatic_complexity,
+                "cognitive": analysis.cognitive_complexity,
+                "max_nesting": analysis.max_nesting_depth,
+                "lines_of_code": analysis.lines_of_code,
+            },
+            "code_smells": analysis.code_smells,
+            "code_smells_count": analysis.code_smells_count,
+            "detected_patterns": analysis.detected_patterns,
+            "suggestions": analysis.suggestions,
+            "suggestions_count": analysis.suggestions_count,
+            "analyzed_at": analysis.analyzed_at.isoformat(),
+        }
+    )
+
+
+@router.get(
+    "/dashboard/quality",
+    summary="Get user quality statistics",
+)
+async def get_quality_stats(
+    quality_service: Annotated[CodeQualityService, Depends(get_quality_service)],
+    current_user: Annotated[UserResponse, Depends(get_current_active_user)],
+) -> dict[str, Any]:
+    """
+    Get aggregated code quality statistics for current user.
+
+    Returns:
+    - Average scores across all dimensions
+    - Grade distribution
+    - Total analyses count
+    """
+    stats = await quality_service.get_user_quality_stats(current_user.id)
+    return success_response(stats)
+
+
+@router.get(
+    "/dashboard/quality/trends",
+    summary="Get quality trends over time",
+)
+async def get_quality_trends(
+    quality_service: Annotated[CodeQualityService, Depends(get_quality_service)],
+    current_user: Annotated[UserResponse, Depends(get_current_active_user)],
+    days: int = Query(default=30, ge=7, le=90),
+) -> dict[str, Any]:
+    """
+    Get code quality score trends over time.
+
+    Args:
+        days: Number of days to look back (7-90)
+
+    Returns:
+    - Daily quality metrics for charting
+    """
+    trends = await quality_service.get_quality_trends(current_user.id, days)
+    return success_response({"trends": trends, "days": days})
+
+
+@router.get(
+    "/dashboard/quality/recent",
+    summary="Get recent quality analyses",
+)
+async def get_recent_quality(
+    quality_service: Annotated[CodeQualityService, Depends(get_quality_service)],
+    current_user: Annotated[UserResponse, Depends(get_current_active_user)],
+    limit: int = Query(default=10, ge=1, le=50),
+) -> dict[str, Any]:
+    """
+    Get recent code quality analyses for current user.
+
+    Returns:
+    - List of recent analyses with scores
+    """
+    analyses = await quality_service.get_recent_analyses(current_user.id, limit)
+
+    return success_response(
+        {
+            "analyses": [
+                {
+                    "submission_id": str(a.submission_id),
+                    "problem_id": str(a.problem_id),
+                    "overall_score": a.overall_score,
+                    "overall_grade": a.overall_grade,
+                    "code_smells_count": a.code_smells_count,
+                    "suggestions_count": a.suggestions_count,
+                    "analyzed_at": a.analyzed_at.isoformat(),
+                }
+                for a in analyses
+            ],
+            "total": len(analyses),
+        }
+    )

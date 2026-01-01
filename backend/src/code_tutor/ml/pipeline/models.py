@@ -164,3 +164,126 @@ class ModelTrainingLogModel(Base):
     __table_args__ = (
         Index("ix_model_training_type_active", "model_type", "is_active"),
     )
+
+
+class CodeQualityAnalysisModel(Base):
+    """Code quality analysis results for submissions.
+
+    Stores multi-dimensional quality scores, code smells,
+    complexity metrics, and improvement suggestions.
+    Used for tracking code quality improvements over time.
+    """
+
+    __tablename__ = "code_quality_analyses"
+
+    id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid4)
+    submission_id: Mapped[UUID] = mapped_column(
+        ForeignKey("submissions.id", ondelete="CASCADE"),
+        nullable=False,
+        unique=True,
+        index=True,
+    )
+    user_id: Mapped[UUID] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    problem_id: Mapped[UUID] = mapped_column(
+        ForeignKey("problems.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+
+    # Multi-dimensional quality scores (0-100)
+    correctness_score: Mapped[int] = mapped_column(Integer, default=0)
+    efficiency_score: Mapped[int] = mapped_column(Integer, default=0)
+    readability_score: Mapped[int] = mapped_column(Integer, default=0)
+    best_practices_score: Mapped[int] = mapped_column(Integer, default=0)
+    overall_score: Mapped[int] = mapped_column(Integer, default=0)
+    overall_grade: Mapped[str] = mapped_column(String(2), default="C")  # A, B, C, D, F
+
+    # Code smells detected
+    # [{"type": "long_function", "severity": "warning", "line": 10, "message": "..."}]
+    code_smells: Mapped[list] = mapped_column(JSON, default=[])
+    code_smells_count: Mapped[int] = mapped_column(Integer, default=0)
+
+    # Complexity metrics
+    cyclomatic_complexity: Mapped[int] = mapped_column(Integer, default=1)
+    cognitive_complexity: Mapped[int] = mapped_column(Integer, default=0)
+    max_nesting_depth: Mapped[int] = mapped_column(Integer, default=0)
+    lines_of_code: Mapped[int] = mapped_column(Integer, default=0)
+
+    # Detected algorithm patterns
+    # ["two-pointers", "sliding-window"]
+    detected_patterns: Mapped[list] = mapped_column(JSON, default=[])
+
+    # Improvement suggestions
+    # [{"type": "efficiency", "message": "...", "priority": "high"}]
+    suggestions: Mapped[list] = mapped_column(JSON, default=[])
+    suggestions_count: Mapped[int] = mapped_column(Integer, default=0)
+
+    # Analysis metadata
+    language: Mapped[str] = mapped_column(String(20), default="python")
+    analyzer_version: Mapped[str] = mapped_column(String(20), default="1.0.0")
+
+    # Timestamps
+    analyzed_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+
+    __table_args__ = (
+        Index("ix_quality_user_analyzed", "user_id", "analyzed_at"),
+        Index("ix_quality_problem", "problem_id"),
+        Index("ix_quality_overall_score", "overall_score"),
+    )
+
+
+class QualityTrendModel(Base):
+    """Daily aggregated quality metrics for users.
+
+    Tracks quality score trends over time for analytics.
+    Aggregated from CodeQualityAnalysisModel daily.
+    """
+
+    __tablename__ = "quality_trends"
+
+    id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid4)
+    user_id: Mapped[UUID] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    trend_date: Mapped[date] = mapped_column(Date, nullable=False, index=True)
+
+    # Average scores for the day
+    avg_overall_score: Mapped[float] = mapped_column(Float, default=0.0)
+    avg_correctness: Mapped[float] = mapped_column(Float, default=0.0)
+    avg_efficiency: Mapped[float] = mapped_column(Float, default=0.0)
+    avg_readability: Mapped[float] = mapped_column(Float, default=0.0)
+    avg_best_practices: Mapped[float] = mapped_column(Float, default=0.0)
+
+    # Complexity averages
+    avg_cyclomatic: Mapped[float] = mapped_column(Float, default=0.0)
+    avg_cognitive: Mapped[float] = mapped_column(Float, default=0.0)
+
+    # Counts
+    submissions_analyzed: Mapped[int] = mapped_column(Integer, default=0)
+    total_smells: Mapped[int] = mapped_column(Integer, default=0)
+    total_suggestions: Mapped[int] = mapped_column(Integer, default=0)
+
+    # Improvement tracking
+    improved_count: Mapped[int] = mapped_column(
+        Integer, default=0
+    )  # Submissions with higher score than previous
+    grade_distribution: Mapped[dict] = mapped_column(
+        JSON, default={}
+    )  # {"A": 2, "B": 3, "C": 1}
+
+    # Timestamps
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime, default=datetime.utcnow, onupdate=datetime.utcnow
+    )
+
+    __table_args__ = (
+        UniqueConstraint("user_id", "trend_date", name="uq_quality_trends_user_date"),
+        Index("ix_quality_trends_user_date", "user_id", "trend_date"),
+    )
