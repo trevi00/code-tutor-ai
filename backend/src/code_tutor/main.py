@@ -8,11 +8,16 @@ from fastapi.middleware.cors import CORSMiddleware
 
 # Import ML pipeline models for database table creation
 import code_tutor.ml.pipeline.models  # noqa: F401
+# Import collaboration models for database table creation
+import code_tutor.collaboration.infrastructure.models  # noqa: F401
+
 from code_tutor.execution.interface.routes import router as execution_router
 
 # Import routers
 from code_tutor.identity.interface.routes import router as auth_router
 from code_tutor.learning.interface.routes import router as learning_router
+from code_tutor.collaboration.interface import http_router as collaboration_router
+from code_tutor.collaboration.interface import websocket_router as collaboration_ws_router
 from code_tutor.shared.api_response import success_response
 from code_tutor.shared.config import get_settings
 from code_tutor.shared.exception_handlers import register_exception_handlers
@@ -94,6 +99,8 @@ def create_app() -> FastAPI:
     app.include_router(learning_router, prefix="/api/v1")
     app.include_router(tutor_router, prefix="/api/v1")
     app.include_router(execution_router, prefix="/api/v1")
+    app.include_router(collaboration_router, prefix="/api/v1")
+    app.include_router(collaboration_ws_router, prefix="/api/v1")
 
     # Health check endpoint
     @app.get("/api/health", tags=["Health"])

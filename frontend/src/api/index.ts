@@ -6,3 +6,4 @@ export { tutorApi } from './tutor';
 export { patternsApi } from './patterns';
 export * as dashboardApi from './dashboard';
 export * as qualityApi from './quality';
+export * as collaborationApi from './collaboration';

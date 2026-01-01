@@ -13,6 +13,8 @@ import DashboardPage from '@/pages/dashboard/DashboardPage';
 import SubmissionsPage from '@/pages/dashboard/SubmissionsPage';
 import ProfilePage from '@/pages/profile/ProfilePage';
 import SettingsPage from '@/pages/settings/SettingsPage';
+import SessionsPage from '@/pages/collaboration/SessionsPage';
+import CollaborationPage from '@/pages/collaboration/CollaborationPage';
 import { useAuthStore } from '@/store/authStore';
 
 // Protected Route component
@@ -123,7 +125,25 @@ export default function App() {
               </ProtectedRoute>
             }
           />
+          <Route
+            path="/collaboration"
+            element={
+              <ProtectedRoute>
+                <SessionsPage />
+              </ProtectedRoute>
+            }
+          />
         </Route>
+
+        {/* Full-screen collaboration page (no layout) */}
+        <Route
+          path="/collaboration/:sessionId"
+          element={
+            <ProtectedRoute>
+              <CollaborationPage />
+            </ProtectedRoute>
+          }
+        />
 
         {/* Fallback */}
         <Route path="*" element={<Navigate to="/" replace />} />

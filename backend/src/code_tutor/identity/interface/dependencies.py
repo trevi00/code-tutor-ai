@@ -91,3 +91,39 @@ async def get_current_active_user(
             detail="Account is deactivated",
         )
     return current_user
+
+
+async def get_current_user_ws(token: str) -> UserResponse | None:
+    """Get current user from WebSocket token (query param).
+
+    Returns None if authentication fails instead of raising exception.
+    """
+    try:
+        from code_tutor.shared.infrastructure.database import get_session_context
+
+        payload = decode_token(token)
+        token_payload = TokenPayload(payload)
+
+        if not token_payload.is_access_token:
+            return None
+
+        async with get_session_context() as session:
+            user_repo = SQLAlchemyUserRepository(session)
+            user = await user_repo.get_by_id(UUID(token_payload.user_id))
+
+            if user is None or not user.is_active:
+                return None
+
+            return UserResponse(
+                id=user.id,
+                email=str(user.email) if user.email else "",
+                username=str(user.username) if user.username else "",
+                role=user.role.value,
+                is_active=user.is_active,
+                is_verified=user.is_verified,
+                created_at=user.created_at,
+                last_login_at=user.last_login_at,
+                bio=user.bio,
+            )
+    except Exception:
+        return None
