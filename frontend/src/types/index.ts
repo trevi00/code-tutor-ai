@@ -392,6 +392,46 @@ export interface RecentQualityAnalysis {
   analyzed_at: string;
 }
 
+// Quality Profile types
+export interface QualityProfile {
+  has_data: boolean;
+  dimensions: {
+    correctness: number;
+    efficiency: number;
+    readability: number;
+    best_practices: number;
+  };
+  weak_areas: string[];
+  strong_areas: string[];
+  common_smells: [string, number][];
+  avg_complexity: number;
+  improvement_trend: 'improving' | 'stable' | 'declining' | 'new_user' | 'insufficient_data';
+  total_analyses?: number;
+}
+
+export interface QualityRecommendation {
+  id: string;
+  title: string;
+  difficulty: Difficulty;
+  category: Category;
+  score: number;
+  reason: string;
+  quality_focus: string[];
+  pattern_ids: string[];
+}
+
+export interface QualityImprovementSuggestion {
+  type: 'dimension' | 'smell' | 'complexity' | 'encouragement' | 'warning' | 'start';
+  priority: number;
+  message: string;
+  dimension?: string;
+  score?: number;
+  tips?: string[];
+  smell_type?: string;
+  count?: number;
+  value?: number;
+}
+
 // Submission summary for list
 export interface SubmissionSummary {
   id: string;

@@ -4,6 +4,9 @@ import type {
   QualityStats,
   QualityTrendPoint,
   RecentQualityAnalysis,
+  QualityProfile,
+  QualityRecommendation,
+  QualityImprovementSuggestion,
 } from '@/types';
 import apiClient from './client';
 
@@ -54,5 +57,42 @@ export const getRecentQuality = async (
   >('/dashboard/quality/recent', {
     params: { limit },
   });
+  return response.data.data;
+};
+
+/**
+ * Get user quality profile
+ */
+export const getQualityProfile = async (): Promise<QualityProfile> => {
+  const response = await apiClient.get<ApiResponse<QualityProfile>>(
+    '/dashboard/quality/profile'
+  );
+  return response.data.data;
+};
+
+/**
+ * Get quality-based problem recommendations
+ */
+export const getQualityRecommendations = async (
+  limit: number = 5
+): Promise<{ recommendations: QualityRecommendation[]; total: number }> => {
+  const response = await apiClient.get<
+    ApiResponse<{ recommendations: QualityRecommendation[]; total: number }>
+  >('/dashboard/quality/recommendations', {
+    params: { limit },
+  });
+  return response.data.data;
+};
+
+/**
+ * Get improvement suggestions
+ */
+export const getImprovementSuggestions = async (): Promise<{
+  suggestions: QualityImprovementSuggestion[];
+  total: number;
+}> => {
+  const response = await apiClient.get<
+    ApiResponse<{ suggestions: QualityImprovementSuggestion[]; total: number }>
+  >('/dashboard/quality/suggestions');
   return response.data.data;
 };

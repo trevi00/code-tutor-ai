@@ -31,7 +31,7 @@ from code_tutor.learning.infrastructure.repository import (
     SQLAlchemyProblemRepository,
     SQLAlchemySubmissionRepository,
 )
-from code_tutor.ml.analysis import CodeQualityService
+from code_tutor.ml.analysis import CodeQualityService, QualityRecommender
 from code_tutor.ml.prediction import InsightsService
 from code_tutor.ml.recommendation import RecommenderService
 from code_tutor.shared.api_response import success_response
@@ -77,6 +77,12 @@ async def get_quality_service(
     session: Annotated[AsyncSession, Depends(get_async_session)],
 ) -> CodeQualityService:
     return CodeQualityService(session)
+
+
+async def get_quality_recommender(
+    session: Annotated[AsyncSession, Depends(get_async_session)],
+) -> QualityRecommender:
+    return QualityRecommender(session)
 
 
 async def get_submission_service(
@@ -862,3 +868,68 @@ async def get_recent_quality(
             "total": len(analyses),
         }
     )
+
+
+# Quality-based recommendations
+@router.get(
+    "/dashboard/quality/profile",
+    summary="Get user quality profile",
+)
+async def get_quality_profile(
+    quality_recommender: Annotated[QualityRecommender, Depends(get_quality_recommender)],
+    current_user: Annotated[UserResponse, Depends(get_current_active_user)],
+) -> dict[str, Any]:
+    """
+    Get user's code quality profile based on submission history.
+
+    Returns:
+    - Average dimension scores
+    - Weak and strong areas
+    - Common code smells
+    - Improvement trend
+    """
+    profile = await quality_recommender.get_quality_profile(current_user.id)
+    return success_response(profile)
+
+
+@router.get(
+    "/dashboard/quality/recommendations",
+    summary="Get quality-based problem recommendations",
+)
+async def get_quality_recommendations(
+    quality_recommender: Annotated[QualityRecommender, Depends(get_quality_recommender)],
+    current_user: Annotated[UserResponse, Depends(get_current_active_user)],
+    limit: int = Query(default=5, ge=1, le=10),
+) -> dict[str, Any]:
+    """
+    Get personalized problem recommendations based on code quality analysis.
+
+    Recommends problems that will help improve weak quality dimensions.
+
+    Returns:
+    - List of recommended problems with quality focus reasons
+    """
+    recommendations = await quality_recommender.get_quality_recommendations(
+        current_user.id, limit
+    )
+    return success_response({"recommendations": recommendations, "total": len(recommendations)})
+
+
+@router.get(
+    "/dashboard/quality/suggestions",
+    summary="Get improvement suggestions",
+)
+async def get_improvement_suggestions(
+    quality_recommender: Annotated[QualityRecommender, Depends(get_quality_recommender)],
+    current_user: Annotated[UserResponse, Depends(get_current_active_user)],
+) -> dict[str, Any]:
+    """
+    Get personalized code quality improvement suggestions.
+
+    Returns:
+    - Actionable suggestions for improving code quality
+    - Tips based on common code smells
+    - Dimension-specific advice
+    """
+    suggestions = await quality_recommender.get_improvement_suggestions(current_user.id)
+    return success_response({"suggestions": suggestions, "total": len(suggestions)})

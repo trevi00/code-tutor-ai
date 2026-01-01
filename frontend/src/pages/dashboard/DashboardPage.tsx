@@ -4,6 +4,7 @@ import { dashboardApi, qualityApi } from '@/api';
 import { ActivityHeatmap } from '@/components/dashboard/ActivityHeatmap';
 import { CodeQualityCard } from '@/components/dashboard/CodeQualityCard';
 import { LearningInsights } from '@/components/dashboard/LearningInsights';
+import { QualityRecommendations } from '@/components/dashboard/QualityRecommendations';
 import { QualityTrendChart } from '@/components/dashboard/QualityTrendChart';
 import { SkillPredictions } from '@/components/dashboard/SkillPredictions';
 import type {
@@ -13,6 +14,9 @@ import type {
   RecentSubmission,
   QualityStats,
   QualityTrendPoint,
+  QualityProfile,
+  QualityRecommendation,
+  QualityImprovementSuggestion,
 } from '@/types';
 
 // Status badge styles
@@ -41,6 +45,9 @@ export default function DashboardPage() {
   const [insights, setInsights] = useState<InsightsData | null>(null);
   const [qualityStats, setQualityStats] = useState<QualityStats | null>(null);
   const [qualityTrends, setQualityTrends] = useState<QualityTrendPoint[]>([]);
+  const [qualityProfile, setQualityProfile] = useState<QualityProfile | null>(null);
+  const [qualityRecommendations, setQualityRecommendations] = useState<QualityRecommendation[]>([]);
+  const [qualitySuggestions, setQualitySuggestions] = useState<QualityImprovementSuggestion[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -48,16 +55,30 @@ export default function DashboardPage() {
     const fetchData = async () => {
       try {
         // Fetch dashboard, insights, and quality data in parallel
-        const [dashboardData, insightsData, qualityStatsData, qualityTrendsData] = await Promise.all([
+        const [
+          dashboardData,
+          insightsData,
+          qualityStatsData,
+          qualityTrendsData,
+          profileData,
+          recommendationsData,
+          suggestionsData,
+        ] = await Promise.all([
           dashboardApi.getDashboard(),
-          dashboardApi.getInsights().catch(() => null), // Don't fail if insights fail
-          qualityApi.getQualityStats().catch(() => null), // Don't fail if quality fails
-          qualityApi.getQualityTrends(30).catch(() => ({ trends: [], days: 30 })), // Don't fail if trends fail
+          dashboardApi.getInsights().catch(() => null),
+          qualityApi.getQualityStats().catch(() => null),
+          qualityApi.getQualityTrends(30).catch(() => ({ trends: [], days: 30 })),
+          qualityApi.getQualityProfile().catch(() => null),
+          qualityApi.getQualityRecommendations(5).catch(() => ({ recommendations: [], total: 0 })),
+          qualityApi.getImprovementSuggestions().catch(() => ({ suggestions: [], total: 0 })),
         ]);
         setDashboard(dashboardData);
         setInsights(insightsData);
         setQualityStats(qualityStatsData);
         setQualityTrends(qualityTrendsData?.trends || []);
+        setQualityProfile(profileData);
+        setQualityRecommendations(recommendationsData?.recommendations || []);
+        setQualitySuggestions(suggestionsData?.suggestions || []);
       } catch (err) {
         setError('대시보드를 불러오는데 실패했습니다.');
         console.error(err);
@@ -153,6 +174,17 @@ export default function DashboardPage() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
           <CodeQualityCard stats={qualityStats} />
           <QualityTrendChart trends={qualityTrends} days={30} />
+        </div>
+      )}
+
+      {/* Quality-Based Recommendations */}
+      {qualityProfile && (
+        <div className="mb-8">
+          <QualityRecommendations
+            profile={qualityProfile}
+            recommendations={qualityRecommendations}
+            suggestions={qualitySuggestions}
+          />
         </div>
       )}
 
