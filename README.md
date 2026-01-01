@@ -12,7 +12,7 @@
 
 ## 프로젝트 상태
 
-**Phase 2 완료** - ML 기반 추천 시스템 및 학습 분석 구현
+**Phase 3 완료** - 코드 품질 분석 및 품질 기반 추천 시스템 구현
 
 | 기능 | 상태 |
 |------|------|
@@ -22,8 +22,10 @@
 | 코드 실행 (Docker 샌드박스) | ✅ 완료 |
 | 대시보드 (통계/스트릭/히트맵) | ✅ 완료 |
 | 패턴 학습 (24개 알고리즘 패턴) | ✅ 완료 |
-| **ML 추천 시스템 (NCF)** | ✅ 완료 |
-| **AI 학습 분석 (LSTM)** | ✅ 완료 |
+| ML 추천 시스템 (NCF) | ✅ 완료 |
+| AI 학습 분석 (LSTM) | ✅ 완료 |
+| **코드 품질 분석 (CodeBERT)** | ✅ 완료 |
+| **품질 기반 추천** | ✅ 완료 |
 | 전체 UI 한글화 | ✅ 완료 |
 | E2E 테스트 (41개) | ✅ 통과 |
 
@@ -70,6 +72,24 @@
 - 성장률 분석 (지난 주 대비)
 - 개인화된 학습 추천 메시지
 - 스킬 갭 시각화
+
+### 코드 품질 분석 (Phase 3)
+- **CodeBERT 기반 다차원 품질 분석**
+  - 정확성 (Correctness) - 엣지 케이스, 경계 조건 처리
+  - 효율성 (Efficiency) - 시간/공간 복잡도 최적화
+  - 가독성 (Readability) - 명명 규칙, 코드 구조
+  - 모범사례 (Best Practices) - 코딩 컨벤션, 에러 처리
+- **코드 스멜 탐지** - 긴 함수, 깊은 중첩, 매직 넘버 등
+- **복잡도 분석** - 순환 복잡도, 인지 복잡도
+- **품질 추이 차트** - 시간에 따른 품질 변화 시각화
+- **등급 시스템** - A/B/C/D/F 등급 부여
+
+### 품질 기반 추천 (Phase 3)
+- **약점 영역 분석** - 4개 품질 차원 중 개선 필요 영역 식별
+- **맞춤형 문제 추천** - 약점 개선에 도움되는 문제 추천
+- **개선 제안** - 차원별 구체적인 개선 팁 제공
+- **코드 스멜 해결 가이드** - 자주 발생하는 스멜 해결 방법
+- **향상 추세 추적** - 품질 개선 여부 모니터링
 
 ---
 
@@ -205,6 +225,17 @@ npm run dev
 | GET | `/api/v1/problems/skill-gaps` | 스킬 갭 분석 |
 | GET | `/api/v1/problems/next-challenge` | 다음 도전 문제 |
 
+### 코드 품질 분석 (Phase 3)
+| Method | Endpoint | 설명 |
+|--------|----------|------|
+| GET | `/api/v1/submissions/{id}/quality` | 제출별 품질 분석 |
+| GET | `/api/v1/dashboard/quality` | 품질 통계 |
+| GET | `/api/v1/dashboard/quality/trends` | 품질 추이 |
+| GET | `/api/v1/dashboard/quality/recent` | 최근 분석 목록 |
+| GET | `/api/v1/dashboard/quality/profile` | 품질 프로필 |
+| GET | `/api/v1/dashboard/quality/recommendations` | 품질 기반 추천 |
+| GET | `/api/v1/dashboard/quality/suggestions` | 개선 제안 |
+
 ---
 
 ## 프로젝트 구조
@@ -217,10 +248,11 @@ code-tutor-ai/
 │       ├── learning/       # 문제/패턴 도메인
 │       ├── execution/      # 코드 실행 도메인
 │       ├── tutor/          # AI 튜터 도메인
-│       ├── ml/             # ML 모듈 (Phase 2)
+│       ├── ml/             # ML 모듈 (Phase 2, 3)
 │       │   ├── recommendation/  # NCF 추천 시스템
 │       │   ├── prediction/      # LSTM 학습 예측
-│       │   ├── pipeline/        # 데이터 파이프라인
+│       │   ├── analysis/        # 코드 품질 분석 (Phase 3)
+│       │   ├── pipeline/        # 데이터 파이프라인 + 품질 모델
 │       │   ├── rag/             # 패턴 RAG
 │       │   └── transformer/     # CodeBERT 분석
 │       └── shared/         # 공유 모듈
@@ -232,7 +264,7 @@ code-tutor-ai/
 │       │   ├── chat/       # AI 튜터 채팅
 │       │   └── dashboard/  # 대시보드 + AI 인사이트
 │       ├── components/     # 재사용 컴포넌트
-│       │   └── dashboard/  # 대시보드 컴포넌트
+│       │   └── dashboard/  # 대시보드 컴포넌트 (품질 분석 포함)
 │       ├── api/            # API 클라이언트
 │       └── e2e/            # E2E 테스트
 ├── docs/                   # 프로젝트 문서
@@ -332,7 +364,8 @@ SANDBOX_MEMORY_LIMIT_MB=256
 | **Phase 1** | ✅ 완료 | MVP (AI 채팅, 코드 리뷰, 문제 풀이) |
 | **Phase 1.5** | ✅ 완료 | 패턴 학습, 한글화 |
 | **Phase 2** | ✅ 완료 | 추천 시스템 (NCF), 학습 분석 (LSTM) |
-| **Phase 3** | 예정 | 코드 품질 분석 (CodeBERT), 고급 분석 대시보드 |
+| **Phase 3** | ✅ 완료 | 코드 품질 분석 (CodeBERT), 품질 기반 추천, 고급 대시보드 |
+| **Phase 4** | 예정 | 실시간 협업, 코드 플레이그라운드 |
 
 ---
 
