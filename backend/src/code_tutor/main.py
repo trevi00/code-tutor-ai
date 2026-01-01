@@ -12,7 +12,11 @@ import code_tutor.ml.pipeline.models  # noqa: F401
 import code_tutor.collaboration.infrastructure.models  # noqa: F401
 # Import playground models for database table creation
 import code_tutor.playground.infrastructure.models  # noqa: F401
+# Import gamification models for database table creation
+import code_tutor.gamification.infrastructure.models  # noqa: F401
 from code_tutor.playground.infrastructure.template_seeder import seed_templates
+from code_tutor.gamification.infrastructure.repository import SQLAlchemyBadgeRepository, SQLAlchemyUserBadgeRepository, SQLAlchemyUserStatsRepository
+from code_tutor.gamification.application.services import BadgeService
 
 from code_tutor.execution.interface.routes import router as execution_router
 
@@ -23,6 +27,7 @@ from code_tutor.collaboration.interface import http_router as collaboration_rout
 from code_tutor.collaboration.interface import websocket_router as collaboration_ws_router
 from code_tutor.playground.interface import router as playground_router
 from code_tutor.visualization.interface import router as visualization_router
+from code_tutor.gamification.interface import router as gamification_router
 from code_tutor.shared.api_response import success_response
 from code_tutor.shared.config import get_settings
 from code_tutor.shared.exception_handlers import register_exception_handlers
@@ -55,11 +60,21 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
         await init_db()
         logger.info("Database initialized")
 
-        # Seed code templates
+        # Seed code templates and badges
         async with get_session_context() as session:
             count = await seed_templates(session)
             if count > 0:
                 logger.info(f"Seeded {count} code templates")
+
+            # Seed gamification badges
+            badge_repo = SQLAlchemyBadgeRepository(session)
+            user_badge_repo = SQLAlchemyUserBadgeRepository(session)
+            user_stats_repo = SQLAlchemyUserStatsRepository(session)
+            badge_service = BadgeService(badge_repo, user_badge_repo, user_stats_repo)
+            badge_count = await badge_service.seed_badges()
+            await session.commit()
+            if badge_count > 0:
+                logger.info(f"Seeded {badge_count} badges")
 
     logger.info("Application started successfully")
 
@@ -114,6 +129,7 @@ def create_app() -> FastAPI:
     app.include_router(collaboration_ws_router, prefix="/api/v1")
     app.include_router(playground_router, prefix="/api/v1")
     app.include_router(visualization_router, prefix="/api/v1")
+    app.include_router(gamification_router, prefix="/api/v1")
 
     # Health check endpoint
     @app.get("/api/health", tags=["Health"])

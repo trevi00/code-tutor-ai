@@ -21,6 +21,7 @@ import {
   SharedPlaygroundPage,
 } from '@/pages/playground';
 import { VisualizationPage } from '@/pages/visualization';
+import { LeaderboardPage, BadgesPage } from '@/pages/gamification';
 import { useAuthStore } from '@/store/authStore';
 
 // Protected Route component
@@ -153,6 +154,24 @@ export default function App() {
 
           {/* Visualization route */}
           <Route path="/visualization" element={<VisualizationPage />} />
+
+          {/* Gamification routes */}
+          <Route
+            path="/leaderboard"
+            element={
+              <ProtectedRoute>
+                <LeaderboardPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/badges"
+            element={
+              <ProtectedRoute>
+                <BadgesPage />
+              </ProtectedRoute>
+            }
+          />
         </Route>
 
         {/* Full-screen collaboration page (no layout) */}

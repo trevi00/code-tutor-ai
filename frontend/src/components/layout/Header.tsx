@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { BookOpen, MessageSquare, LayoutDashboard, User, LogOut, Settings, FileText, ChevronDown, Sparkles, Code2, PlayCircle } from 'lucide-react';
+import { BookOpen, MessageSquare, LayoutDashboard, User, LogOut, Settings, FileText, ChevronDown, Sparkles, Code2, PlayCircle, Trophy, Award } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
 
 export function Header() {
@@ -80,6 +80,13 @@ export function Header() {
               <PlayCircle className="h-5 w-5" />
               <span>시각화</span>
             </Link>
+            <Link
+              to="/leaderboard"
+              className="flex items-center gap-2 text-neutral-600 hover:text-blue-600 transition-all duration-200"
+            >
+              <Trophy className="h-5 w-5" />
+              <span>리더보드</span>
+            </Link>
 
             {/* User Menu Dropdown */}
             <div className="relative ml-4 pl-4 border-l border-neutral-200" ref={menuRef}>
@@ -110,6 +117,14 @@ export function Header() {
                   >
                     <FileText className="h-4 w-4" />
                     <span>제출 기록</span>
+                  </Link>
+                  <Link
+                    to="/badges"
+                    className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    onClick={() => setShowUserMenu(false)}
+                  >
+                    <Award className="h-4 w-4" />
+                    <span>내 배지</span>
                   </Link>
                   <Link
                     to="/settings"

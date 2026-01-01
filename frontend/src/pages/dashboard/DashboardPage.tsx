@@ -7,6 +7,7 @@ import { LearningInsights } from '@/components/dashboard/LearningInsights';
 import { QualityRecommendations } from '@/components/dashboard/QualityRecommendations';
 import { QualityTrendChart } from '@/components/dashboard/QualityTrendChart';
 import { SkillPredictions } from '@/components/dashboard/SkillPredictions';
+import { GamificationWidget } from '@/components/gamification';
 import type {
   DashboardData,
   InsightsData,
@@ -162,12 +163,15 @@ export default function DashboardPage() {
         </StatCard>
       </div>
 
-      {/* AI Learning Insights */}
-      {insights && (
-        <div className="mb-8">
-          <LearningInsights insights={insights} />
+      {/* Gamification & AI Learning Insights */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+        <div className="lg:col-span-2">
+          {insights && <LearningInsights insights={insights} />}
         </div>
-      )}
+        <div>
+          <GamificationWidget />
+        </div>
+      </div>
 
       {/* Code Quality Analysis */}
       {qualityStats && (
