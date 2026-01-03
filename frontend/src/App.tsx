@@ -24,6 +24,8 @@ import { VisualizationPage } from '@/pages/visualization';
 import DebuggerPage from '@/pages/debugger/DebuggerPage';
 import PerformancePage from '@/pages/performance/PerformancePage';
 import { LeaderboardPage, BadgesPage } from '@/pages/gamification';
+import TypingPracticeListPage from '@/pages/typing-practice/TypingPracticeListPage';
+import TypingExercisePage from '@/pages/typing-practice/TypingExercisePage';
 import { useAuthStore } from '@/store/authStore';
 
 // Protected Route component
@@ -162,6 +164,9 @@ export default function App() {
 
           {/* Performance route */}
           <Route path="/performance" element={<PerformancePage />} />
+          {/* Typing Practice */}
+          <Route path="/typing-practice" element={<TypingPracticeListPage />} />
+          <Route path="/typing-practice/:exerciseId" element={<TypingExercisePage />} />
 
           {/* Gamification routes */}
           <Route
