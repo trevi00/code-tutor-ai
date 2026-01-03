@@ -54,6 +54,8 @@ class Category(str, Enum):
     DFS = "dfs"
     DIVIDE_AND_CONQUER = "divide_and_conquer"
     DESIGN = "design"
+    MATH = "math"
+    SIMULATION = "simulation"
 
 
 @dataclass(frozen=True)

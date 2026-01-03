@@ -584,6 +584,632 @@ def is_power_of_two(n):
     return result""",
         "keywords": ["matrix", "spiral", "diagonal", "island", "flood fill"],
     },
+    # ===== 새로 추가된 패턴들 (Phase 7) =====
+    {
+        "id": "prefix-sum",
+        "name": "Prefix Sum",
+        "name_ko": "누적 합",
+        "description": "Precompute cumulative sums for range queries",
+        "description_ko": "범위 쿼리를 위한 누적 합 미리 계산",
+        "use_cases": [
+            "구간 합 쿼리",
+            "부분 배열 합",
+            "평균 계산",
+            "차이 배열",
+        ],
+        "time_complexity": "O(n) 전처리, O(1) 쿼리",
+        "space_complexity": "O(n)",
+        "example_code": """def prefix_sum(nums):
+    n = len(nums)
+    prefix = [0] * (n + 1)
+    for i in range(n):
+        prefix[i + 1] = prefix[i] + nums[i]
+    return prefix
+
+def range_sum(prefix, left, right):
+    # [left, right] 구간 합 (0-indexed)
+    return prefix[right + 1] - prefix[left]""",
+        "keywords": ["cumulative", "range sum", "subarray", "prefix", "precompute"],
+    },
+    {
+        "id": "prefix-sum-2d",
+        "name": "2D Prefix Sum",
+        "name_ko": "2차원 누적 합",
+        "description": "Precompute cumulative sums for 2D range queries",
+        "description_ko": "2차원 범위 쿼리를 위한 누적 합 미리 계산",
+        "use_cases": [
+            "2D 구간 합",
+            "부분 행렬 합",
+            "영역 쿼리",
+        ],
+        "time_complexity": "O(m*n) 전처리, O(1) 쿼리",
+        "space_complexity": "O(m*n)",
+        "example_code": """def build_2d_prefix(matrix):
+    if not matrix:
+        return []
+    m, n = len(matrix), len(matrix[0])
+    prefix = [[0] * (n + 1) for _ in range(m + 1)]
+    for i in range(m):
+        for j in range(n):
+            prefix[i+1][j+1] = (prefix[i][j+1] + prefix[i+1][j]
+                               - prefix[i][j] + matrix[i][j])
+    return prefix
+
+def query_2d(prefix, r1, c1, r2, c2):
+    return (prefix[r2+1][c2+1] - prefix[r1][c2+1]
+            - prefix[r2+1][c1] + prefix[r1][c1])""",
+        "keywords": ["matrix sum", "2d range", "submatrix", "area", "region"],
+    },
+    {
+        "id": "sieve-of-eratosthenes",
+        "name": "Sieve of Eratosthenes",
+        "name_ko": "에라토스테네스의 체",
+        "description": "Efficiently find all primes up to n",
+        "description_ko": "n까지의 모든 소수를 효율적으로 찾기",
+        "use_cases": [
+            "소수 생성",
+            "소수 판별",
+            "N번째 소수 찾기",
+            "소인수분해",
+        ],
+        "time_complexity": "O(n log log n)",
+        "space_complexity": "O(n)",
+        "example_code": """def sieve_of_eratosthenes(n):
+    if n < 2:
+        return []
+    is_prime = [True] * (n + 1)
+    is_prime[0] = is_prime[1] = False
+    for i in range(2, int(n**0.5) + 1):
+        if is_prime[i]:
+            for j in range(i*i, n + 1, i):
+                is_prime[j] = False
+    return [i for i in range(n + 1) if is_prime[i]]""",
+        "keywords": ["prime", "sieve", "factor", "number theory", "primality"],
+    },
+    {
+        "id": "kmp-algorithm",
+        "name": "KMP String Matching",
+        "name_ko": "KMP 문자열 매칭",
+        "description": "Efficient string pattern matching using failure function",
+        "description_ko": "실패 함수를 사용한 효율적인 문자열 패턴 매칭",
+        "use_cases": [
+            "문자열 검색",
+            "패턴 매칭",
+            "부분 문자열 찾기",
+            "반복 패턴 감지",
+        ],
+        "time_complexity": "O(n + m)",
+        "space_complexity": "O(m)",
+        "example_code": """def kmp_search(text, pattern):
+    def build_lps(pattern):
+        lps = [0] * len(pattern)
+        length = 0
+        i = 1
+        while i < len(pattern):
+            if pattern[i] == pattern[length]:
+                length += 1
+                lps[i] = length
+                i += 1
+            elif length > 0:
+                length = lps[length - 1]
+            else:
+                lps[i] = 0
+                i += 1
+        return lps
+
+    lps = build_lps(pattern)
+    i = j = 0
+    positions = []
+    while i < len(text):
+        if text[i] == pattern[j]:
+            i += 1
+            j += 1
+            if j == len(pattern):
+                positions.append(i - j)
+                j = lps[j - 1]
+        elif j > 0:
+            j = lps[j - 1]
+        else:
+            i += 1
+    return positions""",
+        "keywords": ["string match", "pattern", "substring", "failure function", "lps"],
+    },
+    {
+        "id": "counting-sort",
+        "name": "Counting Sort",
+        "name_ko": "계수 정렬",
+        "description": "Sort by counting occurrences of each element",
+        "description_ko": "각 요소의 출현 횟수를 세어 정렬",
+        "use_cases": [
+            "제한된 범위의 정수 정렬",
+            "빈도 기반 정렬",
+            "안정 정렬 필요 시",
+        ],
+        "time_complexity": "O(n + k) where k is range",
+        "space_complexity": "O(k)",
+        "example_code": """def counting_sort(arr):
+    if not arr:
+        return arr
+    min_val, max_val = min(arr), max(arr)
+    range_size = max_val - min_val + 1
+    count = [0] * range_size
+
+    for num in arr:
+        count[num - min_val] += 1
+
+    result = []
+    for i, cnt in enumerate(count):
+        result.extend([i + min_val] * cnt)
+    return result""",
+        "keywords": ["counting", "integer sort", "linear sort", "frequency", "bucket"],
+    },
+    {
+        "id": "radix-sort",
+        "name": "Radix Sort",
+        "name_ko": "기수 정렬",
+        "description": "Sort by processing individual digits",
+        "description_ko": "개별 자릿수를 처리하여 정렬",
+        "use_cases": [
+            "정수 정렬",
+            "문자열 정렬",
+            "고정 길이 키 정렬",
+        ],
+        "time_complexity": "O(d * (n + k)) where d is digits, k is base",
+        "space_complexity": "O(n + k)",
+        "example_code": """def radix_sort(arr):
+    if not arr:
+        return arr
+    max_val = max(arr)
+    exp = 1
+    while max_val // exp > 0:
+        counting_sort_by_digit(arr, exp)
+        exp *= 10
+    return arr
+
+def counting_sort_by_digit(arr, exp):
+    n = len(arr)
+    output = [0] * n
+    count = [0] * 10
+
+    for num in arr:
+        index = (num // exp) % 10
+        count[index] += 1
+
+    for i in range(1, 10):
+        count[i] += count[i - 1]
+
+    for i in range(n - 1, -1, -1):
+        index = (arr[i] // exp) % 10
+        output[count[index] - 1] = arr[i]
+        count[index] -= 1
+
+    for i in range(n):
+        arr[i] = output[i]""",
+        "keywords": ["digit", "base", "lsd", "msd", "linear sort"],
+    },
+    {
+        "id": "shell-sort",
+        "name": "Shell Sort",
+        "name_ko": "셸 정렬",
+        "description": "Generalized insertion sort with gap sequence",
+        "description_ko": "갭 시퀀스를 사용한 일반화된 삽입 정렬",
+        "use_cases": [
+            "중간 크기 배열 정렬",
+            "거의 정렬된 배열",
+            "제자리 정렬 필요 시",
+        ],
+        "time_complexity": "O(n log^2 n) to O(n^2)",
+        "space_complexity": "O(1)",
+        "example_code": """def shell_sort(arr):
+    n = len(arr)
+    gap = n // 2
+
+    while gap > 0:
+        for i in range(gap, n):
+            temp = arr[i]
+            j = i
+            while j >= gap and arr[j - gap] > temp:
+                arr[j] = arr[j - gap]
+                j -= gap
+            arr[j] = temp
+        gap //= 2
+    return arr""",
+        "keywords": ["gap sequence", "insertion sort", "in-place", "diminishing increment"],
+    },
+    {
+        "id": "fenwick-tree",
+        "name": "Fenwick Tree (BIT)",
+        "name_ko": "펜윅 트리",
+        "description": "Binary indexed tree for range queries and point updates",
+        "description_ko": "범위 쿼리와 포인트 업데이트를 위한 이진 인덱스 트리",
+        "use_cases": [
+            "범위 합 쿼리",
+            "포인트 업데이트",
+            "역전 카운트",
+            "누적 빈도",
+        ],
+        "time_complexity": "O(log n) per operation",
+        "space_complexity": "O(n)",
+        "example_code": """class FenwickTree:
+    def __init__(self, n):
+        self.n = n
+        self.tree = [0] * (n + 1)
+
+    def update(self, i, delta):
+        i += 1  # 1-indexed
+        while i <= self.n:
+            self.tree[i] += delta
+            i += i & (-i)  # 다음 노드로 이동
+
+    def prefix_sum(self, i):
+        i += 1  # 1-indexed
+        result = 0
+        while i > 0:
+            result += self.tree[i]
+            i -= i & (-i)  # 부모 노드로 이동
+        return result
+
+    def range_sum(self, left, right):
+        return self.prefix_sum(right) - self.prefix_sum(left - 1)""",
+        "keywords": ["binary indexed tree", "bit", "range query", "point update", "inversion"],
+    },
+    {
+        "id": "avl-tree",
+        "name": "AVL Tree",
+        "name_ko": "AVL 트리",
+        "description": "Self-balancing binary search tree",
+        "description_ko": "자가 균형 이진 탐색 트리",
+        "use_cases": [
+            "정렬된 데이터 유지",
+            "빠른 삽입/삭제/검색",
+            "균형 잡힌 트리 필요 시",
+        ],
+        "time_complexity": "O(log n) per operation",
+        "space_complexity": "O(n)",
+        "example_code": """class AVLNode:
+    def __init__(self, val):
+        self.val = val
+        self.left = self.right = None
+        self.height = 1
+
+class AVLTree:
+    def get_height(self, node):
+        return node.height if node else 0
+
+    def get_balance(self, node):
+        return self.get_height(node.left) - self.get_height(node.right) if node else 0
+
+    def rotate_right(self, y):
+        x = y.left
+        T2 = x.right
+        x.right = y
+        y.left = T2
+        y.height = 1 + max(self.get_height(y.left), self.get_height(y.right))
+        x.height = 1 + max(self.get_height(x.left), self.get_height(x.right))
+        return x
+
+    def rotate_left(self, x):
+        y = x.right
+        T2 = y.left
+        y.left = x
+        x.right = T2
+        x.height = 1 + max(self.get_height(x.left), self.get_height(x.right))
+        y.height = 1 + max(self.get_height(y.left), self.get_height(y.right))
+        return y
+
+    def insert(self, root, val):
+        if not root:
+            return AVLNode(val)
+        if val < root.val:
+            root.left = self.insert(root.left, val)
+        else:
+            root.right = self.insert(root.right, val)
+
+        root.height = 1 + max(self.get_height(root.left), self.get_height(root.right))
+        balance = self.get_balance(root)
+
+        # LL, RR, LR, RL 케이스 처리
+        if balance > 1 and val < root.left.val:
+            return self.rotate_right(root)
+        if balance < -1 and val > root.right.val:
+            return self.rotate_left(root)
+        if balance > 1 and val > root.left.val:
+            root.left = self.rotate_left(root.left)
+            return self.rotate_right(root)
+        if balance < -1 and val < root.right.val:
+            root.right = self.rotate_right(root.right)
+            return self.rotate_left(root)
+        return root""",
+        "keywords": ["balanced bst", "rotation", "self-balancing", "height balanced"],
+    },
+    {
+        "id": "lazy-segment-tree",
+        "name": "Lazy Segment Tree",
+        "name_ko": "레이지 세그먼트 트리",
+        "description": "Segment tree with lazy propagation for range updates",
+        "description_ko": "범위 업데이트를 위한 지연 전파 세그먼트 트리",
+        "use_cases": [
+            "범위 업데이트 + 범위 쿼리",
+            "구간에 값 더하기",
+            "구간 최솟값/최댓값 업데이트",
+        ],
+        "time_complexity": "O(log n) per operation",
+        "space_complexity": "O(n)",
+        "example_code": """class LazySegmentTree:
+    def __init__(self, arr):
+        self.n = len(arr)
+        self.tree = [0] * (4 * self.n)
+        self.lazy = [0] * (4 * self.n)
+        self.build(arr, 1, 0, self.n - 1)
+
+    def build(self, arr, node, start, end):
+        if start == end:
+            self.tree[node] = arr[start]
+        else:
+            mid = (start + end) // 2
+            self.build(arr, 2*node, start, mid)
+            self.build(arr, 2*node+1, mid+1, end)
+            self.tree[node] = self.tree[2*node] + self.tree[2*node+1]
+
+    def push_down(self, node, start, end):
+        if self.lazy[node] != 0:
+            mid = (start + end) // 2
+            self.tree[2*node] += (mid - start + 1) * self.lazy[node]
+            self.tree[2*node+1] += (end - mid) * self.lazy[node]
+            self.lazy[2*node] += self.lazy[node]
+            self.lazy[2*node+1] += self.lazy[node]
+            self.lazy[node] = 0
+
+    def range_update(self, node, start, end, l, r, val):
+        if r < start or end < l:
+            return
+        if l <= start and end <= r:
+            self.tree[node] += (end - start + 1) * val
+            self.lazy[node] += val
+            return
+        self.push_down(node, start, end)
+        mid = (start + end) // 2
+        self.range_update(2*node, start, mid, l, r, val)
+        self.range_update(2*node+1, mid+1, end, l, r, val)
+        self.tree[node] = self.tree[2*node] + self.tree[2*node+1]""",
+        "keywords": ["lazy propagation", "range update", "segment tree", "interval"],
+    },
+    {
+        "id": "dijkstra",
+        "name": "Dijkstra's Algorithm",
+        "name_ko": "다익스트라 알고리즘",
+        "description": "Find shortest path from source to all vertices",
+        "description_ko": "출발점에서 모든 정점까지의 최단 경로 찾기",
+        "use_cases": [
+            "최단 경로",
+            "네트워크 지연 시간",
+            "GPS 네비게이션",
+            "라우팅",
+        ],
+        "time_complexity": "O((V + E) log V)",
+        "space_complexity": "O(V)",
+        "example_code": """import heapq
+def dijkstra(graph, start):
+    n = len(graph)
+    dist = [float('inf')] * n
+    dist[start] = 0
+    pq = [(0, start)]  # (거리, 노드)
+
+    while pq:
+        d, u = heapq.heappop(pq)
+        if d > dist[u]:
+            continue
+        for v, weight in graph[u]:
+            if dist[u] + weight < dist[v]:
+                dist[v] = dist[u] + weight
+                heapq.heappush(pq, (dist[v], v))
+    return dist""",
+        "keywords": ["shortest path", "weighted graph", "priority queue", "single source"],
+    },
+    {
+        "id": "prim-mst",
+        "name": "Prim's MST Algorithm",
+        "name_ko": "프림 MST 알고리즘",
+        "description": "Find minimum spanning tree using greedy approach",
+        "description_ko": "그리디 접근법으로 최소 신장 트리 찾기",
+        "use_cases": [
+            "최소 신장 트리",
+            "네트워크 연결",
+            "클러스터링",
+        ],
+        "time_complexity": "O((V + E) log V)",
+        "space_complexity": "O(V)",
+        "example_code": """import heapq
+def prim_mst(graph, n):
+    visited = [False] * n
+    mst_cost = 0
+    mst_edges = []
+    pq = [(0, 0, -1)]  # (weight, node, parent)
+
+    while pq and len(mst_edges) < n:
+        weight, u, parent = heapq.heappop(pq)
+        if visited[u]:
+            continue
+        visited[u] = True
+        mst_cost += weight
+        if parent != -1:
+            mst_edges.append((parent, u, weight))
+
+        for v, w in graph[u]:
+            if not visited[v]:
+                heapq.heappush(pq, (w, v, u))
+
+    return mst_cost, mst_edges""",
+        "keywords": ["minimum spanning tree", "mst", "greedy", "connected graph"],
+    },
+    {
+        "id": "kruskal-mst",
+        "name": "Kruskal's MST Algorithm",
+        "name_ko": "크루스칼 MST 알고리즘",
+        "description": "Find MST by sorting edges and using union-find",
+        "description_ko": "간선 정렬과 유니온-파인드를 사용한 MST 찾기",
+        "use_cases": [
+            "최소 신장 트리",
+            "네트워크 비용 최소화",
+            "희소 그래프",
+        ],
+        "time_complexity": "O(E log E)",
+        "space_complexity": "O(V)",
+        "example_code": """def kruskal_mst(n, edges):
+    # edges: [(weight, u, v), ...]
+    parent = list(range(n))
+    rank = [0] * n
+
+    def find(x):
+        if parent[x] != x:
+            parent[x] = find(parent[x])
+        return parent[x]
+
+    def union(x, y):
+        px, py = find(x), find(y)
+        if px == py:
+            return False
+        if rank[px] < rank[py]:
+            px, py = py, px
+        parent[py] = px
+        if rank[px] == rank[py]:
+            rank[px] += 1
+        return True
+
+    edges.sort()  # 가중치 기준 정렬
+    mst_cost = 0
+    mst_edges = []
+
+    for weight, u, v in edges:
+        if union(u, v):
+            mst_cost += weight
+            mst_edges.append((u, v, weight))
+            if len(mst_edges) == n - 1:
+                break
+
+    return mst_cost, mst_edges""",
+        "keywords": ["minimum spanning tree", "mst", "union find", "edge sorting"],
+    },
+    {
+        "id": "tree-traversal",
+        "name": "Tree Traversal",
+        "name_ko": "트리 순회",
+        "description": "Traverse tree nodes in specific orders",
+        "description_ko": "특정 순서로 트리 노드 순회",
+        "use_cases": [
+            "전위/중위/후위 순회",
+            "트리 직렬화",
+            "표현식 트리",
+            "트리 복사",
+        ],
+        "time_complexity": "O(n)",
+        "space_complexity": "O(h) where h is height",
+        "example_code": """def preorder(root):
+    if not root:
+        return []
+    return [root.val] + preorder(root.left) + preorder(root.right)
+
+def inorder(root):
+    if not root:
+        return []
+    return inorder(root.left) + [root.val] + inorder(root.right)
+
+def postorder(root):
+    if not root:
+        return []
+    return postorder(root.left) + postorder(root.right) + [root.val]
+
+def level_order(root):
+    from collections import deque
+    if not root:
+        return []
+    result, queue = [], deque([root])
+    while queue:
+        level = []
+        for _ in range(len(queue)):
+            node = queue.popleft()
+            level.append(node.val)
+            if node.left: queue.append(node.left)
+            if node.right: queue.append(node.right)
+        result.append(level)
+    return result""",
+        "keywords": ["preorder", "inorder", "postorder", "level order", "traversal"],
+    },
+    {
+        "id": "lca",
+        "name": "Lowest Common Ancestor",
+        "name_ko": "최소 공통 조상",
+        "description": "Find lowest common ancestor of two nodes in a tree",
+        "description_ko": "트리에서 두 노드의 최소 공통 조상 찾기",
+        "use_cases": [
+            "트리에서 최소 공통 조상",
+            "거리 쿼리",
+            "경로 쿼리",
+        ],
+        "time_complexity": "O(n) naive, O(log n) with preprocessing",
+        "space_complexity": "O(n)",
+        "example_code": """def lca(root, p, q):
+    if not root or root == p or root == q:
+        return root
+    left = lca(root.left, p, q)
+    right = lca(root.right, p, q)
+    if left and right:
+        return root
+    return left or right
+
+# Binary Lifting for O(log n) queries
+def build_lca(n, parent):
+    LOG = 20
+    up = [[0] * n for _ in range(LOG)]
+    up[0] = parent
+    for k in range(1, LOG):
+        for v in range(n):
+            if up[k-1][v] != -1:
+                up[k][v] = up[k-1][up[k-1][v]]
+            else:
+                up[k][v] = -1
+    return up""",
+        "keywords": ["ancestor", "tree", "binary lifting", "path", "distance"],
+    },
+    {
+        "id": "interval-scheduling",
+        "name": "Interval Scheduling",
+        "name_ko": "구간 스케줄링",
+        "description": "Select maximum non-overlapping intervals",
+        "description_ko": "겹치지 않는 최대 구간 선택",
+        "use_cases": [
+            "회의실 배정",
+            "작업 스케줄링",
+            "이벤트 선택",
+        ],
+        "time_complexity": "O(n log n)",
+        "space_complexity": "O(1)",
+        "example_code": """def max_meetings(intervals):
+    # 종료 시간 기준 정렬
+    intervals.sort(key=lambda x: x[1])
+    count = 0
+    end = float('-inf')
+
+    for start, finish in intervals:
+        if start >= end:
+            count += 1
+            end = finish
+
+    return count
+
+def min_meeting_rooms(intervals):
+    import heapq
+    intervals.sort(key=lambda x: x[0])
+    rooms = []  # 각 방의 종료 시간
+
+    for start, end in intervals:
+        if rooms and rooms[0] <= start:
+            heapq.heappop(rooms)
+        heapq.heappush(rooms, end)
+
+    return len(rooms)""",
+        "keywords": ["scheduling", "interval", "meeting room", "greedy", "non-overlapping"],
+    },
 ]
 
 
