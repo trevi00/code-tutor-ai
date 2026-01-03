@@ -11,6 +11,7 @@ import type { TypingExercise, UserTypingStats } from '../../api/typingPractice';
 export default function TypingPracticeListPage() {
   const [exercises, setExercises] = useState<TypingExercise[]>([]);
   const [stats, setStats] = useState<UserTypingStats | null>(null);
+  const [masteredIds, setMasteredIds] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
@@ -29,15 +30,17 @@ export default function TypingPracticeListPage() {
   const loadData = async () => {
     try {
       setLoading(true);
-      const [exercisesRes, statsRes] = await Promise.all([
+      const [exercisesRes, statsRes, masteredRes] = await Promise.all([
         typingPracticeApi.listExercises({
           category: selectedCategory === 'all' ? undefined : selectedCategory,
           page_size: 50,
         }),
         typingPracticeApi.getStats().catch(() => null),
+        typingPracticeApi.getMasteredExercises().catch(() => []),
       ]);
       setExercises(exercisesRes.exercises);
       setStats(statsRes);
+      setMasteredIds(new Set(masteredRes));
     } catch (err) {
       setError('연습 목록을 불러오는데 실패했습니다.');
       console.error(err);
@@ -175,12 +178,21 @@ export default function TypingPracticeListPage() {
             <Link
               key={exercise.id}
               to={`/typing-practice/${exercise.id}`}
-              className="block bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-lg transition-shadow p-5"
+              className={`block rounded-lg shadow hover:shadow-lg transition-shadow p-5 ${
+                masteredIds.has(exercise.id)
+                  ? 'bg-green-50 dark:bg-green-900/20 border-2 border-green-500'
+                  : 'bg-white dark:bg-gray-800'
+              }`}
             >
               <div className="flex items-start justify-between mb-3">
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                  {exercise.title}
-                </h3>
+                <div className="flex items-center gap-2">
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                    {exercise.title}
+                  </h3>
+                  {masteredIds.has(exercise.id) && (
+                    <CheckCircle className="w-5 h-5 text-green-500" />
+                  )}
+                </div>
                 <span
                   className={`px-2 py-1 rounded text-xs font-medium ${getDifficultyColor(
                     exercise.difficulty
@@ -209,11 +221,18 @@ export default function TypingPracticeListPage() {
               )}
 
               <div className="mt-4 flex items-center justify-between">
-                <span className="text-xs text-gray-400">
-                  {exercise.required_completions}회 완료 필요
-                </span>
+                {masteredIds.has(exercise.id) ? (
+                  <span className="text-xs text-green-600 dark:text-green-400 font-medium flex items-center gap-1">
+                    <CheckCircle className="w-3 h-3" />
+                    마스터 완료
+                  </span>
+                ) : (
+                  <span className="text-xs text-gray-400">
+                    {exercise.required_completions}회 완료 필요
+                  </span>
+                )}
                 <span className="text-indigo-600 dark:text-indigo-400 text-sm font-medium">
-                  시작하기 →
+                  {masteredIds.has(exercise.id) ? '복습하기 →' : '시작하기 →'}
                 </span>
               </div>
             </Link>

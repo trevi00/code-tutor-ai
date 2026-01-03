@@ -135,4 +135,10 @@ export const typingPracticeApi = {
     });
     return response.data;
   },
+
+  // Get mastered exercise IDs
+  getMasteredExercises: async (): Promise<string[]> => {
+    const response = await apiClient.get('/typing-practice/mastered');
+    return response.data;
+  },
 };

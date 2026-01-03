@@ -146,6 +146,27 @@ async def get_user_stats(
     return await service.get_user_stats(current_user.id)
 
 
+@router.get("/mastered", response_model=list[str])
+async def get_mastered_exercises(
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Get list of mastered exercise IDs for current user."""
+    attempt_repo = SQLAlchemyTypingAttemptRepository(db)
+    exercise_repo = SQLAlchemyTypingExerciseRepository(db)
+
+    # Get all exercises
+    exercises = await exercise_repo.list_all(limit=100)
+    mastered_ids = []
+
+    for exercise in exercises:
+        progress = await attempt_repo.get_user_progress(current_user.id, exercise.id)
+        if progress and progress.is_mastered:
+            mastered_ids.append(str(exercise.id))
+
+    return mastered_ids
+
+
 @router.get("/leaderboard", response_model=LeaderboardResponse)
 async def get_leaderboard(
     limit: int = Query(10, ge=1, le=100, description="Number of entries"),
