@@ -285,7 +285,7 @@ class SQLAlchemyUserStatsRepository(UserStatsRepository):
         period: Optional[str] = None,
     ) -> list[LeaderboardEntry]:
         # Import here to avoid circular import
-        from code_tutor.auth.infrastructure.models import UserModel
+        from code_tutor.identity.infrastructure.models import UserModel
 
         query = (
             select(UserStatsModel, UserModel.username)
