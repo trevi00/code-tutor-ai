@@ -46,8 +46,8 @@ queries = [[1, 0, 2, 10], [2, 0, 4], [1, 2, 4, 5], [2, 2, 4]]
 
 ### 힌트
 - Lazy Propagation을 사용한 세그먼트 트리가 필요합니다.""",
-        "difficulty": "hard",
-        "category": "tree",
+        "difficulty": "HARD",
+        "category": "TREE",
         "constraints": "1 <= n <= 10^5, 1 <= q <= 10^5",
         "hints": ["세그먼트 트리의 각 노드에 lazy 값 저장", "쿼리/업데이트 시 lazy 전파"],
         "solution_template": "def solution(arr: list, queries: list) -> list:\n    pass",
@@ -142,8 +142,8 @@ start = 0, end = 3
 
 ### 힌트
 - 상태를 (노드, 남은 무료 간선 수)로 확장하세요.""",
-        "difficulty": "hard",
-        "category": "graph",
+        "difficulty": "HARD",
+        "category": "GRAPH",
         "constraints": "1 <= n <= 10^4, 0 <= k <= 10, edges <= 10^5",
         "hints": ["(node, remaining_free)를 상태로", "3차원 DP: dist[node][used_free]"],
         "solution_template": "def solution(n: int, k: int, edges: list, start: int, end: int) -> int:\n    pass",
@@ -234,8 +234,8 @@ root = 0
 - 노드 3: 4
 - 노드 4: 5
 ```""",
-        "difficulty": "hard",
-        "category": "tree",
+        "difficulty": "HARD",
+        "category": "TREE",
         "constraints": "1 <= n <= 10^5",
         "hints": ["DFS로 리프부터 루트 방향으로 계산", "자식들의 서브트리 합 + 자신의 값"],
         "solution_template": "def solution(values: list, edges: list, root: int) -> list:\n    pass",
@@ -297,8 +297,8 @@ cost = [
 
 ### 힌트
 - 방문한 도시 집합을 비트마스크로 표현하세요.""",
-        "difficulty": "hard",
-        "category": "dynamic_programming",
+        "difficulty": "HARD",
+        "category": "DYNAMIC_PROGRAMMING",
         "constraints": "2 <= n <= 15",
         "hints": ["dp[mask][i] = mask 도시들을 방문하고 i에 있을 때 최소 비용", "마지막에 0으로 돌아가는 비용 추가"],
         "solution_template": "def solution(cost: list) -> int:\n    pass",
@@ -367,8 +367,8 @@ n = 3, m = 3
 queries = [[1, 0, 0, 5], [1, 1, 1, 3], [2, 0, 0, 1, 1]]
 출력: [8]
 ```""",
-        "difficulty": "hard",
-        "category": "tree",
+        "difficulty": "HARD",
+        "category": "TREE",
         "constraints": "1 <= n, m <= 1000, q <= 10^5",
         "hints": ["1D Fenwick Tree를 2차원으로 확장", "update와 query 모두 이중 루프"],
         "solution_template": "def solution(n: int, m: int, queries: list) -> list:\n    pass",
@@ -445,8 +445,8 @@ queries = [[3, 5], [4, 6], [3, 6]]
 
 출력: [0, 0, 0]
 ```""",
-        "difficulty": "hard",
-        "category": "tree",
+        "difficulty": "HARD",
+        "category": "TREE",
         "constraints": "1 <= n <= 10^5, 1 <= q <= 10^5",
         "hints": ["Binary Lifting: 2^k번째 조상 미리 계산", "깊이 맞춘 후 같이 올라가기"],
         "solution_template": "def solution(parent: list, queries: list) -> list:\n    pass",
@@ -537,8 +537,8 @@ queries = [[0, 2], [1, 4], [2, 6]]
 
 ### 힌트
 - 쿼리를 재정렬하여 포인터 이동을 최소화하세요.""",
-        "difficulty": "hard",
-        "category": "array",
+        "difficulty": "HARD",
+        "category": "ARRAY",
         "constraints": "1 <= n <= 10^5, 1 <= q <= 10^5",
         "hints": ["블록 크기 sqrt(n)으로 쿼리 정렬", "현재 구간에서 원소 추가/제거"],
         "solution_template": "def solution(arr: list, queries: list) -> list:\n    pass",
@@ -623,8 +623,8 @@ root = 0
 queries = [[3, 4], [2, 4]]
 출력: [5, 5]
 ```""",
-        "difficulty": "hard",
-        "category": "tree",
+        "difficulty": "HARD",
+        "category": "TREE",
         "constraints": "1 <= n <= 10^5, 1 <= q <= 10^5",
         "hints": ["Heavy edge로 체인 분할", "각 체인에 세그먼트 트리 적용"],
         "solution_template": "def solution(values: list, edges: list, root: int, queries: list) -> list:\n    pass",
@@ -754,8 +754,8 @@ b = [4, 3, 2, 1]
 dp[1] = dp[0] + b[0]*a[1] = 0 + 4*1 = 4
 dp[2] = min(dp[0]+b[0]*a[2], dp[1]+b[1]*a[2]) = min(12, 10) = ... 최솟값 선택
 ```""",
-        "difficulty": "hard",
-        "category": "dynamic_programming",
+        "difficulty": "HARD",
+        "category": "DYNAMIC_PROGRAMMING",
         "constraints": "1 <= n <= 10^5",
         "hints": ["직선 y = b[j]*x + dp[j] 형태로 변환", "Convex Hull로 최적 직선 유지"],
         "solution_template": "def solution(a: list, b: list) -> list:\n    pass",
@@ -840,8 +840,8 @@ k = 2
 출력: 4
 쌍: (0,2), (0,3), (2,3), (1,4)
 ```""",
-        "difficulty": "hard",
-        "category": "tree",
+        "difficulty": "HARD",
+        "category": "TREE",
         "constraints": "1 <= n <= 10^4, 1 <= k <= n",
         "hints": ["Centroid에서 모든 서브트리까지 거리 계산", "같은 서브트리 내 쌍은 제외"],
         "solution_template": "def solution(edges: list, k: int) -> int:\n    pass",
@@ -961,8 +961,8 @@ edges = [[0,1,10], [0,2,10], [1,2,2], [1,3,4], [2,3,10]]
 s = 0, t = 3
 출력: 14
 ```""",
-        "difficulty": "hard",
-        "category": "graph",
+        "difficulty": "HARD",
+        "category": "GRAPH",
         "constraints": "1 <= n <= 500, edges <= 5000",
         "hints": ["BFS로 레벨 그래프 구성", "DFS로 blocking flow 찾기"],
         "solution_template": "def solution(n: int, edges: list, s: int, t: int) -> int:\n    pass",
@@ -1059,8 +1059,8 @@ LCP: [1, 3, 0, 0, 2]
 suffix_array = [5, 3, 1, 0, 4, 2]
 lcp = [1, 3, 0, 0, 2]
 ```""",
-        "difficulty": "hard",
-        "category": "string",
+        "difficulty": "HARD",
+        "category": "STRING",
         "constraints": "1 <= len(s) <= 10^5",
         "hints": ["O(n log n) 접미사 배열 구성", "Kasai 알고리즘으로 LCP 계산"],
         "solution_template": "def solution(s: str) -> tuple:\n    pass",
@@ -1144,8 +1144,8 @@ rectangles = [[0,0,2,2], [1,1,3,3]]
 
 설명: 2x2 + 2x2 - 겹침 1x1 = 7
 ```""",
-        "difficulty": "hard",
-        "category": "simulation",
+        "difficulty": "HARD",
+        "category": "SIMULATION",
         "constraints": "1 <= n <= 10^4, 0 <= 좌표 <= 10^6",
         "hints": ["x 좌표로 이벤트 정렬", "y 구간을 세그먼트 트리로 관리"],
         "solution_template": "def solution(rectangles: list) -> int:\n    pass",
@@ -1230,8 +1230,8 @@ a = [1, 2, 1]  # 1 + 2x + x^2 = (1+x)^2
 b = [1, 1]     # 1 + x
 출력: [1, 3, 3, 1]  # (1+x)^3 = 1 + 3x + 3x^2 + x^3
 ```""",
-        "difficulty": "hard",
-        "category": "math",
+        "difficulty": "HARD",
+        "category": "MATH",
         "constraints": "len(a), len(b) <= 10^5",
         "hints": ["FFT로 O(n log n)에 다항식 곱셈", "결과는 len(a) + len(b) - 1 크기"],
         "solution_template": "def solution(a: list, b: list) -> list:\n    pass",
@@ -1325,8 +1325,8 @@ grid = [
 ]
 출력: 5
 ```""",
-        "difficulty": "medium",
-        "category": "graph",
+        "difficulty": "MEDIUM",
+        "category": "GRAPH",
         "constraints": "1 <= N, M <= 100",
         "hints": ["상태: (x, y, 가진 열쇠들)", "열쇠는 비트마스크로 표현"],
         "solution_template": "def solution(grid: list) -> int:\n    pass",
@@ -1420,8 +1420,8 @@ sand = [
 ]
 출력: 3
 ```""",
-        "difficulty": "medium",
-        "category": "simulation",
+        "difficulty": "MEDIUM",
+        "category": "SIMULATION",
         "constraints": "1 <= N, M <= 500",
         "hints": ["가장자리만 변화 가능", "큐로 변화 가능한 칸만 관리"],
         "solution_template": "def solution(sand: list) -> int:\n    pass",
@@ -1498,8 +1498,8 @@ sand = [
 입력: n = 4, m = 1
 출력: ? (퀸 4개 + 비숍 1개)
 ```""",
-        "difficulty": "hard",
-        "category": "backtracking",
+        "difficulty": "HARD",
+        "category": "BACKTRACKING",
         "constraints": "1 <= n <= 10, 0 <= m <= 4",
         "hints": ["퀸 먼저 배치 (N-Queens)", "남은 칸에 비숍 배치"],
         "solution_template": "def solution(n: int, m: int) -> int:\n    pass",
@@ -1603,8 +1603,8 @@ grid = [
 ]
 출력: 3
 ```""",
-        "difficulty": "medium",
-        "category": "graph",
+        "difficulty": "MEDIUM",
+        "category": "GRAPH",
         "constraints": "1 <= N, M <= 1000",
         "hints": ["불 먼저 BFS로 각 칸 도달 시간 계산", "사람 BFS에서 불보다 빨리 도달해야 함"],
         "solution_template": "def solution(grid: list) -> int:\n    pass",
@@ -1712,8 +1712,8 @@ grid = [
 r = 1, c = 1, d = 0
 출력: 7
 ```""",
-        "difficulty": "hard",
-        "category": "simulation",
+        "difficulty": "HARD",
+        "category": "SIMULATION",
         "constraints": "3 <= N, M <= 50",
         "hints": ["상태: (위치, 방향)", "반시계 회전: (d + 3) % 4"],
         "solution_template": "def solution(grid: list, r: int, c: int, d: int) -> int:\n    pass",
@@ -1787,8 +1787,8 @@ board = [
 ]
 출력: 완성된 스도쿠
 ```""",
-        "difficulty": "hard",
-        "category": "backtracking",
+        "difficulty": "HARD",
+        "category": "BACKTRACKING",
         "constraints": "9x9 스도쿠",
         "hints": ["행, 열, 3x3 박스의 숫자 사용 여부 추적", "빈 칸에 1-9 시도"],
         "solution_template": "def solution(board: list) -> list:\n    pass",
@@ -1869,8 +1869,8 @@ board = [
 레벨 1: b, d
 레벨 2: c
 ```""",
-        "difficulty": "medium",
-        "category": "string",
+        "difficulty": "MEDIUM",
+        "category": "STRING",
         "constraints": "1 <= len(s) <= 10^4",
         "hints": ["스택으로 현재 깊이 추적", "각 깊이별 문자 수집"],
         "solution_template": "def solution(s: str) -> dict:\n    pass",
@@ -1923,8 +1923,8 @@ queries = [[0, 3]]
 
 설명: 0→1→2→3 (길이 3), 0→2→3 (길이 3) → 2개
 ```""",
-        "difficulty": "medium",
-        "category": "graph",
+        "difficulty": "MEDIUM",
+        "category": "GRAPH",
         "constraints": "1 <= n <= 200",
         "hints": ["Floyd-Warshall로 최단 거리 계산", "동시에 최단 경로 개수도 업데이트"],
         "solution_template": "def solution(n: int, roads: list, queries: list) -> list:\n    pass",
@@ -1996,8 +1996,8 @@ rectangles = [[0,0,2,2], [1,1,3,3]]
 영역별 직사각형 수: {1: 6, 2: 1}
 (1개로 덮인 영역 6칸, 2개로 덮인 영역 1칸)
 ```""",
-        "difficulty": "medium",
-        "category": "simulation",
+        "difficulty": "MEDIUM",
+        "category": "SIMULATION",
         "constraints": "1 <= n <= 100, 좌표 <= 10^6",
         "hints": ["x, y 좌표 각각 압축", "압축된 격자에서 카운트"],
         "solution_template": "def solution(rectangles: list) -> dict:\n    pass",
@@ -2076,8 +2076,8 @@ t=3: job0 완료, job1 시작 (더 높은 우선순위)
 t=5: job1 완료, job2 시작
 t=6: job2 완료
 ```""",
-        "difficulty": "medium",
-        "category": "simulation",
+        "difficulty": "MEDIUM",
+        "category": "SIMULATION",
         "constraints": "1 <= n <= 10^4",
         "hints": ["우선순위 큐로 대기 작업 관리", "시간순 이벤트 처리"],
         "solution_template": "def solution(jobs: list) -> list:\n    pass",
@@ -2149,8 +2149,8 @@ k = 2
 
 그룹: [["abc", "cab"], ["bca"], ["xyz"], ["zyx"]]
 ```""",
-        "difficulty": "medium",
-        "category": "hash_table",
+        "difficulty": "MEDIUM",
+        "category": "HASH_TABLE",
         "constraints": "1 <= n <= 10^4, 1 <= k <= len(word)",
         "hints": ["k-gram 집합을 frozenset으로", "frozenset을 해시 키로 사용"],
         "solution_template": "def solution(words: list, k: int) -> list:\n    pass",
