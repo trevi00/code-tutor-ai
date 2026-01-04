@@ -1,8 +1,10 @@
 """LLM Service for AI Tutor responses"""
 
 from abc import ABC, abstractmethod
+from enum import IntEnum
 from pathlib import Path
 from typing import Any
+from uuid import UUID
 
 import httpx
 
@@ -10,6 +12,347 @@ from code_tutor.shared.config import get_settings
 from code_tutor.shared.infrastructure.logging import get_logger
 
 logger = get_logger(__name__)
+
+
+# ============== Progressive Hint System ==============
+
+class HintLevel(IntEnum):
+    """Progressive hint levels from vague to specific"""
+    APPROACH = 1      # 접근법 힌트 (가장 약한)
+    ALGORITHM = 2     # 알고리즘 패턴 제시
+    PSEUDOCODE = 3    # 의사코드 제공
+    PARTIAL_CODE = 4  # 부분 코드 제공
+    FULL_SOLUTION = 5 # 전체 해답 (명시적 요청 시만)
+
+
+class ProgressiveHintSystem:
+    """
+    단계별 힌트 제공 시스템.
+
+    사용자의 시도 횟수와 요청에 따라 점진적으로 더 상세한 힌트를 제공합니다.
+    """
+
+    # 힌트 레벨별 프롬프트 템플릿
+    HINT_TEMPLATES = {
+        HintLevel.APPROACH: """## 💡 접근 방향 힌트
+
+이 문제를 풀기 위한 방향을 제시해드릴게요.
+
+**문제 유형**: {problem_type}
+
+**생각해볼 질문들**:
+{guiding_questions}
+
+**키워드**: {keywords}
+
+스스로 조금 더 생각해보시고, 막히면 다음 힌트를 요청해주세요!""",
+
+        HintLevel.ALGORITHM: """## 📚 알고리즘 패턴 힌트
+
+이 문제에 적합한 알고리즘 패턴을 알려드릴게요.
+
+**추천 패턴**: {pattern_name}
+**패턴 설명**: {pattern_description}
+
+**왜 이 패턴인가요?**
+{pattern_reasoning}
+
+**이 패턴의 핵심 아이디어**:
+{pattern_key_idea}
+
+이 패턴을 어떻게 적용할 수 있을지 생각해보세요!""",
+
+        HintLevel.PSEUDOCODE: """## 📝 의사코드 힌트
+
+알고리즘의 전체 흐름을 의사코드로 보여드릴게요.
+
+```
+{pseudocode}
+```
+
+**각 단계 설명**:
+{step_explanations}
+
+이제 이 의사코드를 Python 코드로 변환해보세요!""",
+
+        HintLevel.PARTIAL_CODE: """## 🔧 부분 코드 힌트
+
+핵심 부분의 코드 골격을 제공해드릴게요.
+
+```python
+{partial_code}
+```
+
+**빈 부분 힌트**:
+{fill_hints}
+
+빈 부분을 직접 채워보세요!""",
+
+        HintLevel.FULL_SOLUTION: """## ✅ 전체 풀이
+
+최종 풀이를 보여드릴게요. 다음에는 스스로 풀어볼 수 있도록 해보세요!
+
+```python
+{full_code}
+```
+
+**핵심 포인트**:
+{key_points}
+
+**시간 복잡도**: {time_complexity}
+**공간 복잡도**: {space_complexity}
+
+**학습 포인트**: 이 문제를 통해 {learning_points}를 배웠습니다."""
+    }
+
+    def __init__(self):
+        # 사용자별, 문제별 힌트 상태 추적
+        self._hint_states: dict[str, dict[str, int]] = {}  # {user_id: {problem_id: hint_level}}
+
+    def get_current_level(self, user_id: str | UUID, problem_id: str | UUID) -> int:
+        """현재 힌트 레벨 조회"""
+        user_key = str(user_id)
+        problem_key = str(problem_id)
+
+        if user_key not in self._hint_states:
+            self._hint_states[user_key] = {}
+
+        return self._hint_states[user_key].get(problem_key, 0)
+
+    def request_hint(
+        self,
+        user_id: str | UUID,
+        problem_id: str | UUID,
+        force_level: int | None = None
+    ) -> HintLevel:
+        """
+        다음 레벨의 힌트 요청.
+
+        Args:
+            user_id: 사용자 ID
+            problem_id: 문제 ID
+            force_level: 특정 레벨 강제 지정 (None이면 자동 증가)
+
+        Returns:
+            제공할 힌트 레벨
+        """
+        user_key = str(user_id)
+        problem_key = str(problem_id)
+
+        if user_key not in self._hint_states:
+            self._hint_states[user_key] = {}
+
+        current = self._hint_states[user_key].get(problem_key, 0)
+
+        if force_level is not None:
+            # 전체 풀이는 명시적 요청 시에만
+            if force_level == HintLevel.FULL_SOLUTION:
+                self._hint_states[user_key][problem_key] = HintLevel.FULL_SOLUTION
+                return HintLevel.FULL_SOLUTION
+            new_level = min(force_level, HintLevel.PARTIAL_CODE)
+        else:
+            # 자동 증가 (최대 PARTIAL_CODE까지)
+            new_level = min(current + 1, HintLevel.PARTIAL_CODE)
+
+        self._hint_states[user_key][problem_key] = new_level
+        return HintLevel(new_level)
+
+    def reset_hints(self, user_id: str | UUID, problem_id: str | UUID | None = None):
+        """힌트 상태 리셋"""
+        user_key = str(user_id)
+
+        if user_key not in self._hint_states:
+            return
+
+        if problem_id:
+            self._hint_states[user_key].pop(str(problem_id), None)
+        else:
+            self._hint_states[user_key] = {}
+
+    def format_hint(
+        self,
+        level: HintLevel,
+        problem_data: dict,
+        pattern_data: dict | None = None
+    ) -> str:
+        """
+        힌트 레벨에 맞는 응답 생성.
+
+        Args:
+            level: 힌트 레벨
+            problem_data: 문제 정보
+            pattern_data: 관련 알고리즘 패턴 정보
+
+        Returns:
+            포맷된 힌트 문자열
+        """
+        template = self.HINT_TEMPLATES.get(level, self.HINT_TEMPLATES[HintLevel.APPROACH])
+
+        # 기본 값 설정
+        format_data = {
+            "problem_type": problem_data.get("category", "알고리즘"),
+            "guiding_questions": self._generate_guiding_questions(problem_data),
+            "keywords": ", ".join(problem_data.get("tags", [])),
+            "pattern_name": "",
+            "pattern_description": "",
+            "pattern_reasoning": "",
+            "pattern_key_idea": "",
+            "pseudocode": "",
+            "step_explanations": "",
+            "partial_code": "",
+            "fill_hints": "",
+            "full_code": problem_data.get("solution", "# 풀이 코드"),
+            "key_points": "",
+            "time_complexity": problem_data.get("time_complexity", "O(?)"),
+            "space_complexity": problem_data.get("space_complexity", "O(?)"),
+            "learning_points": problem_data.get("category", "알고리즘 패턴"),
+        }
+
+        # 패턴 데이터가 있으면 추가
+        if pattern_data:
+            format_data.update({
+                "pattern_name": pattern_data.get("name_ko", pattern_data.get("name", "")),
+                "pattern_description": pattern_data.get("description_ko", ""),
+                "pattern_key_idea": pattern_data.get("description", "")[:200],
+                "pseudocode": self._generate_pseudocode(problem_data, pattern_data),
+                "partial_code": self._generate_partial_code(problem_data, pattern_data),
+            })
+
+        # 힌트 데이터 (문제에 힌트가 있으면 활용)
+        hints = problem_data.get("hints", [])
+        if hints:
+            if level == HintLevel.APPROACH and len(hints) > 0:
+                format_data["guiding_questions"] = f"- {hints[0]}"
+            if level == HintLevel.ALGORITHM and len(hints) > 1:
+                format_data["pattern_reasoning"] = hints[1]
+
+        return template.format(**format_data)
+
+    def _generate_guiding_questions(self, problem_data: dict) -> str:
+        """문제 유형에 맞는 유도 질문 생성"""
+        category = problem_data.get("category", "").lower()
+
+        questions = {
+            "array": [
+                "배열을 정렬하면 도움이 될까요?",
+                "투 포인터나 슬라이딩 윈도우를 생각해보셨나요?",
+                "해시맵을 활용할 수 있을까요?",
+            ],
+            "string": [
+                "문자열을 순회하면서 어떤 정보를 추적해야 할까요?",
+                "부분 문자열 비교가 필요한가요?",
+                "패턴 매칭 알고리즘이 필요할까요?",
+            ],
+            "graph": [
+                "그래프 순회(BFS/DFS)가 필요한가요?",
+                "노드 간의 관계를 어떻게 표현할까요?",
+                "최단 경로를 찾아야 하나요?",
+            ],
+            "dynamic_programming": [
+                "부분 문제로 나눌 수 있나요?",
+                "메모이제이션을 적용할 수 있는 중복 계산이 있나요?",
+                "점화식을 세울 수 있을까요?",
+            ],
+            "tree": [
+                "트리 순회 방식(전위/중위/후위)을 생각해보세요.",
+                "재귀적 접근이 도움이 될까요?",
+                "부모-자식 관계를 어떻게 활용할까요?",
+            ],
+        }
+
+        for key, q_list in questions.items():
+            if key in category:
+                return "\n".join(f"- {q}" for q in q_list)
+
+        return """- 입력 데이터의 특성을 파악해보세요.
+- 비슷한 문제를 풀어본 적이 있나요?
+- 가장 단순한 해결책부터 생각해보세요."""
+
+    def _generate_pseudocode(self, problem_data: dict, pattern_data: dict) -> str:
+        """패턴 기반 의사코드 생성"""
+        pattern_id = pattern_data.get("id", "")
+
+        # 패턴별 기본 의사코드 템플릿
+        pseudocode_templates = {
+            "two-pointers": """1. 배열 정렬 (필요시)
+2. left = 0, right = len(arr) - 1 초기화
+3. while left < right:
+   3.1 현재 상태 계산
+   3.2 조건에 따라 left++ 또는 right--
+4. 결과 반환""",
+            "sliding-window": """1. 윈도우 초기화 (start=0, end=0)
+2. while end < len(arr):
+   2.1 arr[end]를 윈도우에 추가
+   2.2 윈도우 조건 위반시:
+       - arr[start] 제거, start++
+   2.3 결과 업데이트
+   2.4 end++
+3. 결과 반환""",
+            "binary-search": """1. left = 0, right = len(arr) - 1
+2. while left <= right:
+   2.1 mid = (left + right) // 2
+   2.2 if arr[mid] == target: return mid
+   2.3 if arr[mid] < target: left = mid + 1
+   2.4 else: right = mid - 1
+3. return -1 (못 찾음)""",
+            "bfs": """1. queue에 시작점 추가, visited 표시
+2. while queue:
+   2.1 현재 노드 = queue.popleft()
+   2.2 목표 도달시 종료
+   2.3 for 인접 노드 in 현재 노드의 이웃:
+       - 미방문이면 queue에 추가, visited 표시
+3. 결과 반환""",
+            "dfs": """1. stack에 시작점 추가 (또는 재귀)
+2. while stack (또는 재귀 호출):
+   2.1 현재 노드 = stack.pop()
+   2.2 방문 처리
+   2.3 종료 조건 확인
+   2.4 for 인접 노드:
+       - 미방문이면 stack에 추가 (또는 재귀 호출)
+3. 결과 반환""",
+        }
+
+        return pseudocode_templates.get(pattern_id, """1. 입력 처리
+2. 자료구조 초기화
+3. 메인 로직 수행
+4. 결과 반환""")
+
+    def _generate_partial_code(self, problem_data: dict, pattern_data: dict) -> str:
+        """패턴 기반 부분 코드 생성"""
+        example_code = pattern_data.get("example_code", "")
+
+        if example_code:
+            # 핵심 부분만 추출하고 일부를 ???로 대체
+            lines = example_code.split("\n")[:15]
+            partial_lines = []
+            for i, line in enumerate(lines):
+                if i % 3 == 2 and "=" in line:  # 일부 줄을 비워둠
+                    partial_lines.append(line.split("=")[0] + "= ???  # 이 부분을 채워보세요")
+                else:
+                    partial_lines.append(line)
+            return "\n".join(partial_lines)
+
+        return """def solution(input_data):
+    # 1. 자료구조 초기화
+    result = ???  # 결과를 저장할 변수
+
+    # 2. 메인 로직
+    for item in input_data:
+        ???  # 핵심 로직을 구현하세요
+
+    return result"""
+
+
+# 전역 힌트 시스템 인스턴스
+_hint_system: ProgressiveHintSystem | None = None
+
+
+def get_hint_system() -> ProgressiveHintSystem:
+    """힌트 시스템 싱글톤 반환"""
+    global _hint_system
+    if _hint_system is None:
+        _hint_system = ProgressiveHintSystem()
+    return _hint_system
 
 # System prompt for the AI tutor with 7-step problem-solving framework
 TUTOR_SYSTEM_PROMPT = """당신은 알고리즘 학습을 돕는 전문 AI 튜터입니다.
@@ -82,13 +425,15 @@ TUTOR_SYSTEM_PROMPT = """당신은 알고리즘 학습을 돕는 전문 AI 튜�
 - 간결하면서도 핵심 전달
 - 이모지는 단계 표시에만 사용
 
-## 40개+ 알고리즘 패턴 지식
+## 58개 알고리즘 패턴 지식
 - 기초: Prefix Sum, Sieve of Eratosthenes, KMP
 - 정렬: Counting Sort, Radix Sort, Shell Sort
 - 탐색: Two Pointers, Sliding Window, Binary Search
-- 트리: BST, AVL, Segment Tree, Fenwick Tree, Trie
-- 그래프: BFS, DFS, Union-Find, Topological Sort, Dijkstra, MST
-- 고급: DP, Greedy, Backtracking, Monotonic Stack"""
+- 자료구조: BST, AVL, Segment Tree, Fenwick Tree, Trie, Sparse Table, Sqrt Decomposition, Persistent Segment Tree, Treap, Link-Cut Tree
+- 그래프: BFS, DFS, Union-Find, Topological Sort, Dijkstra, MST, Bellman-Ford, Floyd-Warshall, Articulation Points/Bridges, 2-SAT
+- DP: 0/1 Knapsack, LIS (O(n log n)), Bitmask DP, Interval DP, Digit DP
+- 문자열: Rabin-Karp, Z Algorithm, Aho-Corasick, Manacher
+- 고급: Greedy, Backtracking, Monotonic Stack"""
 
 # Lazy import for RAG engine to avoid circular imports and slow startup
 _rag_engine = None
@@ -528,7 +873,7 @@ class RAGBasedLLMService(LLMService):
             return """안녕하세요! 알고리즘 학습을 도와드리는 AI 튜터입니다.
 
 **제가 도와드릴 수 있는 것들:**
-- 📚 **알고리즘 패턴 설명**: 40개+ 핵심 패턴
+- 📚 **알고리즘 패턴 설명**: 58개 핵심 패턴
 - 🔍 **코드 리뷰**: 복잡도 분석, 패턴 감지, 최적화 제안
 - 💡 **7단계 문제 풀이 가이드**: 체계적인 문제 해결 접근법
 - 📈 **유사 문제 추천**: 패턴별 난이도별 문제 추천

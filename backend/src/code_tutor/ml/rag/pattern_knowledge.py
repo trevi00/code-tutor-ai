@@ -1210,6 +1210,1040 @@ def min_meeting_rooms(intervals):
     return len(rooms)""",
         "keywords": ["scheduling", "interval", "meeting room", "greedy", "non-overlapping"],
     },
+    # ============== Advanced Data Structures ==============
+    {
+        "id": "sparse-table",
+        "name": "Sparse Table",
+        "name_ko": "스파스 테이블",
+        "description": "A data structure for answering range minimum/maximum queries in O(1) time after O(n log n) preprocessing. Works only for idempotent operations like min, max, gcd.",
+        "description_ko": "O(n log n) 전처리 후 O(1) 시간에 구간 최솟값/최댓값 쿼리를 처리하는 자료구조입니다. min, max, gcd 같은 멱등 연산에만 사용 가능합니다.",
+        "use_cases": [
+            "정적 RMQ (Range Minimum Query)",
+            "정적 구간 GCD 쿼리",
+            "LCA 전처리",
+        ],
+        "time_complexity": "전처리 O(n log n), 쿼리 O(1)",
+        "space_complexity": "O(n log n)",
+        "example_code": """import math
+
+class SparseTable:
+    def __init__(self, arr):
+        n = len(arr)
+        k = int(math.log2(n)) + 1
+        self.sparse = [[0] * k for _ in range(n)]
+        self.log = [0] * (n + 1)
+
+        # 로그 테이블 전처리
+        for i in range(2, n + 1):
+            self.log[i] = self.log[i // 2] + 1
+
+        # 스파스 테이블 구축
+        for i in range(n):
+            self.sparse[i][0] = arr[i]
+
+        j = 1
+        while (1 << j) <= n:
+            i = 0
+            while i + (1 << j) - 1 < n:
+                self.sparse[i][j] = min(
+                    self.sparse[i][j - 1],
+                    self.sparse[i + (1 << (j - 1))][j - 1]
+                )
+                i += 1
+            j += 1
+
+    def query(self, l, r):
+        # O(1) 구간 최솟값 쿼리
+        j = self.log[r - l + 1]
+        return min(self.sparse[l][j], self.sparse[r - (1 << j) + 1][j])""",
+        "keywords": ["sparse table", "RMQ", "range query", "O(1) query", "idempotent"],
+    },
+    {
+        "id": "sqrt-decomposition",
+        "name": "Square Root Decomposition",
+        "name_ko": "제곱근 분할법",
+        "description": "Divides array into sqrt(n) blocks for efficient range queries and updates. Balances between preprocessing and query time.",
+        "description_ko": "배열을 sqrt(n)개의 블록으로 나누어 효율적인 구간 쿼리와 업데이트를 처리합니다. 전처리와 쿼리 시간의 균형을 맞춥니다.",
+        "use_cases": [
+            "구간 합/최솟값 쿼리",
+            "Mo's Algorithm 기반",
+            "오프라인 쿼리 처리",
+        ],
+        "time_complexity": "쿼리 O(√n), 업데이트 O(1) 또는 O(√n)",
+        "space_complexity": "O(n)",
+        "example_code": """import math
+
+class SqrtDecomposition:
+    def __init__(self, arr):
+        self.arr = arr
+        self.n = len(arr)
+        self.block_size = int(math.ceil(math.sqrt(self.n)))
+        self.num_blocks = (self.n + self.block_size - 1) // self.block_size
+        self.blocks = [0] * self.num_blocks
+
+        # 블록 합 초기화
+        for i in range(self.n):
+            self.blocks[i // self.block_size] += arr[i]
+
+    def update(self, idx, val):
+        block_idx = idx // self.block_size
+        self.blocks[block_idx] += val - self.arr[idx]
+        self.arr[idx] = val
+
+    def query(self, l, r):
+        # 구간 [l, r] 합
+        result = 0
+        while l <= r:
+            if l % self.block_size == 0 and l + self.block_size - 1 <= r:
+                # 완전한 블록
+                result += self.blocks[l // self.block_size]
+                l += self.block_size
+            else:
+                result += self.arr[l]
+                l += 1
+        return result""",
+        "keywords": ["sqrt decomposition", "block", "range query", "Mo's algorithm"],
+    },
+    {
+        "id": "persistent-segment-tree",
+        "name": "Persistent Segment Tree",
+        "name_ko": "퍼시스턴트 세그먼트 트리",
+        "description": "Segment tree that preserves all historical versions after updates. Each update creates a new root while sharing unchanged nodes.",
+        "description_ko": "업데이트 후에도 모든 이전 버전을 보존하는 세그먼트 트리입니다. 각 업데이트는 변경되지 않은 노드를 공유하며 새 루트를 생성합니다.",
+        "use_cases": [
+            "K번째 수 찾기",
+            "버전 관리가 필요한 구간 쿼리",
+            "2D 쿼리 처리",
+        ],
+        "time_complexity": "업데이트 O(log n), 쿼리 O(log n)",
+        "space_complexity": "O(n log n)",
+        "example_code": """class Node:
+    def __init__(self, val=0, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
+
+class PersistentSegTree:
+    def __init__(self, n):
+        self.n = n
+        self.roots = []  # 버전별 루트
+
+    def build(self, arr, node, start, end):
+        if start == end:
+            return Node(arr[start])
+        mid = (start + end) // 2
+        left = self.build(arr, None, start, mid)
+        right = self.build(arr, None, mid + 1, end)
+        return Node(left.val + right.val, left, right)
+
+    def update(self, node, start, end, idx, val):
+        if start == end:
+            return Node(val)
+        mid = (start + end) // 2
+        if idx <= mid:
+            new_left = self.update(node.left, start, mid, idx, val)
+            return Node(new_left.val + node.right.val, new_left, node.right)
+        else:
+            new_right = self.update(node.right, mid + 1, end, idx, val)
+            return Node(node.left.val + new_right.val, node.left, new_right)
+
+    def query(self, node, start, end, l, r):
+        if r < start or end < l:
+            return 0
+        if l <= start and end <= r:
+            return node.val
+        mid = (start + end) // 2
+        return (self.query(node.left, start, mid, l, r) +
+                self.query(node.right, mid + 1, end, l, r))""",
+        "keywords": ["persistent", "segment tree", "version control", "k-th smallest"],
+    },
+    {
+        "id": "treap",
+        "name": "Treap",
+        "name_ko": "트립",
+        "description": "Randomized BST that maintains both BST property (by key) and heap property (by random priority). Supports split and merge operations.",
+        "description_ko": "키에 대해 BST 속성, 랜덤 우선순위에 대해 힙 속성을 유지하는 랜덤화된 이진 검색 트리입니다. 분할과 병합 연산을 지원합니다.",
+        "use_cases": [
+            "동적 순서 통계",
+            "구간에 대한 삽입/삭제",
+            "암묵적 키 배열",
+        ],
+        "time_complexity": "기대값 O(log n)",
+        "space_complexity": "O(n)",
+        "example_code": """import random
+
+class TreapNode:
+    def __init__(self, key):
+        self.key = key
+        self.priority = random.random()
+        self.left = None
+        self.right = None
+        self.size = 1
+
+def get_size(node):
+    return node.size if node else 0
+
+def update(node):
+    if node:
+        node.size = 1 + get_size(node.left) + get_size(node.right)
+    return node
+
+def split(node, key):
+    if not node:
+        return None, None
+    if node.key <= key:
+        left, right = split(node.right, key)
+        node.right = left
+        return update(node), right
+    else:
+        left, right = split(node.left, key)
+        node.left = right
+        return left, update(node)
+
+def merge(left, right):
+    if not left or not right:
+        return left or right
+    if left.priority > right.priority:
+        left.right = merge(left.right, right)
+        return update(left)
+    else:
+        right.left = merge(left, right.left)
+        return update(right)
+
+def insert(root, key):
+    left, right = split(root, key)
+    new_node = TreapNode(key)
+    return merge(merge(left, new_node), right)""",
+        "keywords": ["treap", "randomized BST", "split", "merge", "order statistics"],
+    },
+    {
+        "id": "link-cut-tree",
+        "name": "Link-Cut Tree",
+        "name_ko": "링크컷 트리",
+        "description": "Dynamic tree data structure supporting link, cut, and path queries. Uses splay trees to represent preferred paths.",
+        "description_ko": "link, cut, 경로 쿼리를 지원하는 동적 트리 자료구조입니다. 선호 경로를 스플레이 트리로 표현합니다.",
+        "use_cases": [
+            "동적 트리 연결/끊기",
+            "경로 쿼리",
+            "최소 공통 조상 (동적)",
+        ],
+        "time_complexity": "분할 상환 O(log n)",
+        "space_complexity": "O(n)",
+        "example_code": """class LCTNode:
+    def __init__(self, val=0):
+        self.val = val
+        self.sum = val
+        self.rev = False
+        self.parent = None
+        self.children = [None, None]
+
+def is_root(x):
+    return not x.parent or (x.parent.children[0] != x and x.parent.children[1] != x)
+
+def push(x):
+    if x.rev:
+        x.children[0], x.children[1] = x.children[1], x.children[0]
+        for c in x.children:
+            if c:
+                c.rev ^= True
+        x.rev = False
+
+def pull(x):
+    x.sum = x.val
+    for c in x.children:
+        if c:
+            x.sum += c.sum
+
+def rotate(x):
+    p = x.parent
+    g = p.parent
+    d = 1 if p.children[1] == x else 0
+    push(p)
+    push(x)
+
+    if not is_root(p):
+        g.children[1 if g.children[1] == p else 0] = x
+    x.parent = g
+    p.children[d] = x.children[1 - d]
+    if x.children[1 - d]:
+        x.children[1 - d].parent = p
+    x.children[1 - d] = p
+    p.parent = x
+    pull(p)
+    pull(x)
+
+def splay(x):
+    while not is_root(x):
+        p = x.parent
+        if not is_root(p):
+            g = p.parent
+            if (g.children[1] == p) == (p.children[1] == x):
+                rotate(p)
+            else:
+                rotate(x)
+        rotate(x)
+
+def access(x):
+    splay(x)
+    x.children[1] = None
+    pull(x)
+    while x.parent:
+        p = x.parent
+        splay(p)
+        p.children[1] = x
+        pull(p)
+        splay(x)
+
+def link(x, y):
+    access(x)
+    access(y)
+    x.parent = y""",
+        "keywords": ["link-cut tree", "dynamic tree", "splay", "path query", "LCA"],
+    },
+    # ============== Graph Algorithms ==============
+    {
+        "id": "bellman-ford",
+        "name": "Bellman-Ford Algorithm",
+        "name_ko": "벨만-포드 알고리즘",
+        "description": "Single-source shortest path algorithm that handles negative edge weights. Can detect negative cycles.",
+        "description_ko": "음수 가중치 간선을 처리할 수 있는 단일 출발점 최단 경로 알고리즘입니다. 음수 사이클을 감지할 수 있습니다.",
+        "use_cases": [
+            "음수 가중치 그래프",
+            "음수 사이클 탐지",
+            "거리 차이 제약 (SPFA)",
+        ],
+        "time_complexity": "O(VE)",
+        "space_complexity": "O(V)",
+        "example_code": """def bellman_ford(n, edges, src):
+    # edges: [(u, v, w), ...]
+    dist = [float('inf')] * n
+    dist[src] = 0
+
+    # V-1번 완화
+    for _ in range(n - 1):
+        for u, v, w in edges:
+            if dist[u] != float('inf') and dist[u] + w < dist[v]:
+                dist[v] = dist[u] + w
+
+    # 음수 사이클 검사
+    for u, v, w in edges:
+        if dist[u] != float('inf') and dist[u] + w < dist[v]:
+            return None  # 음수 사이클 존재
+
+    return dist
+
+# SPFA (최적화 버전)
+from collections import deque
+
+def spfa(n, adj, src):
+    dist = [float('inf')] * n
+    dist[src] = 0
+    in_queue = [False] * n
+    count = [0] * n  # 큐 진입 횟수
+
+    q = deque([src])
+    in_queue[src] = True
+
+    while q:
+        u = q.popleft()
+        in_queue[u] = False
+
+        for v, w in adj[u]:
+            if dist[u] + w < dist[v]:
+                dist[v] = dist[u] + w
+                if not in_queue[v]:
+                    q.append(v)
+                    in_queue[v] = True
+                    count[v] += 1
+                    if count[v] >= n:
+                        return None  # 음수 사이클
+
+    return dist""",
+        "keywords": ["bellman-ford", "negative weight", "negative cycle", "SPFA", "shortest path"],
+    },
+    {
+        "id": "floyd-warshall",
+        "name": "Floyd-Warshall Algorithm",
+        "name_ko": "플로이드-워셜 알고리즘",
+        "description": "All-pairs shortest path algorithm. Uses dynamic programming to find shortest paths between all pairs of vertices.",
+        "description_ko": "모든 쌍 최단 경로 알고리즘입니다. 동적 프로그래밍을 사용하여 모든 정점 쌍 사이의 최단 경로를 찾습니다.",
+        "use_cases": [
+            "모든 쌍 최단 거리",
+            "그래프 추이적 폐쇄",
+            "경로 존재 여부 확인",
+        ],
+        "time_complexity": "O(V³)",
+        "space_complexity": "O(V²)",
+        "example_code": """def floyd_warshall(n, edges):
+    INF = float('inf')
+    dist = [[INF] * n for _ in range(n)]
+    next_node = [[None] * n for _ in range(n)]
+
+    # 자기 자신까지 거리는 0
+    for i in range(n):
+        dist[i][i] = 0
+
+    # 간선 초기화
+    for u, v, w in edges:
+        dist[u][v] = w
+        next_node[u][v] = v
+
+    # Floyd-Warshall
+    for k in range(n):
+        for i in range(n):
+            for j in range(n):
+                if dist[i][k] + dist[k][j] < dist[i][j]:
+                    dist[i][j] = dist[i][k] + dist[k][j]
+                    next_node[i][j] = next_node[i][k]
+
+    return dist, next_node
+
+def reconstruct_path(u, v, next_node):
+    if next_node[u][v] is None:
+        return []
+    path = [u]
+    while u != v:
+        u = next_node[u][v]
+        path.append(u)
+    return path""",
+        "keywords": ["floyd-warshall", "all pairs", "shortest path", "transitive closure"],
+    },
+    {
+        "id": "articulation-bridges",
+        "name": "Articulation Points and Bridges",
+        "name_ko": "단절점과 단절선",
+        "description": "Find critical vertices (articulation points) and edges (bridges) whose removal disconnects the graph using DFS.",
+        "description_ko": "DFS를 사용하여 그래프를 끊어지게 만드는 중요한 정점(단절점)과 간선(단절선)을 찾습니다.",
+        "use_cases": [
+            "네트워크 취약점 분석",
+            "그래프 연결성",
+            "이중 연결 요소",
+        ],
+        "time_complexity": "O(V + E)",
+        "space_complexity": "O(V)",
+        "example_code": """def find_articulation_and_bridges(n, adj):
+    discovery = [-1] * n
+    low = [-1] * n
+    parent = [-1] * n
+    articulation_points = set()
+    bridges = []
+    time = [0]
+
+    def dfs(u):
+        children = 0
+        discovery[u] = low[u] = time[0]
+        time[0] += 1
+
+        for v in adj[u]:
+            if discovery[v] == -1:  # 방문 안 한 정점
+                children += 1
+                parent[v] = u
+                dfs(v)
+                low[u] = min(low[u], low[v])
+
+                # 단절점 조건
+                if parent[u] == -1 and children > 1:
+                    articulation_points.add(u)
+                if parent[u] != -1 and low[v] >= discovery[u]:
+                    articulation_points.add(u)
+
+                # 단절선 조건
+                if low[v] > discovery[u]:
+                    bridges.append((u, v))
+            elif v != parent[u]:
+                low[u] = min(low[u], discovery[v])
+
+    for i in range(n):
+        if discovery[i] == -1:
+            dfs(i)
+
+    return articulation_points, bridges""",
+        "keywords": ["articulation point", "bridge", "cut vertex", "biconnected", "DFS"],
+    },
+    {
+        "id": "2-sat",
+        "name": "2-SAT",
+        "name_ko": "2-SAT",
+        "description": "Solve boolean satisfiability problems with clauses of exactly 2 literals using SCC decomposition.",
+        "description_ko": "정확히 2개의 리터럴을 가진 절로 이루어진 불리언 만족성 문제를 SCC 분해를 사용하여 해결합니다.",
+        "use_cases": [
+            "논리 제약 조건 만족",
+            "스케줄링 문제",
+            "그래프 2-색칠 가능성",
+        ],
+        "time_complexity": "O(V + E)",
+        "space_complexity": "O(V)",
+        "example_code": """def solve_2sat(n, clauses):
+    # n: 변수 개수 (0 ~ n-1)
+    # clauses: [(a, b), ...] where a, b are literals
+    # literal i = variable i is True
+    # literal ~i (= i + n) = variable i is False
+
+    adj = [[] for _ in range(2 * n)]
+    radj = [[] for _ in range(2 * n)]
+
+    def neg(x):
+        return x + n if x < n else x - n
+
+    # 그래프 구축: (a OR b) => (~a -> b) AND (~b -> a)
+    for a, b in clauses:
+        adj[neg(a)].append(b)
+        adj[neg(b)].append(a)
+        radj[b].append(neg(a))
+        radj[a].append(neg(b))
+
+    # Kosaraju's SCC
+    order = []
+    visited = [False] * (2 * n)
+
+    def dfs1(u):
+        visited[u] = True
+        for v in adj[u]:
+            if not visited[v]:
+                dfs1(v)
+        order.append(u)
+
+    def dfs2(u, comp):
+        scc[u] = comp
+        for v in radj[u]:
+            if scc[v] == -1:
+                dfs2(v, comp)
+
+    for i in range(2 * n):
+        if not visited[i]:
+            dfs1(i)
+
+    scc = [-1] * (2 * n)
+    comp = 0
+    for u in reversed(order):
+        if scc[u] == -1:
+            dfs2(u, comp)
+            comp += 1
+
+    # 만족 가능성 검사
+    for i in range(n):
+        if scc[i] == scc[i + n]:
+            return None  # 불가능
+
+    # 해 구성
+    return [scc[i] > scc[i + n] for i in range(n)]""",
+        "keywords": ["2-SAT", "boolean satisfiability", "SCC", "implication graph"],
+    },
+    # ============== DP Patterns ==============
+    {
+        "id": "knapsack-01",
+        "name": "0/1 Knapsack",
+        "name_ko": "0/1 배낭 문제",
+        "description": "Classic DP problem: maximize value of items that fit in a knapsack. Each item can be taken at most once.",
+        "description_ko": "배낭에 들어갈 수 있는 물건의 가치를 최대화하는 클래식 DP 문제입니다. 각 물건은 최대 한 번만 선택할 수 있습니다.",
+        "use_cases": [
+            "자원 할당 최적화",
+            "부분집합 합",
+            "예산 제약 선택",
+        ],
+        "time_complexity": "O(nW)",
+        "space_complexity": "O(W) (공간 최적화)",
+        "example_code": """def knapsack_01(weights, values, capacity):
+    n = len(weights)
+    # dp[w] = 무게 w 이하일 때 최대 가치
+    dp = [0] * (capacity + 1)
+
+    for i in range(n):
+        # 역순으로 순회 (각 물건 한 번만 사용)
+        for w in range(capacity, weights[i] - 1, -1):
+            dp[w] = max(dp[w], dp[w - weights[i]] + values[i])
+
+    return dp[capacity]
+
+# 선택한 물건 역추적
+def knapsack_with_items(weights, values, capacity):
+    n = len(weights)
+    dp = [[0] * (capacity + 1) for _ in range(n + 1)]
+
+    for i in range(1, n + 1):
+        for w in range(capacity + 1):
+            if weights[i-1] <= w:
+                dp[i][w] = max(dp[i-1][w],
+                              dp[i-1][w - weights[i-1]] + values[i-1])
+            else:
+                dp[i][w] = dp[i-1][w]
+
+    # 역추적
+    selected = []
+    w = capacity
+    for i in range(n, 0, -1):
+        if dp[i][w] != dp[i-1][w]:
+            selected.append(i - 1)
+            w -= weights[i - 1]
+
+    return dp[n][capacity], selected[::-1]""",
+        "keywords": ["knapsack", "0/1", "subset", "optimization", "DP"],
+    },
+    {
+        "id": "lis-binary-search",
+        "name": "LIS with Binary Search",
+        "name_ko": "이분 탐색 LIS",
+        "description": "Find Longest Increasing Subsequence in O(n log n) using binary search with auxiliary array.",
+        "description_ko": "보조 배열과 이분 탐색을 사용하여 O(n log n)에 최장 증가 부분 수열을 찾습니다.",
+        "use_cases": [
+            "최장 증가/감소 수열",
+            "박스 쌓기",
+            "체인 문제",
+        ],
+        "time_complexity": "O(n log n)",
+        "space_complexity": "O(n)",
+        "example_code": """import bisect
+
+def lis_length(arr):
+    # tails[i] = 길이가 i+1인 IS의 가장 작은 마지막 원소
+    tails = []
+
+    for num in arr:
+        pos = bisect.bisect_left(tails, num)
+        if pos == len(tails):
+            tails.append(num)
+        else:
+            tails[pos] = num
+
+    return len(tails)
+
+def lis_with_sequence(arr):
+    n = len(arr)
+    tails = []
+    prev = [-1] * n
+    indices = []  # tails의 각 위치에 해당하는 원본 인덱스
+
+    for i, num in enumerate(arr):
+        pos = bisect.bisect_left(tails, num)
+        if pos > 0:
+            prev[i] = indices[pos - 1]
+        if pos == len(tails):
+            tails.append(num)
+            indices.append(i)
+        else:
+            tails[pos] = num
+            indices[pos] = i
+
+    # LIS 역추적
+    lis = []
+    idx = indices[-1]
+    while idx != -1:
+        lis.append(arr[idx])
+        idx = prev[idx]
+
+    return lis[::-1]""",
+        "keywords": ["LIS", "longest increasing subsequence", "binary search", "patience sorting"],
+    },
+    {
+        "id": "bitmask-dp",
+        "name": "Bitmask DP",
+        "name_ko": "비트마스크 DP",
+        "description": "DP using bitmask to represent set states. Efficient for problems with small set sizes (n ≤ 20).",
+        "description_ko": "집합 상태를 비트마스크로 표현하는 DP입니다. 작은 집합 크기(n ≤ 20)의 문제에 효율적입니다.",
+        "use_cases": [
+            "외판원 문제 (TSP)",
+            "집합 커버",
+            "할당 문제",
+        ],
+        "time_complexity": "O(2^n × n)",
+        "space_complexity": "O(2^n)",
+        "example_code": """def tsp(dist):
+    n = len(dist)
+    INF = float('inf')
+    # dp[mask][i] = mask에 속한 도시를 방문하고 i에서 끝날 때 최소 비용
+    dp = [[INF] * n for _ in range(1 << n)]
+    dp[1][0] = 0  # 시작점 0
+
+    for mask in range(1 << n):
+        for last in range(n):
+            if dp[mask][last] == INF:
+                continue
+            if not (mask & (1 << last)):
+                continue
+
+            for next_city in range(n):
+                if mask & (1 << next_city):
+                    continue  # 이미 방문
+                new_mask = mask | (1 << next_city)
+                dp[new_mask][next_city] = min(
+                    dp[new_mask][next_city],
+                    dp[mask][last] + dist[last][next_city]
+                )
+
+    # 모든 도시 방문 후 시작점으로 복귀
+    full_mask = (1 << n) - 1
+    answer = min(dp[full_mask][i] + dist[i][0] for i in range(n))
+    return answer
+
+# SOS DP (Sum over Subsets)
+def sos_dp(arr):
+    n = len(arr).bit_length()
+    dp = arr.copy()
+
+    for i in range(n):
+        for mask in range(1 << n):
+            if mask & (1 << i):
+                dp[mask] += dp[mask ^ (1 << i)]
+
+    return dp""",
+        "keywords": ["bitmask", "TSP", "subset", "state compression", "SOS DP"],
+    },
+    {
+        "id": "interval-dp",
+        "name": "Interval DP",
+        "name_ko": "구간 DP",
+        "description": "DP over intervals [i, j]. Solve by combining smaller subintervals. Common for parenthesization problems.",
+        "description_ko": "구간 [i, j]에 대한 DP입니다. 더 작은 부분 구간을 결합하여 해결합니다. 괄호화 문제에 흔히 사용됩니다.",
+        "use_cases": [
+            "행렬 체인 곱셈",
+            "최적 BST",
+            "팰린드롬 분할",
+        ],
+        "time_complexity": "O(n³) 또는 O(n² log n)",
+        "space_complexity": "O(n²)",
+        "example_code": """def matrix_chain_multiplication(dims):
+    # dims[i] = i번째 행렬의 행 수, dims[i+1] = 열 수
+    n = len(dims) - 1
+    # dp[i][j] = i~j번 행렬 곱의 최소 연산 횟수
+    dp = [[0] * n for _ in range(n)]
+
+    for length in range(2, n + 1):  # 구간 길이
+        for i in range(n - length + 1):
+            j = i + length - 1
+            dp[i][j] = float('inf')
+            for k in range(i, j):  # 분할점
+                cost = dp[i][k] + dp[k+1][j] + dims[i] * dims[k+1] * dims[j+1]
+                dp[i][j] = min(dp[i][j], cost)
+
+    return dp[0][n-1]
+
+def min_palindrome_partitions(s):
+    n = len(s)
+    # is_pal[i][j] = s[i:j+1]이 팰린드롬인지
+    is_pal = [[False] * n for _ in range(n)]
+    for i in range(n):
+        is_pal[i][i] = True
+    for i in range(n - 1):
+        is_pal[i][i+1] = (s[i] == s[i+1])
+    for length in range(3, n + 1):
+        for i in range(n - length + 1):
+            j = i + length - 1
+            is_pal[i][j] = is_pal[i+1][j-1] and s[i] == s[j]
+
+    # dp[i] = s[0:i+1]의 최소 분할 수
+    dp = list(range(n))
+    for i in range(n):
+        if is_pal[0][i]:
+            dp[i] = 0
+        else:
+            for j in range(i):
+                if is_pal[j+1][i]:
+                    dp[i] = min(dp[i], dp[j] + 1)
+
+    return dp[n-1]""",
+        "keywords": ["interval DP", "range DP", "matrix chain", "palindrome", "parenthesization"],
+    },
+    {
+        "id": "digit-dp",
+        "name": "Digit DP",
+        "name_ko": "자릿수 DP",
+        "description": "Count numbers in a range satisfying certain digit conditions. Process digits from most significant.",
+        "description_ko": "특정 자릿수 조건을 만족하는 범위 내 숫자를 셉니다. 가장 큰 자릿수부터 처리합니다.",
+        "use_cases": [
+            "특정 자릿수 합을 가진 수 세기",
+            "특정 숫자를 포함/제외하는 수",
+            "범위 내 조건 만족 수 세기",
+        ],
+        "time_complexity": "O(자릿수 × 상태 수)",
+        "space_complexity": "O(자릿수 × 상태 수)",
+        "example_code": """def count_digit_sum(n, target_sum):
+    # 1부터 n까지 자릿수 합이 target_sum인 수의 개수
+    digits = [int(d) for d in str(n)]
+    from functools import lru_cache
+
+    @lru_cache(maxsize=None)
+    def dp(pos, digit_sum, tight, started):
+        if pos == len(digits):
+            return 1 if started and digit_sum == target_sum else 0
+
+        limit = digits[pos] if tight else 9
+        result = 0
+
+        for d in range(0, limit + 1):
+            new_tight = tight and (d == limit)
+            new_started = started or (d > 0)
+            new_sum = digit_sum + d if new_started else 0
+            if new_sum <= target_sum:
+                result += dp(pos + 1, new_sum, new_tight, new_started)
+
+        return result
+
+    return dp(0, 0, True, False)
+
+def count_without_digit(n, forbidden):
+    # 1부터 n까지 forbidden 자릿수를 포함하지 않는 수
+    digits = [int(d) for d in str(n)]
+    from functools import lru_cache
+
+    @lru_cache(maxsize=None)
+    def dp(pos, tight, started):
+        if pos == len(digits):
+            return 1 if started else 0
+
+        limit = digits[pos] if tight else 9
+        result = 0
+
+        for d in range(0, limit + 1):
+            if d == forbidden and started:
+                continue
+            if d == forbidden and not started and d > 0:
+                continue
+
+            new_tight = tight and (d == limit)
+            new_started = started or (d > 0)
+            result += dp(pos + 1, new_tight, new_started)
+
+        return result
+
+    return dp(0, True, False)""",
+        "keywords": ["digit DP", "counting", "range query", "digit sum"],
+    },
+    # ============== String Algorithms ==============
+    {
+        "id": "rabin-karp",
+        "name": "Rabin-Karp Algorithm",
+        "name_ko": "라빈-카프 알고리즘",
+        "description": "String matching using rolling hash. Efficient for multiple pattern search or plagiarism detection.",
+        "description_ko": "롤링 해시를 사용한 문자열 매칭 알고리즘입니다. 다중 패턴 검색이나 표절 탐지에 효율적입니다.",
+        "use_cases": [
+            "다중 패턴 매칭",
+            "가장 긴 중복 부분 문자열",
+            "표절 탐지",
+        ],
+        "time_complexity": "평균 O(n + m), 최악 O(nm)",
+        "space_complexity": "O(1)",
+        "example_code": """def rabin_karp(text, pattern):
+    n, m = len(text), len(pattern)
+    if m > n:
+        return []
+
+    BASE = 256
+    MOD = 10**9 + 7
+
+    # 패턴 해시 계산
+    pattern_hash = 0
+    text_hash = 0
+    h = pow(BASE, m - 1, MOD)
+
+    for i in range(m):
+        pattern_hash = (pattern_hash * BASE + ord(pattern[i])) % MOD
+        text_hash = (text_hash * BASE + ord(text[i])) % MOD
+
+    matches = []
+
+    for i in range(n - m + 1):
+        if pattern_hash == text_hash:
+            # 해시 충돌 확인
+            if text[i:i+m] == pattern:
+                matches.append(i)
+
+        if i < n - m:
+            # 롤링 해시 업데이트
+            text_hash = (text_hash - ord(text[i]) * h) % MOD
+            text_hash = (text_hash * BASE + ord(text[i + m])) % MOD
+            text_hash = (text_hash + MOD) % MOD
+
+    return matches
+
+# 다중 패턴 버전
+def rabin_karp_multi(text, patterns):
+    pattern_hashes = {}
+    BASE, MOD = 256, 10**9 + 7
+
+    for p in patterns:
+        h = 0
+        for c in p:
+            h = (h * BASE + ord(c)) % MOD
+        pattern_hashes.setdefault(len(p), {})[h] = p
+
+    results = {p: [] for p in patterns}
+    # ... (각 패턴 길이별로 롤링 해시 적용)
+    return results""",
+        "keywords": ["rabin-karp", "rolling hash", "string matching", "fingerprint"],
+    },
+    {
+        "id": "z-algorithm",
+        "name": "Z Algorithm",
+        "name_ko": "Z 알고리즘",
+        "description": "Compute Z-array where Z[i] is the length of longest substring starting at i that matches prefix. O(n) time.",
+        "description_ko": "Z[i]가 i에서 시작하는 가장 긴 접두사 일치 부분 문자열 길이인 Z 배열을 계산합니다. O(n) 시간.",
+        "use_cases": [
+            "패턴 매칭",
+            "주기 찾기",
+            "가장 긴 공통 접두사",
+        ],
+        "time_complexity": "O(n)",
+        "space_complexity": "O(n)",
+        "example_code": """def z_function(s):
+    n = len(s)
+    z = [0] * n
+    z[0] = n
+
+    l, r = 0, 0
+    for i in range(1, n):
+        if i < r:
+            z[i] = min(r - i, z[i - l])
+
+        while i + z[i] < n and s[z[i]] == s[i + z[i]]:
+            z[i] += 1
+
+        if i + z[i] > r:
+            l, r = i, i + z[i]
+
+    return z
+
+def pattern_matching_z(text, pattern):
+    # pattern + "$" + text
+    combined = pattern + "$" + text
+    z = z_function(combined)
+    m = len(pattern)
+
+    matches = []
+    for i in range(m + 1, len(combined)):
+        if z[i] == m:
+            matches.append(i - m - 1)
+
+    return matches
+
+def longest_prefix_suffix(s):
+    # 가장 긴 proper prefix = suffix
+    z = z_function(s)
+    n = len(s)
+
+    for length in range(n - 1, 0, -1):
+        if z[n - length] == length:
+            return length
+    return 0""",
+        "keywords": ["Z algorithm", "Z function", "prefix matching", "pattern search"],
+    },
+    {
+        "id": "aho-corasick",
+        "name": "Aho-Corasick Algorithm",
+        "name_ko": "아호-코라식 알고리즘",
+        "description": "Efficient multi-pattern string matching using trie with failure links. Finds all patterns in one pass.",
+        "description_ko": "실패 링크가 있는 트라이를 사용한 효율적인 다중 패턴 문자열 매칭입니다. 한 번의 순회로 모든 패턴을 찾습니다.",
+        "use_cases": [
+            "다중 키워드 검색",
+            "금칙어 필터링",
+            "DNA 서열 매칭",
+        ],
+        "time_complexity": "O(n + m + z), z=매칭 수",
+        "space_complexity": "O(Σm × 알파벳 크기)",
+        "example_code": """from collections import deque, defaultdict
+
+class AhoCorasick:
+    def __init__(self):
+        self.goto = [{}]  # goto 함수
+        self.fail = [0]   # failure 함수
+        self.output = [[]]  # 각 상태의 출력 패턴
+
+    def add_pattern(self, pattern, idx):
+        state = 0
+        for c in pattern:
+            if c not in self.goto[state]:
+                self.goto[state][c] = len(self.goto)
+                self.goto.append({})
+                self.fail.append(0)
+                self.output.append([])
+            state = self.goto[state][c]
+        self.output[state].append(idx)
+
+    def build(self):
+        q = deque()
+        for c, next_state in self.goto[0].items():
+            q.append(next_state)
+
+        while q:
+            state = q.popleft()
+            for c, next_state in self.goto[state].items():
+                q.append(next_state)
+
+                # failure 링크 계산
+                fail_state = self.fail[state]
+                while fail_state and c not in self.goto[fail_state]:
+                    fail_state = self.fail[fail_state]
+
+                self.fail[next_state] = self.goto[fail_state].get(c, 0)
+                self.output[next_state] += self.output[self.fail[next_state]]
+
+    def search(self, text):
+        state = 0
+        results = []
+
+        for i, c in enumerate(text):
+            while state and c not in self.goto[state]:
+                state = self.fail[state]
+            state = self.goto[state].get(c, 0)
+
+            for pattern_idx in self.output[state]:
+                results.append((i, pattern_idx))
+
+        return results""",
+        "keywords": ["aho-corasick", "multi-pattern", "trie", "failure link", "automaton"],
+    },
+    {
+        "id": "manacher",
+        "name": "Manacher's Algorithm",
+        "name_ko": "매나커 알고리즘",
+        "description": "Find all palindromic substrings in O(n) time. Uses symmetry of palindromes to avoid redundant comparisons.",
+        "description_ko": "O(n) 시간에 모든 팰린드롬 부분 문자열을 찾습니다. 회문의 대칭성을 이용해 중복 비교를 피합니다.",
+        "use_cases": [
+            "최장 팰린드롬 부분 문자열",
+            "팰린드롬 개수 세기",
+            "팰린드롬 분할",
+        ],
+        "time_complexity": "O(n)",
+        "space_complexity": "O(n)",
+        "example_code": """def manacher(s):
+    # 문자열 변환: "abc" -> "#a#b#c#"
+    t = '#' + '#'.join(s) + '#'
+    n = len(t)
+    p = [0] * n  # p[i] = i 중심 팰린드롬 반경
+
+    center = right = 0
+
+    for i in range(n):
+        if i < right:
+            mirror = 2 * center - i
+            p[i] = min(right - i, p[mirror])
+
+        # 확장 시도
+        while (i + p[i] + 1 < n and i - p[i] - 1 >= 0 and
+               t[i + p[i] + 1] == t[i - p[i] - 1]):
+            p[i] += 1
+
+        # 경계 업데이트
+        if i + p[i] > right:
+            center, right = i, i + p[i]
+
+    return p
+
+def longest_palindrome(s):
+    p = manacher(s)
+    max_len = max(p)
+    center = p.index(max_len)
+
+    # 원본 문자열에서 위치 계산
+    start = (center - max_len) // 2
+    return s[start:start + max_len]
+
+def count_palindromic_substrings(s):
+    p = manacher(s)
+    # p[i]가 홀수 인덱스면 홀수 길이 팰린드롬
+    # p[i]가 짝수 인덱스면 짝수 길이 팰린드롬
+    return sum((r + 1) // 2 for r in p)""",
+        "keywords": ["manacher", "palindrome", "longest palindrome", "linear time"],
+    },
 ]
 
 

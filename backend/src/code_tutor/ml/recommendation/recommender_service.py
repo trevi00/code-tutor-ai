@@ -289,3 +289,271 @@ def reset_recommender() -> None:
     global _recommender
     _recommender = None
     logger.info("recommender_reset")
+
+
+class WeaknessAnalyzer:
+    """
+    사용자 약점 분석 및 맞춤형 문제 추천.
+
+    제출 기록을 분석하여 약점 패턴을 식별하고,
+    약점 강화를 위한 문제를 추천합니다.
+    """
+
+    def __init__(self, session: AsyncSession):
+        self.session = session
+
+    async def get_weakness_patterns(self, user_id: UUID) -> list[dict]:
+        """
+        사용자의 약점 패턴을 분석합니다.
+
+        Args:
+            user_id: 사용자 ID
+
+        Returns:
+            약점 패턴 리스트 (낮은 성공률 순)
+        """
+        # 사용자 제출 기록 조회
+        submissions_query = select(SubmissionModel).where(
+            SubmissionModel.user_id == user_id
+        )
+        result = await self.session.execute(submissions_query)
+        submissions = result.scalars().all()
+
+        if not submissions:
+            return []
+
+        # 문제 ID 수집
+        problem_ids = list(set(sub.problem_id for sub in submissions))
+
+        # 문제 정보 조회
+        problems_query = select(ProblemModel).where(ProblemModel.id.in_(problem_ids))
+        problems_result = await self.session.execute(problems_query)
+        problems = {p.id: p for p in problems_result.scalars().all()}
+
+        # 카테고리 및 패턴별 통계 계산
+        category_stats: dict[str, dict] = {}
+        pattern_stats: dict[str, dict] = {}
+
+        for sub in submissions:
+            if sub.problem_id not in problems:
+                continue
+
+            problem = problems[sub.problem_id]
+            category = problem.category.value
+
+            # 카테고리 통계
+            if category not in category_stats:
+                category_stats[category] = {"attempts": 0, "solved": 0}
+            category_stats[category]["attempts"] += 1
+            if sub.status == SubmissionStatus.ACCEPTED:
+                category_stats[category]["solved"] += 1
+
+            # 패턴 통계
+            for pattern in problem.pattern_ids or []:
+                if pattern not in pattern_stats:
+                    pattern_stats[pattern] = {"attempts": 0, "solved": 0, "problems": set()}
+                pattern_stats[pattern]["attempts"] += 1
+                pattern_stats[pattern]["problems"].add(sub.problem_id)
+                if sub.status == SubmissionStatus.ACCEPTED:
+                    pattern_stats[pattern]["solved"] += 1
+
+        # 약점 패턴 식별 (성공률 < 50%)
+        weaknesses = []
+
+        for category, stats in category_stats.items():
+            if stats["attempts"] >= 2:  # 최소 2번 시도
+                success_rate = stats["solved"] / stats["attempts"]
+                if success_rate < 0.5:
+                    weaknesses.append({
+                        "type": "category",
+                        "name": category,
+                        "success_rate": success_rate,
+                        "attempts": stats["attempts"],
+                        "solved": stats["solved"],
+                        "severity": "high" if success_rate < 0.3 else "medium",
+                        "recommendation": f"{category} 카테고리의 기초 문제부터 다시 연습해보세요.",
+                    })
+
+        for pattern, stats in pattern_stats.items():
+            if stats["attempts"] >= 2:
+                success_rate = stats["solved"] / stats["attempts"]
+                if success_rate < 0.5:
+                    weaknesses.append({
+                        "type": "pattern",
+                        "name": pattern,
+                        "success_rate": success_rate,
+                        "attempts": stats["attempts"],
+                        "solved": stats["solved"],
+                        "problem_count": len(stats["problems"]),
+                        "severity": "high" if success_rate < 0.3 else "medium",
+                        "recommendation": f"{pattern} 패턴을 집중적으로 연습해보세요.",
+                    })
+
+        # 성공률 오름차순 정렬 (가장 약한 것 먼저)
+        weaknesses.sort(key=lambda x: x["success_rate"])
+
+        return weaknesses
+
+    async def get_targeted_recommendations(
+        self,
+        user_id: UUID,
+        limit: int = 5,
+        focus_weakness: str | None = None,
+    ) -> list[dict]:
+        """
+        약점 기반 맞춤형 문제 추천.
+
+        Args:
+            user_id: 사용자 ID
+            limit: 추천 문제 수
+            focus_weakness: 특정 약점에 집중 (카테고리 또는 패턴 이름)
+
+        Returns:
+            추천 문제 리스트
+        """
+        weaknesses = await self.get_weakness_patterns(user_id)
+
+        if not weaknesses:
+            # 약점이 없으면 일반 추천
+            return []
+
+        # 가장 약한 패턴/카테고리 선택
+        if focus_weakness:
+            target = next(
+                (w for w in weaknesses if w["name"] == focus_weakness),
+                weaknesses[0]
+            )
+        else:
+            target = weaknesses[0]
+
+        # 해당 카테고리/패턴의 문제 조회
+        if target["type"] == "category":
+            from code_tutor.learning.domain.value_objects import ProblemCategory
+            try:
+                category_enum = ProblemCategory(target["name"])
+                problems_query = select(ProblemModel).where(
+                    ProblemModel.category == category_enum,
+                    ProblemModel.is_published == True,
+                )
+            except ValueError:
+                problems_query = select(ProblemModel).where(
+                    ProblemModel.is_published == True
+                )
+        else:
+            # 패턴 기반 조회
+            problems_query = select(ProblemModel).where(
+                ProblemModel.is_published == True,
+            )
+
+        result = await self.session.execute(problems_query)
+        problems = result.scalars().all()
+
+        # 사용자가 이미 풀었던 문제 조회
+        solved_query = select(SubmissionModel.problem_id).where(
+            SubmissionModel.user_id == user_id,
+            SubmissionModel.status == SubmissionStatus.ACCEPTED,
+        ).distinct()
+        solved_result = await self.session.execute(solved_query)
+        solved_ids = set(r[0] for r in solved_result.all())
+
+        # 미풀이 문제 필터링 및 난이도순 정렬
+        recommendations = []
+        difficulty_order = {"easy": 0, "medium": 1, "hard": 2}
+
+        for p in problems:
+            if p.id in solved_ids:
+                continue
+
+            # 패턴 매칭 확인
+            if target["type"] == "pattern":
+                if target["name"] not in (p.pattern_ids or []):
+                    continue
+
+            recommendations.append({
+                "id": str(p.id),
+                "title": p.title,
+                "difficulty": p.difficulty.value,
+                "category": p.category.value,
+                "pattern_ids": p.pattern_ids or [],
+                "reason": f"약점 보강: {target['name']} ({target['type']})",
+                "weakness_info": {
+                    "success_rate": target["success_rate"],
+                    "attempts": target["attempts"],
+                },
+            })
+
+        # 난이도순 정렬 (쉬운 것부터)
+        recommendations.sort(
+            key=lambda x: difficulty_order.get(x["difficulty"], 1)
+        )
+
+        return recommendations[:limit]
+
+    async def get_learning_path(self, user_id: UUID) -> dict:
+        """
+        사용자 맞춤형 학습 경로 제안.
+
+        Args:
+            user_id: 사용자 ID
+
+        Returns:
+            학습 경로 정보
+        """
+        weaknesses = await self.get_weakness_patterns(user_id)
+
+        # 제출 통계 조회
+        submissions_query = select(SubmissionModel).where(
+            SubmissionModel.user_id == user_id
+        )
+        result = await self.session.execute(submissions_query)
+        submissions = result.scalars().all()
+
+        total_submissions = len(submissions)
+        solved_count = sum(
+            1 for s in submissions if s.status == SubmissionStatus.ACCEPTED
+        )
+
+        # 학습 단계 결정
+        if total_submissions < 10:
+            stage = "beginner"
+            stage_description = "기초 단계"
+            next_milestone = "10문제 풀이"
+        elif solved_count < 20:
+            stage = "intermediate"
+            stage_description = "중급 단계"
+            next_milestone = "20문제 해결"
+        elif solved_count < 50:
+            stage = "advanced"
+            stage_description = "고급 단계"
+            next_milestone = "50문제 해결"
+        else:
+            stage = "expert"
+            stage_description = "전문가 단계"
+            next_milestone = "대회 문제 도전"
+
+        # 추천 학습 순서
+        if weaknesses:
+            priority_focus = [w["name"] for w in weaknesses[:3]]
+        else:
+            priority_focus = ["array", "string", "dynamic_programming"]
+
+        return {
+            "current_stage": stage,
+            "stage_description": stage_description,
+            "total_submissions": total_submissions,
+            "problems_solved": solved_count,
+            "success_rate": solved_count / total_submissions if total_submissions > 0 else 0,
+            "next_milestone": next_milestone,
+            "weaknesses": weaknesses[:5],
+            "priority_focus": priority_focus,
+            "recommended_next_steps": [
+                f"약점 보강: {weaknesses[0]['name']}" if weaknesses else "기초 문제 연습",
+                "일일 1문제 풀이 도전",
+                "풀이 시간 단축 연습",
+            ],
+        }
+
+
+async def get_weakness_analyzer(session: AsyncSession) -> WeaknessAnalyzer:
+    """Factory function to get weakness analyzer."""
+    return WeaknessAnalyzer(session)
