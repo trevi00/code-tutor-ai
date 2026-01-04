@@ -50,6 +50,10 @@ XP_REWARDS = {
     "collaboration_session": 30,
     "playground_created": 15,
     "playground_shared": 25,
+    # Typing practice rewards
+    "typing_attempt_completed": 20,  # Each attempt completion
+    "typing_exercise_mastered": 50,  # Bonus for mastering (5 completions)
+    "typing_high_accuracy": 10,  # Bonus for 95%+ accuracy
 }
 
 # Level thresholds

@@ -26,6 +26,12 @@ from code_tutor.typing_practice.infrastructure.repository import (
     SQLAlchemyTypingExerciseRepository,
     SQLAlchemyTypingAttemptRepository,
 )
+from code_tutor.gamification.application.services import XPService, BadgeService
+from code_tutor.gamification.infrastructure.repository import (
+    SQLAlchemyBadgeRepository,
+    SQLAlchemyUserBadgeRepository,
+    SQLAlchemyUserStatsRepository,
+)
 
 router = APIRouter(prefix="/typing-practice", tags=["Typing Practice"])
 
@@ -35,6 +41,15 @@ def get_typing_service(db: AsyncSession = Depends(get_db)) -> TypingPracticeServ
     exercise_repo = SQLAlchemyTypingExerciseRepository(db)
     attempt_repo = SQLAlchemyTypingAttemptRepository(db)
     return TypingPracticeService(exercise_repo, attempt_repo)
+
+
+def get_xp_service(db: AsyncSession = Depends(get_db)) -> XPService:
+    """Dependency to get XP service for gamification integration."""
+    badge_repo = SQLAlchemyBadgeRepository(db)
+    user_badge_repo = SQLAlchemyUserBadgeRepository(db)
+    user_stats_repo = SQLAlchemyUserStatsRepository(db)
+    badge_service = BadgeService(badge_repo, user_badge_repo, user_stats_repo)
+    return XPService(user_stats_repo, badge_service)
 
 
 # ============== Exercise Endpoints ==============
@@ -124,6 +139,8 @@ async def complete_attempt(
     request: CompleteAttemptRequest,
     current_user: User = Depends(get_current_user),
     service: TypingPracticeService = Depends(get_typing_service),
+    xp_service: XPService = Depends(get_xp_service),
+    db: AsyncSession = Depends(get_db),
 ):
     """Complete a typing attempt with results."""
     attempt = await service.complete_attempt(attempt_id, request)
@@ -132,6 +149,28 @@ async def complete_attempt(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Attempt not found",
         )
+
+    # Award XP for completing attempt
+    try:
+        # Base XP for attempt completion
+        await xp_service.add_xp(current_user.id, "typing_attempt_completed")
+
+        # Bonus XP for high accuracy (95%+)
+        if request.accuracy >= 95:
+            await xp_service.add_xp(current_user.id, "typing_high_accuracy")
+
+        # Check if exercise is now mastered
+        progress = await service.get_user_progress(current_user.id, attempt.exercise_id)
+        if progress and progress.is_mastered and progress.completed_attempts == 5:
+            # Just reached mastery (5th completion)
+            await xp_service.add_xp(current_user.id, "typing_exercise_mastered")
+
+        await db.commit()
+    except Exception as e:
+        # Log error but don't fail the request
+        import logging
+        logging.getLogger(__name__).warning(f"Failed to award XP: {e}")
+
     return attempt
 
 
