@@ -113,6 +113,19 @@ class BadgeService:
 
     def _check_badge_requirement(self, stats: UserStats, badge: Badge) -> bool:
         """Check if user stats meet badge requirement."""
+        # Boolean fields (path level completions)
+        bool_stat_mapping = {
+            "beginner_path_completed": stats.beginner_path_completed,
+            "elementary_path_completed": stats.elementary_path_completed,
+            "intermediate_path_completed": stats.intermediate_path_completed,
+            "advanced_path_completed": stats.advanced_path_completed,
+        }
+
+        # Check boolean requirements first
+        if badge.requirement in bool_stat_mapping:
+            return bool_stat_mapping[badge.requirement]
+
+        # Numeric requirements
         stat_mapping = {
             "problems_solved": stats.problems_solved,
             "problems_solved_first_try": stats.problems_solved_first_try,
@@ -122,6 +135,8 @@ class BadgeService:
             "collaborations_count": stats.collaborations_count,
             "playgrounds_created": stats.playgrounds_created,
             "playgrounds_shared": stats.playgrounds_shared,
+            "lessons_completed": stats.lessons_completed,
+            "paths_completed": stats.paths_completed,
         }
         current_value = stat_mapping.get(badge.requirement, 0)
         return current_value >= badge.requirement_value
@@ -191,6 +206,10 @@ class XPService:
             stats.playgrounds_created += 1
         elif action == "playground_shared":
             stats.playgrounds_shared += 1
+        elif action == "lesson_completed":
+            stats.increment_lessons_completed()
+        elif action == "path_completed":
+            stats.increment_paths_completed()
 
         await self.user_stats_repo.update(stats)
 
@@ -212,6 +231,15 @@ class XPService:
         """Record an activity and award XP."""
         return await self.add_xp(user_id, action)
 
+    async def set_path_level_completed(self, user_id: UUID, level: str) -> None:
+        """Set a specific path level as completed for badge tracking."""
+        stats = await self.user_stats_repo.get_or_create(user_id)
+        stats.set_path_level_completed(level)
+        await self.user_stats_repo.update(stats)
+
+        # Check for new badges after setting the path level
+        await self.badge_service.check_and_award_badges(user_id)
+
     def _to_stats_response(self, stats: UserStats) -> UserStatsResponse:
         current_xp, current_threshold, next_threshold = stats.xp_progress
         return UserStatsResponse(
@@ -229,6 +257,8 @@ class XPService:
             collaborations_count=stats.collaborations_count,
             playgrounds_created=stats.playgrounds_created,
             playgrounds_shared=stats.playgrounds_shared,
+            lessons_completed=stats.lessons_completed,
+            paths_completed=stats.paths_completed,
         )
 
 
@@ -489,5 +519,7 @@ class GamificationService:
             "collaborations_count": stats.collaborations_count,
             "playgrounds_created": stats.playgrounds_created,
             "playgrounds_shared": stats.playgrounds_shared,
+            "lessons_completed": stats.lessons_completed,
+            "paths_completed": stats.paths_completed,
         }
         return mapping.get(requirement, 0)

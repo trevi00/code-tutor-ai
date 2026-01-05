@@ -83,6 +83,12 @@ def _model_to_user_stats(model: UserStatsModel) -> UserStats:
         collaborations_count=model.collaborations_count,
         playgrounds_created=model.playgrounds_created,
         playgrounds_shared=model.playgrounds_shared,
+        lessons_completed=model.lessons_completed,
+        paths_completed=model.paths_completed,
+        beginner_path_completed=model.beginner_path_completed or False,
+        elementary_path_completed=model.elementary_path_completed or False,
+        intermediate_path_completed=model.intermediate_path_completed or False,
+        advanced_path_completed=model.advanced_path_completed or False,
         last_activity_date=model.last_activity_date,
         created_at=model.created_at,
         updated_at=model.updated_at,
@@ -243,6 +249,12 @@ class SQLAlchemyUserStatsRepository(UserStatsRepository):
             collaborations_count=stats.collaborations_count,
             playgrounds_created=stats.playgrounds_created,
             playgrounds_shared=stats.playgrounds_shared,
+            lessons_completed=stats.lessons_completed,
+            paths_completed=stats.paths_completed,
+            beginner_path_completed=stats.beginner_path_completed,
+            elementary_path_completed=stats.elementary_path_completed,
+            intermediate_path_completed=stats.intermediate_path_completed,
+            advanced_path_completed=stats.advanced_path_completed,
             last_activity_date=stats.last_activity_date,
             created_at=stats.created_at,
             updated_at=stats.updated_at,
@@ -266,6 +278,12 @@ class SQLAlchemyUserStatsRepository(UserStatsRepository):
             model.collaborations_count = stats.collaborations_count
             model.playgrounds_created = stats.playgrounds_created
             model.playgrounds_shared = stats.playgrounds_shared
+            model.lessons_completed = stats.lessons_completed
+            model.paths_completed = stats.paths_completed
+            model.beginner_path_completed = stats.beginner_path_completed
+            model.elementary_path_completed = stats.elementary_path_completed
+            model.intermediate_path_completed = stats.intermediate_path_completed
+            model.advanced_path_completed = stats.advanced_path_completed
             model.last_activity_date = stats.last_activity_date
             model.updated_at = datetime.utcnow()
             await self.session.flush()

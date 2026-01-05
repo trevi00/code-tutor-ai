@@ -76,6 +76,9 @@ class UserStatsResponse(BaseModel):
     collaborations_count: int
     playgrounds_created: int
     playgrounds_shared: int
+    # Roadmap progress
+    lessons_completed: int = 0
+    paths_completed: int = 0
 
     class Config:
         from_attributes = True

@@ -16,6 +16,8 @@ import code_tutor.playground.infrastructure.models  # noqa: F401
 import code_tutor.gamification.infrastructure.models  # noqa: F401
 # Import typing_practice models for database table creation
 import code_tutor.typing_practice.infrastructure.models  # noqa: F401
+# Import roadmap models for database table creation
+import code_tutor.roadmap.infrastructure.models  # noqa: F401
 from code_tutor.playground.infrastructure.template_seeder import seed_templates
 from code_tutor.gamification.infrastructure.repository import SQLAlchemyBadgeRepository, SQLAlchemyUserBadgeRepository, SQLAlchemyUserStatsRepository
 from code_tutor.gamification.application.services import BadgeService
@@ -41,6 +43,7 @@ from code_tutor.shared.infrastructure.redis import close_redis
 from code_tutor.shared.middleware import RateLimitMiddleware
 from code_tutor.tutor.interface.routes import router as tutor_router
 from code_tutor.typing_practice.interface.routes import router as typing_practice_router
+from code_tutor.roadmap.interface.routes import router as roadmap_router
 
 logger = get_logger(__name__)
 
@@ -138,6 +141,7 @@ def create_app() -> FastAPI:
     app.include_router(debugger_router, prefix="/api/v1")
     app.include_router(performance_router, prefix="/api/v1")
     app.include_router(typing_practice_router, prefix="/api/v1")
+    app.include_router(roadmap_router, prefix="/api/v1")
 
     # Health check endpoint
     @app.get("/api/health", tags=["Health"])

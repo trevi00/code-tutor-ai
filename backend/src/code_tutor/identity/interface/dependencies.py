@@ -93,6 +93,46 @@ async def get_current_active_user(
     return current_user
 
 
+async def get_optional_user(
+    credentials: Annotated[HTTPAuthorizationCredentials | None, Depends(HTTPBearer(auto_error=False))],
+    user_repo: Annotated[UserRepository, Depends(get_user_repository)],
+    redis: Annotated[RedisClient | None, Depends(get_redis)],
+) -> UserResponse | None:
+    """Get current user if authenticated, otherwise return None."""
+    if not credentials:
+        return None
+
+    token = credentials.credentials
+    try:
+        payload = decode_token(token)
+        token_payload = TokenPayload(payload)
+
+        if not token_payload.is_access_token:
+            return None
+
+        if redis:
+            if await redis.is_token_blacklisted(token_payload.jti):
+                return None
+
+        user = await user_repo.get_by_id(UUID(token_payload.user_id))
+        if user is None:
+            return None
+
+        return UserResponse(
+            id=user.id,
+            email=str(user.email) if user.email else "",
+            username=str(user.username) if user.username else "",
+            role=user.role.value,
+            is_active=user.is_active,
+            is_verified=user.is_verified,
+            created_at=user.created_at,
+            last_login_at=user.last_login_at,
+            bio=user.bio,
+        )
+    except Exception:
+        return None
+
+
 async def get_current_user_ws(token: str) -> UserResponse | None:
     """Get current user from WebSocket token (query param).
 

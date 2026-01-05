@@ -11,6 +11,7 @@ from sqlalchemy import (
     ForeignKey,
     Enum as SQLEnum,
     Text,
+    Boolean,
 )
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
@@ -74,6 +75,14 @@ class UserStatsModel(Base):
     collaborations_count = Column(Integer, default=0)
     playgrounds_created = Column(Integer, default=0)
     playgrounds_shared = Column(Integer, default=0)
+    # Roadmap progress
+    lessons_completed = Column(Integer, default=0)
+    paths_completed = Column(Integer, default=0)
+    # Path level completion flags
+    beginner_path_completed = Column(Boolean, default=False)
+    elementary_path_completed = Column(Boolean, default=False)
+    intermediate_path_completed = Column(Boolean, default=False)
+    advanced_path_completed = Column(Boolean, default=False)
     last_activity_date = Column(DateTime, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)

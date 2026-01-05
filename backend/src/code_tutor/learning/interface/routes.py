@@ -34,8 +34,17 @@ from code_tutor.learning.infrastructure.repository import (
 from code_tutor.ml.analysis import CodeQualityService, QualityRecommender
 from code_tutor.ml.prediction import InsightsService
 from code_tutor.ml.recommendation import RecommenderService
+from code_tutor.gamification.application.services import BadgeService, XPService
+from code_tutor.gamification.infrastructure.repository import (
+    SQLAlchemyBadgeRepository,
+    SQLAlchemyUserBadgeRepository,
+    SQLAlchemyUserStatsRepository,
+)
 from code_tutor.shared.api_response import success_response
 from code_tutor.shared.config import get_settings
+from code_tutor.shared.infrastructure.logging import get_logger
+
+logger = get_logger(__name__)
 from code_tutor.shared.exceptions import AppException
 from code_tutor.shared.infrastructure.database import get_async_session
 
@@ -103,6 +112,25 @@ async def get_submission_evaluator(
     settings = get_settings()
     use_docker = settings.ENVIRONMENT != "development"
     return SubmissionEvaluator(problem_repo, submission_repo, use_docker=use_docker)
+
+
+async def get_badge_service(
+    session: Annotated[AsyncSession, Depends(get_async_session)],
+) -> BadgeService:
+    """Get badge service for gamification."""
+    badge_repo = SQLAlchemyBadgeRepository(session)
+    user_badge_repo = SQLAlchemyUserBadgeRepository(session)
+    user_stats_repo = SQLAlchemyUserStatsRepository(session)
+    return BadgeService(badge_repo, user_badge_repo, user_stats_repo)
+
+
+async def get_xp_service(
+    session: Annotated[AsyncSession, Depends(get_async_session)],
+    badge_service: Annotated[BadgeService, Depends(get_badge_service)],
+) -> XPService:
+    """Get XP service for gamification."""
+    user_stats_repo = SQLAlchemyUserStatsRepository(session)
+    return XPService(user_stats_repo, badge_service)
 
 
 # Problem endpoints
@@ -326,6 +354,7 @@ async def submit_and_evaluate(
     evaluator: Annotated[SubmissionEvaluator, Depends(get_submission_evaluator)],
     recommender: Annotated[RecommenderService, Depends(get_recommender_service)],
     quality_service: Annotated[CodeQualityService, Depends(get_quality_service)],
+    xp_service: Annotated[XPService, Depends(get_xp_service)],
     current_user: Annotated[UserResponse, Depends(get_current_active_user)],
 ) -> SubmissionResponse:
     """
@@ -335,10 +364,20 @@ async def submit_and_evaluate(
     1. POST /submissions (create submission)
     2. POST /submissions/{id}/evaluate (run evaluation)
     3. Analyze code quality (async, non-blocking)
+    4. Update gamification stats (XP, badges) on success
 
     Returns the evaluated submission with status and test results.
     """
     try:
+        # Check if user has already solved this problem (for gamification)
+        already_solved = await service.has_user_solved(current_user.id, request.problem_id)
+
+        # Check if this is the user's first submission for this problem
+        previous_submissions = await service.get_user_problem_submissions(
+            current_user.id, request.problem_id, limit=1
+        )
+        is_first_attempt = len(previous_submissions) == 0
+
         # Create submission
         submission = await service.create_submission(current_user.id, request)
 
@@ -355,6 +394,24 @@ async def submit_and_evaluate(
             problem_id=request.problem_id,
             is_solved=is_solved,
         )
+
+        # Update gamification stats if this is a NEW successful solve
+        logger.info(
+            "Gamification check",
+            is_solved=is_solved,
+            already_solved=already_solved,
+            is_first_attempt=is_first_attempt,
+        )
+        if is_solved and not already_solved:
+            try:
+                # Award XP based on whether this was first attempt
+                action = "problem_solved_first_try" if is_first_attempt else "problem_solved"
+                logger.info("Recording activity", action=action, user_id=str(current_user.id))
+                await xp_service.record_activity(current_user.id, action)
+                logger.info("Activity recorded successfully")
+            except Exception as e:
+                logger.error("Gamification failed", error=str(e), error_type=type(e).__name__)
+                pass  # Gamification failure shouldn't affect submission
 
         # Analyze code quality (best effort, don't fail on error)
         try:

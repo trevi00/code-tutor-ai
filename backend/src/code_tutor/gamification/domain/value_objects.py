@@ -54,6 +54,11 @@ XP_REWARDS = {
     "typing_attempt_completed": 20,  # Each attempt completion
     "typing_exercise_mastered": 50,  # Bonus for mastering (5 completions)
     "typing_high_accuracy": 10,  # Bonus for 95%+ accuracy
+    # Roadmap learning rewards
+    "lesson_completed": 10,  # Base XP per lesson (actual reward from lesson.xp_reward)
+    "module_completed": 50,  # Bonus for completing a module
+    "path_completed": 200,  # Bonus for completing a learning path
+    "path_started": 5,  # Small reward for starting a path
 }
 
 # Level thresholds

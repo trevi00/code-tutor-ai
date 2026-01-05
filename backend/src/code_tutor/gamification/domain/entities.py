@@ -92,6 +92,14 @@ class UserStats:
     collaborations_count: int = 0
     playgrounds_created: int = 0
     playgrounds_shared: int = 0
+    # Roadmap progress
+    lessons_completed: int = 0
+    paths_completed: int = 0
+    # Path level completion flags
+    beginner_path_completed: bool = False
+    elementary_path_completed: bool = False
+    intermediate_path_completed: bool = False
+    advanced_path_completed: bool = False
     last_activity_date: Optional[datetime] = None
     created_at: datetime = field(default_factory=datetime.utcnow)
     updated_at: datetime = field(default_factory=datetime.utcnow)
@@ -169,6 +177,29 @@ class UserStats:
         self.problems_solved += 1
         if first_try:
             self.problems_solved_first_try += 1
+        self.updated_at = datetime.utcnow()
+
+    def increment_lessons_completed(self) -> None:
+        """Increment lessons completed counter."""
+        self.lessons_completed += 1
+        self.updated_at = datetime.utcnow()
+
+    def increment_paths_completed(self) -> None:
+        """Increment paths completed counter."""
+        self.paths_completed += 1
+        self.updated_at = datetime.utcnow()
+
+    def set_path_level_completed(self, level: str) -> None:
+        """Set a specific path level as completed."""
+        level_lower = level.lower()
+        if level_lower == "beginner":
+            self.beginner_path_completed = True
+        elif level_lower == "elementary":
+            self.elementary_path_completed = True
+        elif level_lower == "intermediate":
+            self.intermediate_path_completed = True
+        elif level_lower == "advanced":
+            self.advanced_path_completed = True
         self.updated_at = datetime.utcnow()
 
 
@@ -435,5 +466,107 @@ PREDEFINED_BADGES = [
         "requirement": "playgrounds_shared",
         "requirement_value": 5,
         "xp_reward": 100,
+    },
+    # Roadmap Learning Badges
+    {
+        "name": "학습 시작",
+        "description": "첫 번째 레슨을 완료했습니다",
+        "icon": "📖",
+        "rarity": BadgeRarity.COMMON,
+        "category": BadgeCategory.MASTERY,
+        "requirement": "lessons_completed",
+        "requirement_value": 1,
+        "xp_reward": 20,
+    },
+    {
+        "name": "꾸준한 학습자",
+        "description": "10개의 레슨을 완료했습니다",
+        "icon": "📚",
+        "rarity": BadgeRarity.UNCOMMON,
+        "category": BadgeCategory.MASTERY,
+        "requirement": "lessons_completed",
+        "requirement_value": 10,
+        "xp_reward": 100,
+    },
+    {
+        "name": "열정적 학습자",
+        "description": "50개의 레슨을 완료했습니다",
+        "icon": "🎯",
+        "rarity": BadgeRarity.RARE,
+        "category": BadgeCategory.MASTERY,
+        "requirement": "lessons_completed",
+        "requirement_value": 50,
+        "xp_reward": 300,
+    },
+    {
+        "name": "학습 마니아",
+        "description": "100개의 레슨을 완료했습니다",
+        "icon": "🏅",
+        "rarity": BadgeRarity.EPIC,
+        "category": BadgeCategory.MASTERY,
+        "requirement": "lessons_completed",
+        "requirement_value": 100,
+        "xp_reward": 500,
+    },
+    {
+        "name": "첫 경로 완주",
+        "description": "첫 번째 학습 경로를 완료했습니다",
+        "icon": "🛤️",
+        "rarity": BadgeRarity.RARE,
+        "category": BadgeCategory.MASTERY,
+        "requirement": "paths_completed",
+        "requirement_value": 1,
+        "xp_reward": 200,
+    },
+    {
+        "name": "로드맵 정복자",
+        "description": "모든 학습 경로를 완료했습니다 (4개)",
+        "icon": "👑",
+        "rarity": BadgeRarity.LEGENDARY,
+        "category": BadgeCategory.MASTERY,
+        "requirement": "paths_completed",
+        "requirement_value": 4,
+        "xp_reward": 1000,
+    },
+    # Path Level Completion Badges
+    {
+        "name": "파이썬 입문자",
+        "description": "파이썬 입문 경로를 완료했습니다",
+        "icon": "🐍",
+        "rarity": BadgeRarity.UNCOMMON,
+        "category": BadgeCategory.MASTERY,
+        "requirement": "beginner_path_completed",
+        "requirement_value": 1,
+        "xp_reward": 150,
+    },
+    {
+        "name": "기초 마스터",
+        "description": "기초 알고리즘 경로를 완료했습니다",
+        "icon": "📚",
+        "rarity": BadgeRarity.RARE,
+        "category": BadgeCategory.MASTERY,
+        "requirement": "elementary_path_completed",
+        "requirement_value": 1,
+        "xp_reward": 250,
+    },
+    {
+        "name": "알고리즘 중수",
+        "description": "중급 알고리즘 경로를 완료했습니다",
+        "icon": "🚀",
+        "rarity": BadgeRarity.EPIC,
+        "category": BadgeCategory.MASTERY,
+        "requirement": "intermediate_path_completed",
+        "requirement_value": 1,
+        "xp_reward": 400,
+    },
+    {
+        "name": "알고리즘 고수",
+        "description": "고급 알고리즘 경로를 완료했습니다",
+        "icon": "🏆",
+        "rarity": BadgeRarity.LEGENDARY,
+        "category": BadgeCategory.MASTERY,
+        "requirement": "advanced_path_completed",
+        "requirement_value": 1,
+        "xp_reward": 600,
     },
 ]
