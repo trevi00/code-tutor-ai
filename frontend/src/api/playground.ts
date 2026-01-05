@@ -4,6 +4,14 @@
 
 import { apiClient } from './client';
 
+// Helper to unwrap success_response format: { success, data, meta? }
+function unwrapResponse<T>(response: T | { success: boolean; data: T; meta?: unknown }): T {
+  if (response && typeof response === 'object' && 'success' in response && 'data' in response) {
+    return (response as { success: boolean; data: T }).data;
+  }
+  return response as T;
+}
+
 // === Types ===
 
 export interface PlaygroundResponse {
@@ -131,11 +139,11 @@ export async function executePlayground(
   playgroundId: string,
   request: ExecutePlaygroundRequest
 ): Promise<ExecutionResponse> {
-  const response = await apiClient.post(
+  const response = await apiClient.post<ExecutionResponse | { success: boolean; data: ExecutionResponse }>(
     `/playground/${playgroundId}/execute`,
     request
   );
-  return response.data;
+  return unwrapResponse(response.data);
 }
 
 export async function forkPlayground(

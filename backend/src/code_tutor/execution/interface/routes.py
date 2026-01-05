@@ -8,7 +8,6 @@ from code_tutor.execution.application.dto import ExecuteCodeRequest
 from code_tutor.execution.application.services import ExecutionService
 from code_tutor.identity.application.dto import UserResponse
 from code_tutor.identity.interface.dependencies import get_current_active_user
-from code_tutor.shared.api_response import success_response
 from code_tutor.shared.config import get_settings
 
 router = APIRouter(prefix="/execute", tags=["Code Execution"])
@@ -40,4 +39,4 @@ async def execute_code(
     - Maximum execution time is 30 seconds
     """
     result = await service.execute_code(request)
-    return success_response(result.model_dump())
+    return result.model_dump()

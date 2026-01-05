@@ -3,7 +3,7 @@
  * Shows modules and lessons for a specific path
  */
 import { useState, useEffect } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import {
   BookOpen,
   CheckCircle,
@@ -12,7 +12,6 @@ import {
   ChevronDown,
   Zap,
   ArrowLeft,
-  Play,
   FileText,
   Code,
   Keyboard,
@@ -21,11 +20,10 @@ import {
   Lock,
 } from 'lucide-react';
 import { roadmapApi } from '../../api/roadmap';
-import type { LearningPath, Module, Lesson, LessonType } from '../../api/roadmap';
+import type { LearningPath, LessonType } from '../../api/roadmap';
 
 export default function PathDetailPage() {
   const { pathId } = useParams<{ pathId: string }>();
-  const navigate = useNavigate();
   const [path, setPath] = useState<LearningPath | null>(null);
   const [expandedModules, setExpandedModules] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);

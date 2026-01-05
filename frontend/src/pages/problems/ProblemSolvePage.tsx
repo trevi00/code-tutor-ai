@@ -146,6 +146,7 @@ export function ProblemSolvePage() {
         results: result.test_results?.map((tr) => ({
           is_passed: tr.is_passed,
           actual_output: tr.actual_output || '',
+          expected_output: tr.expected_output || '',
         })) || [],
       });
     } catch (err) {

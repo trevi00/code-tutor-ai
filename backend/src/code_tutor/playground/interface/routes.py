@@ -42,7 +42,7 @@ async def get_playground_service(db=Depends(get_async_session)) -> PlaygroundSer
     return PlaygroundService(
         playground_repo,
         history_repo,
-        use_docker=settings.ENVIRONMENT != "test",
+        use_docker=settings.ENVIRONMENT not in ("development", "test"),
     )
 
 

@@ -100,9 +100,10 @@ export interface TestResult {
   test_case_id: string;
   is_passed: boolean;
   actual_output: string;
+  expected_output: string;
   execution_time_ms: number;
-  memory_usage_mb: number;
-  error?: string;
+  memory_usage_mb?: number;
+  error_message?: string;
 }
 
 export interface Submission {

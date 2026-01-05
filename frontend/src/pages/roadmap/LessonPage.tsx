@@ -7,7 +7,6 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import {
   ArrowLeft,
   ArrowRight,
-  BookOpen,
   CheckCircle,
   Clock,
   Zap,

@@ -7,10 +7,18 @@ export interface SubmitCodeRequest {
   language?: string;
 }
 
+// Helper to unwrap success_response format: { success, data, meta? }
+function unwrapResponse<T>(response: T | { success: boolean; data: T; meta?: unknown }): T {
+  if (response && typeof response === 'object' && 'success' in response && 'data' in response) {
+    return (response as { success: boolean; data: T }).data;
+  }
+  return response as T;
+}
+
 export const executionApi = {
   execute: async (data: ExecuteCodeRequest): Promise<ExecuteCodeResponse> => {
-    const response = await apiClient.post<ExecuteCodeResponse>('/execute/run', data);
-    return response.data;
+    const response = await apiClient.post<ExecuteCodeResponse | { success: boolean; data: ExecuteCodeResponse }>('/execute/run', data);
+    return unwrapResponse(response.data);
   },
 
   submit: async (data: SubmitCodeRequest): Promise<Submission> => {
