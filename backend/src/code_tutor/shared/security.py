@@ -120,8 +120,9 @@ class TokenPayload:
 
     def __init__(self, payload: dict[str, Any]) -> None:
         self.sub: str = payload.get("sub", "")
-        self.exp: datetime = datetime.fromtimestamp(payload.get("exp", 0))
-        self.iat: datetime = datetime.fromtimestamp(payload.get("iat", 0))
+        # Use utcfromtimestamp to match JWT's UTC timestamps
+        self.exp: datetime = datetime.utcfromtimestamp(payload.get("exp", 0))
+        self.iat: datetime = datetime.utcfromtimestamp(payload.get("iat", 0))
         self.jti: str = payload.get("jti", "")
         self.type: str = payload.get("type", "")
 

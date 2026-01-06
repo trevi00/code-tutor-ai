@@ -1,5 +1,6 @@
 """Identity application services (use cases)"""
 
+from datetime import datetime
 from uuid import UUID
 
 from code_tutor.identity.application.dto import (
@@ -208,10 +209,13 @@ class AuthService:
 
         # Blacklist old refresh token
         if self._redis:
-            remaining_time = int(
-                (token_payload.exp - token_payload.iat).total_seconds()
+            # Calculate actual remaining time until expiration
+            remaining_time = max(
+                0,
+                int((token_payload.exp - datetime.utcnow()).total_seconds())
             )
-            await self._redis.blacklist_token(token_payload.jti, remaining_time)
+            if remaining_time > 0:
+                await self._redis.blacklist_token(token_payload.jti, remaining_time)
 
         # Create new tokens
         return await self._create_tokens(user)
