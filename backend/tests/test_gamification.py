@@ -867,3 +867,778 @@ class TestGamificationIntegration:
         assert completed is True
         assert user_challenge.status == ChallengeStatus.COMPLETED
         assert user_challenge.progress_percentage == 100.0
+
+
+# ============= Service Tests =============
+
+class TestBadgeService:
+    """Tests for BadgeService."""
+
+    @pytest.fixture
+    def mock_badge_repo(self):
+        return AsyncMock()
+
+    @pytest.fixture
+    def mock_user_badge_repo(self):
+        return AsyncMock()
+
+    @pytest.fixture
+    def mock_user_stats_repo(self):
+        return AsyncMock()
+
+    @pytest.fixture
+    def badge_service(self, mock_badge_repo, mock_user_badge_repo, mock_user_stats_repo):
+        from code_tutor.gamification.application.services import BadgeService
+        return BadgeService(mock_badge_repo, mock_user_badge_repo, mock_user_stats_repo)
+
+    @pytest.mark.asyncio
+    async def test_seed_badges_creates_new_badges(self, badge_service, mock_badge_repo):
+        """Test seeding badges when none exist."""
+        mock_badge_repo.exists_by_name.return_value = False
+        mock_badge_repo.create.return_value = None
+
+        count = await badge_service.seed_badges()
+
+        assert count == len(PREDEFINED_BADGES)
+        assert mock_badge_repo.exists_by_name.call_count == len(PREDEFINED_BADGES)
+        assert mock_badge_repo.create.call_count == len(PREDEFINED_BADGES)
+
+    @pytest.mark.asyncio
+    async def test_seed_badges_skips_existing(self, badge_service, mock_badge_repo):
+        """Test seeding badges skips existing ones."""
+        mock_badge_repo.exists_by_name.return_value = True
+
+        count = await badge_service.seed_badges()
+
+        assert count == 0
+        assert mock_badge_repo.create.call_count == 0
+
+    @pytest.mark.asyncio
+    async def test_get_all_badges(self, badge_service, mock_badge_repo):
+        """Test getting all badges."""
+        badges = [
+            Badge.create(
+                name="Test Badge",
+                description="Test",
+                icon="⭐",
+                rarity=BadgeRarity.COMMON,
+                category=BadgeCategory.PROBLEM_SOLVING,
+                requirement="problems_solved",
+                requirement_value=1,
+                xp_reward=50,
+            )
+        ]
+        mock_badge_repo.get_all.return_value = badges
+
+        result = await badge_service.get_all_badges()
+
+        assert len(result) == 1
+        assert result[0].name == "Test Badge"
+
+    @pytest.mark.asyncio
+    async def test_get_user_badges(self, badge_service, mock_badge_repo, mock_user_badge_repo):
+        """Test getting user's badges."""
+        user_id = uuid4()
+        badge = Badge.create(
+            name="First Badge",
+            description="Test",
+            icon="🎯",
+            rarity=BadgeRarity.COMMON,
+            category=BadgeCategory.PROBLEM_SOLVING,
+            requirement="problems_solved",
+            requirement_value=1,
+            xp_reward=50,
+        )
+        user_badge = UserBadge.create(user_id, badge.id)
+        user_badge.badge = badge
+
+        mock_badge_repo.get_all.return_value = [badge]
+        mock_user_badge_repo.get_by_user.return_value = [user_badge]
+
+        result = await badge_service.get_user_badges(user_id)
+
+        assert result.total_earned == 1
+        assert result.total_available == 0
+
+    @pytest.mark.asyncio
+    async def test_check_and_award_badges_awards_qualified(
+        self, badge_service, mock_badge_repo, mock_user_badge_repo, mock_user_stats_repo
+    ):
+        """Test awarding badges when user qualifies."""
+        user_id = uuid4()
+        badge = Badge.create(
+            name="Solver",
+            description="Solve 1 problem",
+            icon="✅",
+            rarity=BadgeRarity.COMMON,
+            category=BadgeCategory.PROBLEM_SOLVING,
+            requirement="problems_solved",
+            requirement_value=1,
+            xp_reward=50,
+        )
+        stats = UserStats.create(user_id)
+        stats.problems_solved = 5  # Exceeds requirement
+
+        mock_user_stats_repo.get_or_create.return_value = stats
+        mock_badge_repo.get_all.return_value = [badge]
+        mock_user_badge_repo.has_badge.return_value = False
+        mock_user_badge_repo.award_badge.return_value = None
+        mock_user_stats_repo.update.return_value = None
+
+        result = await badge_service.check_and_award_badges(user_id)
+
+        assert len(result) == 1
+        assert result[0].name == "Solver"
+        mock_user_badge_repo.award_badge.assert_called_once()
+
+    @pytest.mark.asyncio
+    async def test_check_and_award_badges_skips_already_earned(
+        self, badge_service, mock_badge_repo, mock_user_badge_repo, mock_user_stats_repo
+    ):
+        """Test skipping badges user already has."""
+        user_id = uuid4()
+        badge = Badge.create(
+            name="Solver",
+            description="Solve 1 problem",
+            icon="✅",
+            rarity=BadgeRarity.COMMON,
+            category=BadgeCategory.PROBLEM_SOLVING,
+            requirement="problems_solved",
+            requirement_value=1,
+            xp_reward=50,
+        )
+        stats = UserStats.create(user_id)
+        stats.problems_solved = 5
+
+        mock_user_stats_repo.get_or_create.return_value = stats
+        mock_badge_repo.get_all.return_value = [badge]
+        mock_user_badge_repo.has_badge.return_value = True  # Already has
+
+        result = await badge_service.check_and_award_badges(user_id)
+
+        assert len(result) == 0
+        mock_user_badge_repo.award_badge.assert_not_called()
+
+    def test_check_badge_requirement_problems_solved(self, badge_service):
+        """Test checking problems_solved requirement."""
+        stats = UserStats.create(uuid4())
+        stats.problems_solved = 10
+        badge = Badge.create(
+            name="Test",
+            description="Test",
+            icon="⭐",
+            rarity=BadgeRarity.COMMON,
+            category=BadgeCategory.PROBLEM_SOLVING,
+            requirement="problems_solved",
+            requirement_value=5,
+            xp_reward=50,
+        )
+
+        assert badge_service._check_badge_requirement(stats, badge) is True
+
+        badge.requirement_value = 20
+        assert badge_service._check_badge_requirement(stats, badge) is False
+
+    def test_check_badge_requirement_path_completed(self, badge_service):
+        """Test checking path completion requirement."""
+        stats = UserStats.create(uuid4())
+        stats.beginner_path_completed = True
+        badge = Badge.create(
+            name="Test",
+            description="Test",
+            icon="⭐",
+            rarity=BadgeRarity.RARE,
+            category=BadgeCategory.MASTERY,
+            requirement="beginner_path_completed",
+            requirement_value=1,
+            xp_reward=100,
+        )
+
+        assert badge_service._check_badge_requirement(stats, badge) is True
+
+        stats.beginner_path_completed = False
+        assert badge_service._check_badge_requirement(stats, badge) is False
+
+
+class TestXPService:
+    """Tests for XPService."""
+
+    @pytest.fixture
+    def mock_user_stats_repo(self):
+        return AsyncMock()
+
+    @pytest.fixture
+    def mock_badge_service(self):
+        return AsyncMock()
+
+    @pytest.fixture
+    def xp_service(self, mock_user_stats_repo, mock_badge_service):
+        from code_tutor.gamification.application.services import XPService
+        return XPService(mock_user_stats_repo, mock_badge_service)
+
+    @pytest.mark.asyncio
+    async def test_get_user_stats(self, xp_service, mock_user_stats_repo):
+        """Test getting user stats."""
+        user_id = uuid4()
+        stats = UserStats.create(user_id)
+        stats.total_xp = 500
+        stats.problems_solved = 10
+        mock_user_stats_repo.get_or_create.return_value = stats
+
+        result = await xp_service.get_user_stats(user_id)
+
+        assert result.total_xp == 500
+        assert result.problems_solved == 10
+        assert result.level > 1
+
+    @pytest.mark.asyncio
+    async def test_add_xp_problem_solved(self, xp_service, mock_user_stats_repo, mock_badge_service):
+        """Test adding XP for problem solved."""
+        user_id = uuid4()
+        stats = UserStats.create(user_id)
+        mock_user_stats_repo.get_or_create.return_value = stats
+        mock_user_stats_repo.update.return_value = None
+        mock_badge_service.check_and_award_badges.return_value = []
+
+        result = await xp_service.add_xp(user_id, "problem_solved")
+
+        assert result.xp_added == XP_REWARDS["problem_solved"]
+        assert result.total_xp == XP_REWARDS["problem_solved"]
+        assert stats.problems_solved == 1
+        mock_user_stats_repo.update.assert_called()
+
+    @pytest.mark.asyncio
+    async def test_add_xp_problem_solved_first_try(self, xp_service, mock_user_stats_repo, mock_badge_service):
+        """Test adding XP for problem solved first try."""
+        user_id = uuid4()
+        stats = UserStats.create(user_id)
+        mock_user_stats_repo.get_or_create.return_value = stats
+        mock_user_stats_repo.update.return_value = None
+        mock_badge_service.check_and_award_badges.return_value = []
+
+        result = await xp_service.add_xp(user_id, "problem_solved_first_try")
+
+        assert result.xp_added == XP_REWARDS["problem_solved_first_try"]
+        assert stats.problems_solved == 1
+        assert stats.problems_solved_first_try == 1
+
+    @pytest.mark.asyncio
+    async def test_add_xp_custom_amount(self, xp_service, mock_user_stats_repo, mock_badge_service):
+        """Test adding custom XP amount."""
+        user_id = uuid4()
+        stats = UserStats.create(user_id)
+        mock_user_stats_repo.get_or_create.return_value = stats
+        mock_user_stats_repo.update.return_value = None
+        mock_badge_service.check_and_award_badges.return_value = []
+
+        result = await xp_service.add_xp(user_id, "custom_action", custom_amount=200)
+
+        assert result.xp_added == 200
+        assert result.total_xp == 200
+
+    @pytest.mark.asyncio
+    async def test_add_xp_level_up(self, xp_service, mock_user_stats_repo, mock_badge_service):
+        """Test level up when adding XP."""
+        user_id = uuid4()
+        stats = UserStats.create(user_id)
+        stats.total_xp = 95  # Close to level 2 (100)
+        mock_user_stats_repo.get_or_create.return_value = stats
+        mock_user_stats_repo.update.return_value = None
+        mock_badge_service.check_and_award_badges.return_value = []
+
+        result = await xp_service.add_xp(user_id, "problem_solved")  # +50 XP
+
+        assert result.leveled_up is True
+        assert result.level == 2
+
+    @pytest.mark.asyncio
+    async def test_add_xp_various_actions(self, xp_service, mock_user_stats_repo, mock_badge_service):
+        """Test XP for various actions updates correct counters."""
+        user_id = uuid4()
+        stats = UserStats.create(user_id)
+        mock_user_stats_repo.get_or_create.return_value = stats
+        mock_user_stats_repo.update.return_value = None
+        mock_badge_service.check_and_award_badges.return_value = []
+
+        # collaboration_session
+        await xp_service.add_xp(user_id, "collaboration_session")
+        assert stats.collaborations_count == 1
+
+        # playground_created
+        await xp_service.add_xp(user_id, "playground_created")
+        assert stats.playgrounds_created == 1
+
+        # playground_shared
+        await xp_service.add_xp(user_id, "playground_shared")
+        assert stats.playgrounds_shared == 1
+
+        # lesson_completed
+        await xp_service.add_xp(user_id, "lesson_completed")
+        assert stats.lessons_completed == 1
+
+        # path_completed
+        await xp_service.add_xp(user_id, "path_completed")
+        assert stats.paths_completed == 1
+
+    @pytest.mark.asyncio
+    async def test_record_activity(self, xp_service, mock_user_stats_repo, mock_badge_service):
+        """Test recording activity."""
+        user_id = uuid4()
+        stats = UserStats.create(user_id)
+        mock_user_stats_repo.get_or_create.return_value = stats
+        mock_user_stats_repo.update.return_value = None
+        mock_badge_service.check_and_award_badges.return_value = []
+
+        result = await xp_service.record_activity(user_id, "daily_login")
+
+        assert result.xp_added == XP_REWARDS["daily_login"]
+
+    @pytest.mark.asyncio
+    async def test_set_path_level_completed(self, xp_service, mock_user_stats_repo, mock_badge_service):
+        """Test setting path level completed."""
+        user_id = uuid4()
+        stats = UserStats.create(user_id)
+        mock_user_stats_repo.get_or_create.return_value = stats
+        mock_user_stats_repo.update.return_value = None
+        mock_badge_service.check_and_award_badges.return_value = []
+
+        await xp_service.set_path_level_completed(user_id, "beginner")
+
+        assert stats.beginner_path_completed is True
+        mock_user_stats_repo.update.assert_called()
+        mock_badge_service.check_and_award_badges.assert_called_with(user_id)
+
+
+class TestLeaderboardService:
+    """Tests for LeaderboardService."""
+
+    @pytest.fixture
+    def mock_user_stats_repo(self):
+        return AsyncMock()
+
+    @pytest.fixture
+    def leaderboard_service(self, mock_user_stats_repo):
+        from code_tutor.gamification.application.services import LeaderboardService
+        return LeaderboardService(mock_user_stats_repo)
+
+    @pytest.mark.asyncio
+    async def test_get_leaderboard(self, leaderboard_service, mock_user_stats_repo):
+        """Test getting leaderboard."""
+        entries = [
+            LeaderboardEntry(
+                user_id=uuid4(),
+                username="user1",
+                total_xp=1000,
+                level=5,
+                level_title="도전자",
+                rank=1,
+                problems_solved=20,
+                current_streak=10,
+            ),
+            LeaderboardEntry(
+                user_id=uuid4(),
+                username="user2",
+                total_xp=500,
+                level=3,
+                level_title="탐험가",
+                rank=2,
+                problems_solved=10,
+                current_streak=5,
+            ),
+        ]
+        mock_user_stats_repo.get_leaderboard.return_value = entries
+        mock_user_stats_repo.get_user_rank.return_value = 1
+
+        result = await leaderboard_service.get_leaderboard(
+            period="all", limit=100, offset=0, user_id=entries[0].user_id
+        )
+
+        assert result.period == "all"
+        assert result.total_users == 2
+        assert len(result.entries) == 2
+        assert result.entries[0].rank == 1
+        assert result.user_rank == 1
+
+    @pytest.mark.asyncio
+    async def test_get_leaderboard_weekly(self, leaderboard_service, mock_user_stats_repo):
+        """Test getting weekly leaderboard."""
+        mock_user_stats_repo.get_leaderboard.return_value = []
+
+        result = await leaderboard_service.get_leaderboard(period="weekly")
+
+        assert result.period == "weekly"
+        mock_user_stats_repo.get_leaderboard.assert_called_with(
+            limit=100, offset=0, period="weekly"
+        )
+
+
+class TestChallengeService:
+    """Tests for ChallengeService."""
+
+    @pytest.fixture
+    def mock_challenge_repo(self):
+        return AsyncMock()
+
+    @pytest.fixture
+    def mock_user_challenge_repo(self):
+        return AsyncMock()
+
+    @pytest.fixture
+    def mock_user_stats_repo(self):
+        return AsyncMock()
+
+    @pytest.fixture
+    def challenge_service(self, mock_challenge_repo, mock_user_challenge_repo, mock_user_stats_repo):
+        from code_tutor.gamification.application.services import ChallengeService
+        return ChallengeService(mock_challenge_repo, mock_user_challenge_repo, mock_user_stats_repo)
+
+    @pytest.mark.asyncio
+    async def test_create_challenge(self, challenge_service, mock_challenge_repo):
+        """Test creating a challenge."""
+        mock_challenge_repo.create.return_value = None
+
+        result = await challenge_service.create_challenge(
+            name="Weekly Warrior",
+            description="Solve 10 problems",
+            challenge_type=ChallengeType.WEEKLY,
+            target_action="solve_problems",
+            target_value=10,
+            xp_reward=500,
+            duration_days=7,
+        )
+
+        assert result.name == "Weekly Warrior"
+        assert result.challenge_type == ChallengeType.WEEKLY
+        assert result.target_value == 10
+        assert result.xp_reward == 500
+        mock_challenge_repo.create.assert_called_once()
+
+    @pytest.mark.asyncio
+    async def test_get_user_challenges(self, challenge_service, mock_challenge_repo, mock_user_challenge_repo):
+        """Test getting user's challenges."""
+        user_id = uuid4()
+        now = datetime.now(timezone.utc)
+        challenge = Challenge.create(
+            name="Test",
+            description="Test",
+            challenge_type=ChallengeType.DAILY,
+            target_action="solve_problems",
+            target_value=5,
+            xp_reward=100,
+            start_date=now,
+            end_date=now + timedelta(days=1),
+        )
+        user_challenge = UserChallenge.create(user_id, challenge.id)
+        user_challenge.challenge = challenge
+
+        mock_challenge_repo.get_active.return_value = [challenge]
+        mock_user_challenge_repo.get_by_user.return_value = [user_challenge]
+
+        result = await challenge_service.get_user_challenges(user_id)
+
+        assert len(result.active) == 1
+        assert len(result.completed) == 0
+        assert len(result.available) == 0  # Already joined
+
+    @pytest.mark.asyncio
+    async def test_join_challenge(self, challenge_service, mock_challenge_repo, mock_user_challenge_repo):
+        """Test joining a challenge."""
+        user_id = uuid4()
+        now = datetime.now(timezone.utc)
+        challenge = Challenge.create(
+            name="Test Challenge",
+            description="Test",
+            challenge_type=ChallengeType.DAILY,
+            target_action="solve_problems",
+            target_value=5,
+            xp_reward=100,
+            start_date=now,
+            end_date=now + timedelta(days=1),
+        )
+
+        mock_user_challenge_repo.get_by_user_and_challenge.return_value = None
+        mock_challenge_repo.get_by_id.return_value = challenge
+        mock_user_challenge_repo.create.return_value = None
+
+        result = await challenge_service.join_challenge(user_id, challenge.id)
+
+        assert result.challenge.name == "Test Challenge"
+        assert result.current_progress == 0
+        mock_user_challenge_repo.create.assert_called_once()
+
+    @pytest.mark.asyncio
+    async def test_join_challenge_already_joined(self, challenge_service, mock_user_challenge_repo):
+        """Test joining a challenge user already joined."""
+        user_id = uuid4()
+        now = datetime.now(timezone.utc)
+        challenge = Challenge.create(
+            name="Test",
+            description="Test",
+            challenge_type=ChallengeType.DAILY,
+            target_action="solve_problems",
+            target_value=5,
+            xp_reward=100,
+            start_date=now,
+            end_date=now + timedelta(days=1),
+        )
+        existing = UserChallenge.create(user_id, challenge.id)
+        existing.challenge = challenge
+        existing.current_progress = 3
+
+        mock_user_challenge_repo.get_by_user_and_challenge.return_value = existing
+
+        result = await challenge_service.join_challenge(user_id, challenge.id)
+
+        assert result.current_progress == 3  # Returns existing
+        mock_user_challenge_repo.create.assert_not_called()
+
+    @pytest.mark.asyncio
+    async def test_join_challenge_not_found(self, challenge_service, mock_challenge_repo, mock_user_challenge_repo):
+        """Test joining non-existent challenge."""
+        mock_user_challenge_repo.get_by_user_and_challenge.return_value = None
+        mock_challenge_repo.get_by_id.return_value = None
+
+        with pytest.raises(ValueError, match="Challenge not found"):
+            await challenge_service.join_challenge(uuid4(), uuid4())
+
+    @pytest.mark.asyncio
+    async def test_update_challenge_progress(
+        self, challenge_service, mock_user_challenge_repo, mock_user_stats_repo
+    ):
+        """Test updating challenge progress."""
+        user_id = uuid4()
+        now = datetime.now(timezone.utc)
+        challenge = Challenge.create(
+            name="Solver",
+            description="Solve 5 problems",
+            challenge_type=ChallengeType.DAILY,
+            target_action="solve_problems",
+            target_value=5,
+            xp_reward=100,
+            start_date=now,
+            end_date=now + timedelta(days=1),
+        )
+        user_challenge = UserChallenge.create(user_id, challenge.id)
+        user_challenge.challenge = challenge
+
+        stats = UserStats.create(user_id)
+        stats.problems_solved = 5
+
+        mock_user_stats_repo.get_or_create.return_value = stats
+        mock_user_challenge_repo.get_by_user.return_value = [user_challenge]
+        mock_user_challenge_repo.update.return_value = None
+        mock_user_stats_repo.update.return_value = None
+
+        result = await challenge_service.update_challenge_progress(user_id, "solve_problems")
+
+        assert len(result) == 1
+        assert result[0].status == ChallengeStatus.COMPLETED
+
+    def test_get_progress_for_action(self, challenge_service):
+        """Test getting progress for various actions."""
+        stats = UserStats.create(uuid4())
+        stats.problems_solved = 10
+        stats.current_streak = 5
+        stats.patterns_mastered = 3
+        stats.collaborations_count = 2
+
+        assert challenge_service._get_progress_for_action(stats, "solve_problems") == 10
+        assert challenge_service._get_progress_for_action(stats, "maintain_streak") == 5
+        assert challenge_service._get_progress_for_action(stats, "complete_patterns") == 3
+        assert challenge_service._get_progress_for_action(stats, "collaborate") == 2
+        assert challenge_service._get_progress_for_action(stats, "unknown") == 0
+
+
+class TestGamificationService:
+    """Tests for GamificationService."""
+
+    @pytest.fixture
+    def mock_badge_service(self):
+        return AsyncMock()
+
+    @pytest.fixture
+    def mock_xp_service(self):
+        return AsyncMock()
+
+    @pytest.fixture
+    def mock_leaderboard_service(self):
+        return AsyncMock()
+
+    @pytest.fixture
+    def mock_challenge_service(self):
+        return AsyncMock()
+
+    @pytest.fixture
+    def gamification_service(
+        self, mock_badge_service, mock_xp_service, mock_leaderboard_service, mock_challenge_service
+    ):
+        from code_tutor.gamification.application.services import GamificationService
+        return GamificationService(
+            mock_badge_service, mock_xp_service, mock_leaderboard_service, mock_challenge_service
+        )
+
+    @pytest.mark.asyncio
+    async def test_get_overview(
+        self,
+        gamification_service,
+        mock_badge_service,
+        mock_xp_service,
+        mock_leaderboard_service,
+        mock_challenge_service,
+    ):
+        """Test getting gamification overview."""
+        user_id = uuid4()
+        from code_tutor.gamification.application.dto import (
+            UserStatsResponse,
+            UserBadgesResponse,
+            ChallengesResponse,
+            LeaderboardResponse,
+            BadgeResponse,
+        )
+
+        stats = UserStatsResponse(
+            total_xp=500,
+            level=4,
+            level_title="탐구자",
+            xp_progress=150,
+            xp_for_next_level=350,
+            xp_percentage=42.8,
+            current_streak=5,
+            longest_streak=10,
+            problems_solved=20,
+            problems_solved_first_try=10,
+            patterns_mastered=3,
+            collaborations_count=2,
+            playgrounds_created=1,
+            playgrounds_shared=0,
+            lessons_completed=5,
+            paths_completed=0,
+        )
+
+        available_badge = BadgeResponse(
+            id=uuid4(),
+            name="Streak Master",
+            description="Maintain 30 day streak",
+            icon="🔥",
+            rarity=BadgeRarity.EPIC,
+            category=BadgeCategory.STREAK,
+            requirement="current_streak",
+            requirement_value=30,
+            xp_reward=500,
+        )
+
+        badges = UserBadgesResponse(
+            earned=[],
+            available=[available_badge],
+            total_earned=0,
+            total_available=1,
+        )
+
+        challenges = ChallengesResponse(active=[], completed=[], available=[])
+
+        leaderboard = LeaderboardResponse(
+            entries=[],
+            period="all",
+            total_users=0,
+            user_rank=5,
+        )
+
+        mock_xp_service.get_user_stats.return_value = stats
+        mock_badge_service.get_user_badges.return_value = badges
+        mock_challenge_service.get_user_challenges.return_value = challenges
+        mock_leaderboard_service.get_leaderboard.return_value = leaderboard
+
+        result = await gamification_service.get_overview(user_id)
+
+        assert result.stats.total_xp == 500
+        assert result.leaderboard_rank == 5
+        assert result.next_badge_progress is not None
+        assert result.next_badge_progress["badge"] == "Streak Master"
+        assert result.next_badge_progress["current"] == 5  # current_streak
+        assert result.next_badge_progress["required"] == 30
+
+
+# ============= API Route Tests =============
+
+@pytest.fixture
+def mock_current_user():
+    """Create mock current user."""
+    from code_tutor.identity.application.dto import UserResponse
+    return UserResponse(
+        id=uuid4(),
+        email="test@example.com",
+        username="testuser",
+        role="student",
+        is_active=True,
+        is_verified=True,
+        created_at=datetime.now(timezone.utc),
+    )
+
+
+@pytest.fixture
+def mock_admin_user():
+    """Create mock admin user."""
+    from code_tutor.identity.application.dto import UserResponse
+    return UserResponse(
+        id=uuid4(),
+        email="admin@example.com",
+        username="admin",
+        role="admin",
+        is_active=True,
+        is_verified=True,
+        created_at=datetime.now(timezone.utc),
+    )
+
+
+class TestGamificationRoutesUnit:
+    """Unit tests for gamification API routes with mocked services."""
+
+    def test_router_prefix(self):
+        """Test router has correct prefix."""
+        from code_tutor.gamification.interface.routes import router
+        assert router.prefix == "/gamification"
+
+    def test_router_tags(self):
+        """Test router has correct tags."""
+        from code_tutor.gamification.interface.routes import router
+        assert "Gamification" in router.tags
+
+    def test_router_has_expected_routes(self):
+        """Test router has all expected routes."""
+        from code_tutor.gamification.interface.routes import router
+
+        route_paths = [r.path for r in router.routes]
+
+        expected_paths = [
+            "/gamification/overview",
+            "/gamification/badges",
+            "/gamification/badges/me",
+            "/gamification/badges/check",
+            "/gamification/stats",
+            "/gamification/xp",
+            "/gamification/activity/{action}",
+            "/gamification/leaderboard",
+            "/gamification/challenges",
+            "/gamification/challenges/{challenge_id}/join",
+            "/gamification/admin/seed-badges",
+            "/gamification/admin/challenges",
+        ]
+
+        for path in expected_paths:
+            assert path in route_paths, f"Missing route: {path}"
+
+    def test_service_factory_functions_exist(self):
+        """Test service factory functions exist."""
+        from code_tutor.gamification.interface.routes import (
+            get_badge_service,
+            get_xp_service,
+            get_leaderboard_service,
+            get_challenge_service,
+            get_gamification_service,
+        )
+
+        assert callable(get_badge_service)
+        assert callable(get_xp_service)
+        assert callable(get_leaderboard_service)
+        assert callable(get_challenge_service)
+        assert callable(get_gamification_service)
