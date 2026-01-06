@@ -1076,6 +1076,173 @@ class RAGBasedLLMService(LLMService):
         return analysis
 
 
+class OpenAILLMService(LLMService):
+    """
+    OpenAI-based LLM service for cloud model inference.
+
+    Uses OpenAI API to generate responses using models like GPT-4o-mini.
+    """
+
+    def __init__(self) -> None:
+        self._settings = get_settings()
+        self._api_key = self._settings.OPENAI_API_KEY
+        self._model = self._settings.OPENAI_MODEL
+        self._max_tokens = self._settings.LLM_MAX_TOKENS
+        self._client = httpx.AsyncClient(
+            timeout=60.0,
+            headers={
+                "Authorization": f"Bearer {self._api_key}",
+                "Content-Type": "application/json",
+            },
+        )
+
+    async def generate_response(
+        self,
+        user_message: str,
+        context: str | None = None,
+        conversation_history: list[dict[str, str]] | None = None,
+    ) -> str:
+        """Generate response using OpenAI API"""
+        if not self._api_key:
+            logger.warning("OpenAI API key not configured")
+            return await self._generate_fallback(user_message)
+
+        try:
+            # Build messages
+            messages = [{"role": "system", "content": TUTOR_SYSTEM_PROMPT}]
+
+            # Add conversation history
+            if conversation_history:
+                for msg in conversation_history[-5:]:  # Last 5 messages for context
+                    messages.append(
+                        {
+                            "role": msg.get("role", "user"),
+                            "content": msg.get("content", ""),
+                        }
+                    )
+
+            # Add context if available
+            user_content = user_message
+            if context:
+                user_content = f"{user_message}\n\n관련 코드:\n{context}"
+
+            messages.append({"role": "user", "content": user_content})
+
+            # Call OpenAI API
+            response = await self._client.post(
+                "https://api.openai.com/v1/chat/completions",
+                json={
+                    "model": self._model,
+                    "messages": messages,
+                    "temperature": 0.7,
+                    "max_tokens": self._max_tokens,
+                    "top_p": 0.9,
+                },
+            )
+            response.raise_for_status()
+
+            result = response.json()
+            return result.get("choices", [{}])[0].get("message", {}).get(
+                "content", "응답을 생성할 수 없습니다."
+            )
+
+        except httpx.TimeoutException:
+            logger.error("OpenAI request timed out")
+            return "죄송합니다. 응답 생성에 시간이 너무 오래 걸립니다. 잠시 후 다시 시도해주세요."
+        except httpx.HTTPStatusError as e:
+            logger.error(f"OpenAI HTTP error: {e.response.status_code} - {e.response.text}")
+            if e.response.status_code == 401:
+                return "죄송합니다. API 키가 유효하지 않습니다."
+            elif e.response.status_code == 429:
+                return "죄송합니다. API 사용량이 초과되었습니다. 잠시 후 다시 시도해주세요."
+            return "죄송합니다. AI 서비스에 연결할 수 없습니다."
+        except Exception as e:
+            logger.error(f"OpenAI error: {e}")
+            return await self._generate_fallback(user_message)
+
+    async def _generate_fallback(self, user_message: str) -> str:
+        """Fallback response when OpenAI is unavailable"""
+        lower_msg = user_message.lower()
+
+        if any(word in lower_msg for word in ["안녕", "hello", "hi"]):
+            return """안녕하세요! 알고리즘 학습을 도와드리는 AI 튜터입니다.
+
+무엇을 도와드릴까요?
+- 알고리즘 패턴 설명
+- 코드 리뷰
+- 문제 풀이 힌트"""
+
+        return """좋은 질문입니다!
+
+알고리즘 문제 해결 단계:
+1. **문제 이해**: 입력/출력 파악
+2. **예제 분석**: 패턴 발견
+3. **접근법 선택**: 적합한 알고리즘 선택
+4. **구현**: 코드 작성
+
+어떤 부분을 더 자세히 알고 싶으신가요?"""
+
+    async def analyze_code(
+        self,
+        code: str,
+        language: str = "python",
+    ) -> dict[str, Any]:
+        """Analyze code using OpenAI"""
+        if not self._api_key:
+            return {
+                "analysis": "API 키가 설정되지 않았습니다.",
+                "score": 70,
+                "complexity": {"time": "O(?)", "space": "O(?)"},
+            }
+
+        prompt = f"""다음 {language} 코드를 분석해주세요:
+
+```{language}
+{code}
+```
+
+다음 항목을 분석해주세요:
+1. 시간 복잡도
+2. 공간 복잡도
+3. 코드 품질 점수 (0-100)
+4. 개선 제안"""
+
+        try:
+            response = await self._client.post(
+                "https://api.openai.com/v1/chat/completions",
+                json={
+                    "model": self._model,
+                    "messages": [
+                        {"role": "system", "content": "당신은 코드 분석 전문가입니다. 한국어로 응답하세요."},
+                        {"role": "user", "content": prompt},
+                    ],
+                    "temperature": 0.3,
+                    "max_tokens": 1024,
+                },
+            )
+            response.raise_for_status()
+
+            result = response.json()
+            analysis_text = result.get("choices", [{}])[0].get("message", {}).get("content", "")
+
+            return {
+                "analysis": analysis_text,
+                "score": 70,
+                "complexity": {"time": "O(?)", "space": "O(?)"},
+            }
+        except Exception as e:
+            logger.error(f"Code analysis failed: {e}")
+            return {
+                "analysis": "코드 분석을 수행할 수 없습니다.",
+                "score": 70,
+                "complexity": {"time": "O(?)", "space": "O(?)"},
+            }
+
+    async def close(self):
+        """Close the HTTP client"""
+        await self._client.aclose()
+
+
 class OllamaLLMService(LLMService):
     """
     Ollama-based LLM service for local model inference.
@@ -1226,6 +1393,13 @@ def get_llm_service() -> LLMService:
 
     # Check LLM provider setting
     provider = settings.LLM_PROVIDER
+
+    if provider == "openai":
+        if settings.OPENAI_API_KEY:
+            logger.info("Using OpenAI LLM service")
+            return OpenAILLMService()
+        else:
+            logger.warning("OpenAI API key not set, falling back to pattern-based service")
 
     if provider == "ollama":
         logger.info("Using Ollama LLM service")
