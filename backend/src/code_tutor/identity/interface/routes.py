@@ -25,6 +25,11 @@ from code_tutor.identity.interface.dependencies import (
 )
 from code_tutor.shared.exceptions import AppException
 from code_tutor.shared.infrastructure.redis import RedisClient
+from code_tutor.shared.middleware.rate_limiter import (
+    login_rate_limit,
+    register_rate_limit,
+    refresh_rate_limit,
+)
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 security = HTTPBearer()
@@ -55,11 +60,13 @@ def get_user_service(
         201: {"description": "회원가입 성공"},
         400: {"description": "유효하지 않은 입력 데이터"},
         409: {"description": "이메일 또는 사용자명 중복"},
+        429: {"description": "요청 횟수 초과 (분당 3회 제한)"},
     },
 )
 async def register(
     request: RegisterRequest,
     auth_service: Annotated[AuthService, Depends(get_auth_service)],
+    _: Annotated[None, Depends(register_rate_limit)],
 ) -> UserResponse:
     """Register a new user account"""
     try:
@@ -81,11 +88,13 @@ async def register(
     responses={
         200: {"description": "로그인 성공, 액세스 토큰과 리프레시 토큰 반환"},
         401: {"description": "이메일 또는 비밀번호 불일치"},
+        429: {"description": "요청 횟수 초과 (분당 5회 제한)"},
     },
 )
 async def login(
     request: LoginRequest,
     auth_service: Annotated[AuthService, Depends(get_auth_service)],
+    _: Annotated[None, Depends(login_rate_limit)],
 ) -> LoginResponse:
     """Authenticate user and return tokens"""
     try:
@@ -105,11 +114,13 @@ async def login(
     responses={
         200: {"description": "토큰 갱신 성공"},
         401: {"description": "유효하지 않거나 만료된 리프레시 토큰"},
+        429: {"description": "요청 횟수 초과 (분당 10회 제한)"},
     },
 )
 async def refresh_token(
     request: RefreshTokenRequest,
     auth_service: Annotated[AuthService, Depends(get_auth_service)],
+    _: Annotated[None, Depends(refresh_rate_limit)],
 ) -> TokenResponse:
     """Refresh access token using refresh token"""
     try:

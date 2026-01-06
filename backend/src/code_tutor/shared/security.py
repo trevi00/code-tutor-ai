@@ -1,6 +1,6 @@
 """Security utilities - password hashing and JWT handling"""
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Any
 from uuid import uuid4
 
@@ -9,6 +9,11 @@ from jose import JWTError, jwt
 
 from code_tutor.shared.config import get_settings
 from code_tutor.shared.exceptions import UnauthorizedError
+
+
+def utc_now() -> datetime:
+    """Get current UTC time (timezone-aware)"""
+    return datetime.now(timezone.utc)
 
 
 def hash_password(password: str) -> str:
@@ -35,16 +40,16 @@ def create_access_token(
     to_encode = data.copy()
 
     if expires_delta:
-        expire = datetime.utcnow() + expires_delta
+        expire = utc_now() + expires_delta
     else:
-        expire = datetime.utcnow() + timedelta(
+        expire = utc_now() + timedelta(
             minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES
         )
 
     to_encode.update(
         {
             "exp": expire,
-            "iat": datetime.utcnow(),
+            "iat": utc_now(),
             "jti": str(uuid4()),
             "type": "access",
         }
@@ -66,14 +71,14 @@ def create_refresh_token(
     to_encode = data.copy()
 
     if expires_delta:
-        expire = datetime.utcnow() + expires_delta
+        expire = utc_now() + expires_delta
     else:
-        expire = datetime.utcnow() + timedelta(days=settings.REFRESH_TOKEN_EXPIRE_DAYS)
+        expire = utc_now() + timedelta(days=settings.REFRESH_TOKEN_EXPIRE_DAYS)
 
     to_encode.update(
         {
             "exp": expire,
-            "iat": datetime.utcnow(),
+            "iat": utc_now(),
             "jti": str(uuid4()),
             "type": "refresh",
         }
@@ -120,9 +125,13 @@ class TokenPayload:
 
     def __init__(self, payload: dict[str, Any]) -> None:
         self.sub: str = payload.get("sub", "")
-        # Use utcfromtimestamp to match JWT's UTC timestamps
-        self.exp: datetime = datetime.utcfromtimestamp(payload.get("exp", 0))
-        self.iat: datetime = datetime.utcfromtimestamp(payload.get("iat", 0))
+        # Use fromtimestamp with UTC timezone for timezone-aware datetimes
+        self.exp: datetime = datetime.fromtimestamp(
+            payload.get("exp", 0), tz=timezone.utc
+        )
+        self.iat: datetime = datetime.fromtimestamp(
+            payload.get("iat", 0), tz=timezone.utc
+        )
         self.jti: str = payload.get("jti", "")
         self.type: str = payload.get("type", "")
 
@@ -132,7 +141,7 @@ class TokenPayload:
 
     @property
     def is_expired(self) -> bool:
-        return datetime.utcnow() > self.exp
+        return utc_now() > self.exp
 
     @property
     def is_access_token(self) -> bool:

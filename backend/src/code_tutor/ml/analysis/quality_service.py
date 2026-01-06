@@ -4,8 +4,13 @@ Integrates code analysis, classification, and persistence.
 Provides comprehensive code quality tracking and trend analysis.
 """
 
-from datetime import date, datetime, timedelta
+from datetime import date, datetime, timedelta, timezone
 from uuid import UUID
+
+
+def utc_now() -> datetime:
+    """Get current UTC time (timezone-aware)"""
+    return datetime.now(timezone.utc)
 
 import structlog
 from sqlalchemy import func, select
@@ -120,7 +125,7 @@ class CodeQualityService:
                 # Metadata
                 language=language,
                 analyzer_version=ANALYZER_VERSION,
-                analyzed_at=datetime.utcnow(),
+                analyzed_at=utc_now(),
             )
 
             self.session.add(quality_analysis)

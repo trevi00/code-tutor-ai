@@ -1,9 +1,14 @@
 """Base domain classes for DDD implementation"""
 
 from abc import ABC
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any
 from uuid import UUID, uuid4
+
+
+def utc_now() -> datetime:
+    """Get current UTC time (timezone-aware)"""
+    return datetime.now(timezone.utc)
 
 
 class ValueObject(ABC):
@@ -33,8 +38,8 @@ class Entity(ABC):
 
     def __init__(self, id: UUID | None = None) -> None:
         self._id = id or uuid4()
-        self._created_at = datetime.utcnow()
-        self._updated_at = datetime.utcnow()
+        self._created_at = utc_now()
+        self._updated_at = utc_now()
 
     @property
     def id(self) -> UUID:
@@ -50,7 +55,7 @@ class Entity(ABC):
 
     def _touch(self) -> None:
         """Update the updated_at timestamp"""
-        self._updated_at = datetime.utcnow()
+        self._updated_at = utc_now()
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, self.__class__):

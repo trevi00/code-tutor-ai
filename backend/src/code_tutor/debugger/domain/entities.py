@@ -1,9 +1,14 @@
 """Debugger domain entities."""
 
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any, Optional
 from uuid import UUID, uuid4
+
+
+def utc_now() -> datetime:
+    """Get current UTC time (timezone-aware)"""
+    return datetime.now(timezone.utc)
 
 from .value_objects import (
     StepType,
@@ -132,13 +137,13 @@ class DebugSession:
         """Mark session as completed."""
         self.status = DebugStatus.COMPLETED
         self.output = output
-        self.completed_at = datetime.utcnow()
+        self.completed_at = utc_now()
 
     def fail(self, error: str) -> None:
         """Mark session as failed."""
         self.status = DebugStatus.ERROR
         self.error = error
-        self.completed_at = datetime.utcnow()
+        self.completed_at = utc_now()
 
     def to_dict(self) -> dict:
         """Convert to dictionary."""

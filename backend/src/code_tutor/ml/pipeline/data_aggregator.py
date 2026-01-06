@@ -3,8 +3,13 @@
 Aggregates user-problem interactions for NCF collaborative filtering.
 """
 
-from datetime import datetime
+from datetime import datetime, timezone
 from uuid import UUID
+
+
+def utc_now() -> datetime:
+    """Get current UTC time (timezone-aware)"""
+    return datetime.now(timezone.utc)
 
 import structlog
 from sqlalchemy import func, select
@@ -186,7 +191,7 @@ class DataAggregator:
                     "solved_at": stmt.excluded.solved_at,
                     "time_to_solve_seconds": stmt.excluded.time_to_solve_seconds,
                     "interaction_score": stmt.excluded.interaction_score,
-                    "updated_at": datetime.utcnow(),
+                    "updated_at": utc_now(),
                 },
             )
             await self.session.execute(stmt)
@@ -203,7 +208,7 @@ class DataAggregator:
                     "solved_at": stmt.excluded.solved_at,
                     "time_to_solve_seconds": stmt.excluded.time_to_solve_seconds,
                     "interaction_score": stmt.excluded.interaction_score,
-                    "updated_at": datetime.utcnow(),
+                    "updated_at": utc_now(),
                 },
             )
             await self.session.execute(stmt)

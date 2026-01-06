@@ -2,9 +2,14 @@
 
 import secrets
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any
 from uuid import UUID, uuid4
+
+
+def utc_now() -> datetime:
+    """Get current UTC time (timezone-aware)"""
+    return datetime.now(timezone.utc)
 
 from code_tutor.playground.domain.value_objects import (
     PlaygroundLanguage,
@@ -99,7 +104,7 @@ class Playground:
             self.visibility = visibility
         if stdin is not None:
             self.stdin = stdin
-        self.updated_at = datetime.utcnow()
+        self.updated_at = utc_now()
 
     def increment_run_count(self) -> None:
         """Increment the run count."""

@@ -1,9 +1,14 @@
 """Domain entities for typing practice."""
 
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional
 from uuid import UUID, uuid4
+
+
+def utc_now() -> datetime:
+    """Get current UTC time (timezone-aware)"""
+    return datetime.now(timezone.utc)
 
 from code_tutor.typing_practice.domain.value_objects import (
     ExerciseCategory,
@@ -40,7 +45,7 @@ class TypingExercise:
         required_completions: int = 5,
     ) -> "TypingExercise":
         """Factory method to create a new exercise."""
-        now = datetime.utcnow()
+        now = utc_now()
         return cls(
             id=uuid4(),
             title=title,
@@ -70,7 +75,7 @@ class TypingExercise:
             self.description = description
         if difficulty is not None:
             self.difficulty = difficulty
-        self.updated_at = datetime.utcnow()
+        self.updated_at = utc_now()
 
     @property
     def char_count(self) -> int:
@@ -112,7 +117,7 @@ class TypingAttempt:
             user_id=user_id,
             exercise_id=exercise_id,
             attempt_number=attempt_number,
-            started_at=datetime.utcnow(),
+            started_at=utc_now(),
         )
 
     def complete(
@@ -128,12 +133,12 @@ class TypingAttempt:
         self.wpm = wpm
         self.time_seconds = time_seconds
         self.status = AttemptStatus.COMPLETED
-        self.completed_at = datetime.utcnow()
+        self.completed_at = utc_now()
 
     def abandon(self) -> None:
         """Mark the attempt as abandoned."""
         self.status = AttemptStatus.ABANDONED
-        self.completed_at = datetime.utcnow()
+        self.completed_at = utc_now()
 
     @property
     def is_completed(self) -> bool:

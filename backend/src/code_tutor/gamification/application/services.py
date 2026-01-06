@@ -1,8 +1,13 @@
 """Gamification services."""
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Optional
 from uuid import UUID
+
+
+def utc_now() -> datetime:
+    """Get current UTC time (timezone-aware)"""
+    return datetime.now(timezone.utc)
 
 from code_tutor.gamification.domain.entities import (
     Badge,
@@ -193,7 +198,7 @@ class XPService:
         stats.add_xp(xp_amount)
 
         # Update streak
-        stats.update_streak(datetime.utcnow())
+        stats.update_streak(utc_now())
 
         # Update specific counters based on action
         if action == "problem_solved":
@@ -330,7 +335,7 @@ class ChallengeService:
         duration_days: int,
     ) -> ChallengeResponse:
         """Create a new challenge."""
-        now = datetime.utcnow()
+        now = utc_now()
         challenge = Challenge.create(
             name=name,
             description=description,
@@ -426,7 +431,7 @@ class ChallengeService:
     def _to_challenge_response(self, challenge: Challenge) -> ChallengeResponse:
         time_remaining = None
         if challenge.is_active:
-            delta = challenge.end_date - datetime.utcnow()
+            delta = challenge.end_date - utc_now()
             if delta.days > 0:
                 time_remaining = f"{delta.days}일 남음"
             elif delta.seconds > 3600:

@@ -4,8 +4,13 @@ Aggregates user learning statistics from submissions for ML models.
 """
 
 from collections import defaultdict
-from datetime import date, datetime, timedelta
+from datetime import date, datetime, timedelta, timezone
 from uuid import UUID
+
+
+def utc_now() -> datetime:
+    """Get current UTC time (timezone-aware)"""
+    return datetime.now(timezone.utc)
 
 import structlog
 from sqlalchemy import select
@@ -205,7 +210,7 @@ class DailyStatsService:
                     "category_breakdown": stmt.excluded.category_breakdown,
                     "study_minutes": stmt.excluded.study_minutes,
                     "is_active_day": stmt.excluded.is_active_day,
-                    "updated_at": datetime.utcnow(),
+                    "updated_at": utc_now(),
                 },
             )
             await self.session.execute(stmt)
@@ -228,7 +233,7 @@ class DailyStatsService:
                     "category_breakdown": stmt.excluded.category_breakdown,
                     "study_minutes": stmt.excluded.study_minutes,
                     "is_active_day": stmt.excluded.is_active_day,
-                    "updated_at": datetime.utcnow(),
+                    "updated_at": utc_now(),
                 },
             )
             await self.session.execute(stmt)

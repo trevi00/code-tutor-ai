@@ -1,6 +1,6 @@
 """Domain entities for Learning Roadmap."""
 
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional
 from uuid import UUID
 
@@ -10,6 +10,11 @@ from code_tutor.roadmap.domain.value_objects import (
     LessonType,
     ProgressStatus,
 )
+
+
+def utc_now() -> datetime:
+    """Get current UTC time (timezone-aware)"""
+    return datetime.now(timezone.utc)
 
 
 class Lesson(Entity):
@@ -163,12 +168,12 @@ class UserPathProgress(Entity):
     def start(self) -> None:
         if self.status == ProgressStatus.NOT_STARTED:
             self.status = ProgressStatus.IN_PROGRESS
-            self.started_at = datetime.utcnow()
+            self.started_at = utc_now()
             self._touch()
 
     def complete(self) -> None:
         self.status = ProgressStatus.COMPLETED
-        self.completed_at = datetime.utcnow()
+        self.completed_at = utc_now()
         self._touch()
 
     def update_progress(self, completed: int, total: int) -> None:
@@ -208,13 +213,13 @@ class UserLessonProgress(Entity):
     def start(self) -> None:
         if self.status == ProgressStatus.NOT_STARTED:
             self.status = ProgressStatus.IN_PROGRESS
-            self.started_at = datetime.utcnow()
+            self.started_at = utc_now()
         self.attempts += 1
         self._touch()
 
     def complete(self, score: int | None = None) -> None:
         self.status = ProgressStatus.COMPLETED
-        self.completed_at = datetime.utcnow()
+        self.completed_at = utc_now()
         if score is not None:
             self.score = score
         self._touch()

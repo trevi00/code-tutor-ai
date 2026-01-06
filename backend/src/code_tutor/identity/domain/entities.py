@@ -15,7 +15,7 @@ from code_tutor.identity.domain.value_objects import (
     UserRole,
 )
 from code_tutor.shared.domain.base import AggregateRoot
-from code_tutor.shared.security import hash_password, verify_password
+from code_tutor.shared.security import hash_password, utc_now, verify_password
 
 
 class User(AggregateRoot):
@@ -145,7 +145,7 @@ class User(AggregateRoot):
 
     def record_login(self) -> None:
         """Record a successful login"""
-        self._last_login_at = datetime.utcnow()
+        self._last_login_at = utc_now()
         self._touch()
 
         self.add_domain_event(UserLoggedIn(user_id=self.id))

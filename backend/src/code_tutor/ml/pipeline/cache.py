@@ -3,8 +3,13 @@
 Redis-based caching for ML model predictions and recommendations.
 """
 
-from datetime import datetime
+from datetime import datetime, timezone
 from uuid import UUID
+
+
+def utc_now() -> datetime:
+    """Get current UTC time (timezone-aware)"""
+    return datetime.now(timezone.utc)
 
 import structlog
 
@@ -93,7 +98,7 @@ class RecommendationCache:
         key = f"{self.PREFIX_RECOMMENDATIONS}:{user_id}:{strategy}:{limit}"
         data = {
             "recommendations": recommendations,
-            "cached_at": datetime.utcnow().isoformat(),
+            "cached_at": utc_now().isoformat(),
             "strategy": strategy,
         }
 
@@ -166,7 +171,7 @@ class RecommendationCache:
             True if cached successfully
         """
         key = f"{self.PREFIX_PREDICTIONS}:{user_id}:{prediction_type}"
-        predictions["cached_at"] = datetime.utcnow().isoformat()
+        predictions["cached_at"] = utc_now().isoformat()
 
         ttl = ttl or self.TTL_PREDICTIONS
         return await self.redis.set_json(key, predictions, expire_seconds=ttl)
@@ -225,7 +230,7 @@ class RecommendationCache:
         key = f"{self.PREFIX_USER_STATS}:{user_id}:{days}"
         data = {
             "sequence": sequence,
-            "cached_at": datetime.utcnow().isoformat(),
+            "cached_at": utc_now().isoformat(),
         }
 
         ttl = ttl or self.TTL_USER_STATS
@@ -257,7 +262,7 @@ class RecommendationCache:
             True if cached successfully
         """
         key = self.PREFIX_INTERACTION_MATRIX
-        matrix_data["cached_at"] = datetime.utcnow().isoformat()
+        matrix_data["cached_at"] = utc_now().isoformat()
 
         ttl = ttl or self.TTL_INTERACTION_MATRIX
         return await self.redis.set_json(key, matrix_data, expire_seconds=ttl)

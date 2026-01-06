@@ -1,8 +1,13 @@
 """Collaboration service for managing real-time coding sessions."""
 
 import random
-from datetime import datetime
+from datetime import datetime, timezone
 from uuid import UUID, uuid4
+
+
+def utc_now() -> datetime:
+    """Get current UTC time (timezone-aware)"""
+    return datetime.now(timezone.utc)
 
 import structlog
 
@@ -262,7 +267,7 @@ class CollaborationService:
             user_id=user_id,
             operation=operation,
             version=new_version,
-            timestamp=datetime.utcnow(),
+            timestamp=utc_now(),
         )
         await self.repository.save_code_change(change)
 

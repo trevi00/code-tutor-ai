@@ -55,7 +55,7 @@ class CreateSubmissionRequest(BaseModel):
     """Create submission request"""
 
     problem_id: UUID
-    code: str = Field(..., min_length=1)
+    code: str = Field(..., min_length=1, max_length=100000)  # 100KB limit
     language: str = Field(default="python", pattern="^(python)$")
 
 

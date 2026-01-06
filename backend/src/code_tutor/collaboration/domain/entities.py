@@ -1,9 +1,14 @@
 """Collaboration domain entities."""
 
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any
 from uuid import UUID, uuid4
+
+
+def utc_now() -> datetime:
+    """Get current UTC time (timezone-aware)"""
+    return datetime.now(timezone.utc)
 
 from code_tutor.collaboration.domain.value_objects import (
     CodeOperation,
@@ -142,7 +147,7 @@ class CollaborationSession:
         if self.status == SessionStatus.WAITING:
             self.status = SessionStatus.ACTIVE
 
-        self.updated_at = datetime.utcnow()
+        self.updated_at = utc_now()
         return participant
 
     def remove_participant(self, user_id: UUID) -> None:
@@ -150,7 +155,7 @@ class CollaborationSession:
         participant = self.get_participant_by_user_id(user_id)
         if participant:
             participant.deactivate()
-            self.updated_at = datetime.utcnow()
+            self.updated_at = utc_now()
 
         # Close session if no active participants
         if not self.active_participants:
@@ -194,7 +199,7 @@ class CollaborationSession:
                 + self.code_content[pos + operation.length :]
             )
 
-        self.updated_at = datetime.utcnow()
+        self.updated_at = utc_now()
         return self.version
 
     def update_participant_cursor(
@@ -234,7 +239,7 @@ class CollaborationSession:
         self.status = SessionStatus.CLOSED
         for p in self.participants:
             p.deactivate()
-        self.updated_at = datetime.utcnow()
+        self.updated_at = utc_now()
 
     def is_host(self, user_id: UUID) -> bool:
         """Check if user is the host."""

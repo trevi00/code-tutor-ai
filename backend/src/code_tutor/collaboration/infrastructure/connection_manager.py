@@ -3,9 +3,14 @@
 import asyncio
 import json
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any
 from uuid import UUID
+
+
+def utc_now() -> datetime:
+    """Get current UTC time (timezone-aware)"""
+    return datetime.now(timezone.utc)
 
 import structlog
 from fastapi import WebSocket
@@ -180,7 +185,7 @@ def create_message(msg_type: str, data: dict[str, Any]) -> dict[str, Any]:
     return {
         "type": msg_type,
         "data": data,
-        "timestamp": datetime.utcnow().isoformat(),
+        "timestamp": utc_now().isoformat(),
     }
 
 

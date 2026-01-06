@@ -1,9 +1,14 @@
 """Gamification domain entities."""
 
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional
 from uuid import UUID, uuid4
+
+
+def utc_now() -> datetime:
+    """Get current UTC time (timezone-aware)"""
+    return datetime.now(timezone.utc)
 
 from .value_objects import (
     BadgeRarity,
@@ -139,7 +144,7 @@ class UserStats:
     def add_xp(self, amount: int) -> int:
         """Add XP and return new total."""
         self.total_xp += amount
-        self.updated_at = datetime.utcnow()
+        self.updated_at = utc_now()
         return self.total_xp
 
     def update_streak(self, today: datetime) -> bool:
@@ -150,7 +155,7 @@ class UserStats:
         if self.last_activity_date is None:
             self.current_streak = 1
             self.last_activity_date = today
-            self.updated_at = datetime.utcnow()
+            self.updated_at = utc_now()
             return True
 
         days_diff = (today.date() - self.last_activity_date.date()).days
@@ -163,13 +168,13 @@ class UserStats:
             self.current_streak += 1
             self.longest_streak = max(self.longest_streak, self.current_streak)
             self.last_activity_date = today
-            self.updated_at = datetime.utcnow()
+            self.updated_at = utc_now()
             return True
         else:
             # Streak broken
             self.current_streak = 1
             self.last_activity_date = today
-            self.updated_at = datetime.utcnow()
+            self.updated_at = utc_now()
             return False
 
     def increment_problems_solved(self, first_try: bool = False) -> None:
@@ -177,17 +182,17 @@ class UserStats:
         self.problems_solved += 1
         if first_try:
             self.problems_solved_first_try += 1
-        self.updated_at = datetime.utcnow()
+        self.updated_at = utc_now()
 
     def increment_lessons_completed(self) -> None:
         """Increment lessons completed counter."""
         self.lessons_completed += 1
-        self.updated_at = datetime.utcnow()
+        self.updated_at = utc_now()
 
     def increment_paths_completed(self) -> None:
         """Increment paths completed counter."""
         self.paths_completed += 1
-        self.updated_at = datetime.utcnow()
+        self.updated_at = utc_now()
 
     def set_path_level_completed(self, level: str) -> None:
         """Set a specific path level as completed."""
@@ -200,7 +205,7 @@ class UserStats:
             self.intermediate_path_completed = True
         elif level_lower == "advanced":
             self.advanced_path_completed = True
-        self.updated_at = datetime.utcnow()
+        self.updated_at = utc_now()
 
 
 @dataclass
@@ -246,7 +251,7 @@ class Challenge:
     @property
     def is_active(self) -> bool:
         """Check if challenge is currently active."""
-        now = datetime.utcnow()
+        now = utc_now()
         return self.start_date <= now <= self.end_date
 
 
@@ -284,7 +289,7 @@ class UserChallenge:
 
         if self.challenge and self.current_progress >= self.challenge.target_value:
             self.status = ChallengeStatus.COMPLETED
-            self.completed_at = datetime.utcnow()
+            self.completed_at = utc_now()
             return True
 
         return False

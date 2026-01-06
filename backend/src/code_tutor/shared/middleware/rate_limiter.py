@@ -27,18 +27,52 @@ class RateLimitExceeded(HTTPException):
 class InMemoryRateLimiter:
     """Simple in-memory rate limiter using token bucket algorithm"""
 
+    # Cleanup settings
+    CLEANUP_INTERVAL = 100  # Run cleanup every N requests
+    ENTRY_TTL = 600  # Remove entries not accessed for 10 minutes
+
     def __init__(self, requests_per_minute: int = 60, burst_size: int = 10):
         self.requests_per_minute = requests_per_minute
         self.burst_size = burst_size
         self.tokens: dict[str, float] = defaultdict(lambda: float(burst_size))
         self.last_update: dict[str, float] = defaultdict(time.time)
         self.token_rate = requests_per_minute / 60.0  # tokens per second
+        self._request_count = 0
+
+    def _cleanup_stale_entries(self) -> None:
+        """Remove entries that haven't been accessed recently"""
+        current_time = time.time()
+        cutoff = current_time - self.ENTRY_TTL
+
+        # Find stale keys
+        stale_keys = [
+            key for key, last_time in self.last_update.items()
+            if last_time < cutoff
+        ]
+
+        # Remove stale entries
+        for key in stale_keys:
+            self.tokens.pop(key, None)
+            self.last_update.pop(key, None)
+
+        if stale_keys:
+            logger.debug(
+                "Rate limiter cleanup completed",
+                removed_entries=len(stale_keys),
+                remaining_entries=len(self.tokens),
+            )
 
     def is_allowed(self, key: str) -> tuple[bool, int]:
         """
         Check if request is allowed.
         Returns (allowed, retry_after_seconds)
         """
+        # Periodic cleanup
+        self._request_count += 1
+        if self._request_count >= self.CLEANUP_INTERVAL:
+            self._cleanup_stale_entries()
+            self._request_count = 0
+
         current_time = time.time()
         time_passed = current_time - self.last_update[key]
         self.last_update[key] = current_time
@@ -61,6 +95,14 @@ class InMemoryRateLimiter:
     def get_remaining(self, key: str) -> int:
         """Get remaining requests"""
         return max(0, int(self.tokens.get(key, self.burst_size)))
+
+    def get_stats(self) -> dict:
+        """Get limiter statistics for monitoring"""
+        return {
+            "active_entries": len(self.tokens),
+            "requests_per_minute": self.requests_per_minute,
+            "burst_size": self.burst_size,
+        }
 
 
 # Global rate limiter instances for different endpoints
@@ -186,3 +228,48 @@ def _get_client_id_from_request(request: Request) -> str:
     if forwarded:
         return f"ip:{forwarded.split(',')[0].strip()}"
     return f"ip:{request.client.host if request.client else 'unknown'}"
+
+
+# Authentication-specific rate limiters (stricter limits for security)
+_auth_login_limiter = InMemoryRateLimiter(
+    requests_per_minute=5,  # 5 login attempts per minute
+    burst_size=3,  # Max 3 rapid attempts
+)
+_auth_register_limiter = InMemoryRateLimiter(
+    requests_per_minute=3,  # 3 registrations per minute
+    burst_size=2,  # Max 2 rapid attempts
+)
+_auth_refresh_limiter = InMemoryRateLimiter(
+    requests_per_minute=10,  # 10 token refreshes per minute
+    burst_size=5,
+)
+
+
+def check_auth_rate_limit(limiter: InMemoryRateLimiter, request: Request) -> None:
+    """Check rate limit and raise exception if exceeded"""
+    client_id = _get_client_id_from_request(request)
+    allowed, retry_after = limiter.is_allowed(client_id)
+
+    if not allowed:
+        logger.warning(
+            "Auth rate limit exceeded",
+            client_id=client_id,
+            path=request.url.path,
+            retry_after=retry_after,
+        )
+        raise RateLimitExceeded(retry_after)
+
+
+def login_rate_limit(request: Request) -> None:
+    """Dependency for login rate limiting (5/min)"""
+    check_auth_rate_limit(_auth_login_limiter, request)
+
+
+def register_rate_limit(request: Request) -> None:
+    """Dependency for registration rate limiting (3/min)"""
+    check_auth_rate_limit(_auth_register_limiter, request)
+
+
+def refresh_rate_limit(request: Request) -> None:
+    """Dependency for token refresh rate limiting (10/min)"""
+    check_auth_rate_limit(_auth_refresh_limiter, request)

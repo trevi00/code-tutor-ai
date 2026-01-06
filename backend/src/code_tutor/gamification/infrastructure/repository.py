@@ -1,8 +1,13 @@
 """Gamification repository implementations."""
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Optional
 from uuid import UUID
+
+
+def utc_now() -> datetime:
+    """Get current UTC time (timezone-aware)"""
+    return datetime.now(timezone.utc)
 
 from sqlalchemy import select, func, desc
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -285,7 +290,7 @@ class SQLAlchemyUserStatsRepository(UserStatsRepository):
             model.intermediate_path_completed = stats.intermediate_path_completed
             model.advanced_path_completed = stats.advanced_path_completed
             model.last_activity_date = stats.last_activity_date
-            model.updated_at = datetime.utcnow()
+            model.updated_at = utc_now()
             await self.session.flush()
         return stats
 
@@ -313,10 +318,10 @@ class SQLAlchemyUserStatsRepository(UserStatsRepository):
 
         # Filter by period if specified
         if period == "weekly":
-            week_ago = datetime.utcnow() - timedelta(days=7)
+            week_ago = utc_now() - timedelta(days=7)
             query = query.where(UserStatsModel.last_activity_date >= week_ago)
         elif period == "monthly":
-            month_ago = datetime.utcnow() - timedelta(days=30)
+            month_ago = utc_now() - timedelta(days=30)
             query = query.where(UserStatsModel.last_activity_date >= month_ago)
 
         query = query.offset(offset).limit(limit)
@@ -375,7 +380,7 @@ class SQLAlchemyChallengeRepository(ChallengeRepository):
         self,
         challenge_type: Optional[ChallengeType] = None,
     ) -> list[Challenge]:
-        now = datetime.utcnow()
+        now = utc_now()
         query = select(ChallengeModel).where(
             ChallengeModel.start_date <= now,
             ChallengeModel.end_date >= now,

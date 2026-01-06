@@ -1,6 +1,6 @@
 """Learning domain entities"""
 
-from datetime import datetime
+from datetime import datetime, timezone
 from uuid import UUID
 
 from code_tutor.learning.domain.events import (
@@ -15,6 +15,11 @@ from code_tutor.learning.domain.value_objects import (
     TestResult,
 )
 from code_tutor.shared.domain.base import AggregateRoot, Entity
+
+
+def utc_now() -> datetime:
+    """Get current UTC time (timezone-aware)"""
+    return datetime.now(timezone.utc)
 
 
 class TestCase(Entity):
@@ -308,7 +313,7 @@ class Submission(AggregateRoot):
         self._execution_time_ms = execution_time_ms
         self._memory_usage_mb = memory_usage_mb
         self._error_message = error_message
-        self._submitted_at = submitted_at or datetime.utcnow()
+        self._submitted_at = submitted_at or utc_now()
         self._evaluated_at = evaluated_at
 
     @classmethod
@@ -417,7 +422,7 @@ class Submission(AggregateRoot):
         self._execution_time_ms = execution_time_ms
         self._memory_usage_mb = memory_usage_mb
         self._error_message = error_message
-        self._evaluated_at = datetime.utcnow()
+        self._evaluated_at = utc_now()
         self._touch()
 
         self.add_domain_event(
