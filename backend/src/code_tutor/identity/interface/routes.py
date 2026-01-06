@@ -32,7 +32,7 @@ from code_tutor.shared.middleware.rate_limiter import (
 )
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
-security = HTTPBearer()
+security = HTTPBearer(auto_error=False)
 
 
 def get_auth_service(
@@ -143,10 +143,16 @@ async def refresh_token(
     },
 )
 async def logout(
-    credentials: Annotated[HTTPAuthorizationCredentials, Depends(security)],
+    credentials: Annotated[HTTPAuthorizationCredentials | None, Depends(security)],
     auth_service: Annotated[AuthService, Depends(get_auth_service)],
 ) -> MessageResponse:
     """Logout user and invalidate tokens"""
+    if credentials is None:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Authentication required",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
     await auth_service.logout(credentials.credentials)
     return MessageResponse(message="Successfully logged out")
 

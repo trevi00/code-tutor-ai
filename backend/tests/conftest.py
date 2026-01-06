@@ -11,9 +11,18 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_asyn
 
 from code_tutor.main import app
 from code_tutor.shared.infrastructure.database import Base, get_async_session
+from code_tutor.shared.middleware.rate_limiter import reset_auth_rate_limiters
 
 # Test database URL (use SQLite for testing)
 TEST_DATABASE_URL = "sqlite+aiosqlite:///:memory:"
+
+
+@pytest.fixture(autouse=True)
+def reset_rate_limiters():
+    """Reset rate limiters before each test to avoid rate limit issues"""
+    reset_auth_rate_limiters()
+    yield
+    reset_auth_rate_limiters()
 
 
 @pytest.fixture(scope="session")
@@ -71,7 +80,7 @@ def sample_user_data() -> dict[str, Any]:
     return {
         "email": "test@example.com",
         "username": "testuser",
-        "password": "TestPass123",
+        "password": "TestPass123!",  # 특수문자 포함 필수
     }
 
 

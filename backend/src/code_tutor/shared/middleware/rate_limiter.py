@@ -273,3 +273,11 @@ def register_rate_limit(request: Request) -> None:
 def refresh_rate_limit(request: Request) -> None:
     """Dependency for token refresh rate limiting (10/min)"""
     check_auth_rate_limit(_auth_refresh_limiter, request)
+
+
+def reset_auth_rate_limiters() -> None:
+    """Reset all auth rate limiters (for testing)"""
+    global _auth_login_limiter, _auth_register_limiter, _auth_refresh_limiter
+    _auth_login_limiter = InMemoryRateLimiter(requests_per_minute=5, burst_size=3)
+    _auth_register_limiter = InMemoryRateLimiter(requests_per_minute=3, burst_size=2)
+    _auth_refresh_limiter = InMemoryRateLimiter(requests_per_minute=10, burst_size=5)

@@ -75,7 +75,7 @@ class TestPassword:
 
     def test_password_strength_valid(self):
         """Test valid strong password"""
-        password = Password("SecurePass123")
+        password = Password("SecurePass123!")  # 특수문자 포함
         password.validate_strength()  # Should not raise
 
     def test_password_strength_no_uppercase(self):

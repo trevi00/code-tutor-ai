@@ -15,8 +15,8 @@ from code_tutor.shared.infrastructure.database import get_async_session
 from code_tutor.shared.infrastructure.redis import RedisClient, get_redis_client
 from code_tutor.shared.security import TokenPayload, decode_token
 
-# Security scheme
-security = HTTPBearer()
+# Security scheme - auto_error=False to return 401 instead of 403
+security = HTTPBearer(auto_error=False)
 
 
 async def get_user_repository(
@@ -36,11 +36,18 @@ async def get_redis() -> RedisClient | None:
 
 
 async def get_current_user(
-    credentials: Annotated[HTTPAuthorizationCredentials, Depends(security)],
+    credentials: Annotated[HTTPAuthorizationCredentials | None, Depends(security)],
     user_repo: Annotated[UserRepository, Depends(get_user_repository)],
     redis: Annotated[RedisClient | None, Depends(get_redis)],
 ) -> UserResponse:
     """Get current authenticated user from JWT token"""
+    if credentials is None:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Authentication required",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
     token = credentials.credentials
 
     try:

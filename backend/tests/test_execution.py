@@ -48,11 +48,7 @@ async def test_execute_simple_code(client: AsyncClient, auth_headers: dict):
     )
     assert response.status_code == 200
 
-    data = response.json()
-    assert data["success"] is True
-    assert "data" in data
-
-    result = data["data"]
+    result = response.json()
     assert "execution_id" in result
     assert "status" in result
     assert "stdout" in result
@@ -73,8 +69,9 @@ async def test_execute_code_with_stdin(client: AsyncClient, auth_headers: dict):
     )
     assert response.status_code == 200
 
-    data = response.json()
-    assert data["success"] is True
+    result = response.json()
+    assert "status" in result
+    assert "Hello, Claude" in result.get("stdout", "")
 
 
 @pytest.mark.asyncio
@@ -90,9 +87,7 @@ async def test_execute_code_syntax_error(client: AsyncClient, auth_headers: dict
     )
     assert response.status_code == 200
 
-    data = response.json()
-    assert data["success"] is True
-    result = data["data"]
+    result = response.json()
     # Should have error in stderr or error_message
     assert result["status"] != "success" or "error" in result.get("stderr", "").lower()
 
@@ -110,9 +105,7 @@ async def test_execute_code_runtime_error(client: AsyncClient, auth_headers: dic
     )
     assert response.status_code == 200
 
-    data = response.json()
-    assert data["success"] is True
-    result = data["data"]
+    result = response.json()
     # Should indicate runtime error
     assert result["status"] in ["runtime_error", "success"]  # depends on how error is handled
 
