@@ -40,7 +40,7 @@ from code_tutor.shared.constants import RateLimiting
 from code_tutor.shared.exception_handlers import register_exception_handlers
 from code_tutor.shared.infrastructure.database import close_db, get_session_context, init_db
 from code_tutor.shared.infrastructure.logging import configure_logging, get_logger
-from code_tutor.shared.infrastructure.redis import close_redis
+from code_tutor.shared.infrastructure.redis import close_redis, get_redis_client
 from code_tutor.shared.middleware import RateLimitMiddleware
 from code_tutor.tutor.interface.routes import router as tutor_router
 from code_tutor.typing_practice.interface.routes import router as typing_practice_router
@@ -192,15 +192,10 @@ API 요청은 분당 60회로 제한됩니다.
     )
 
     # Configure CORS with explicit allowed methods and headers
-    # Block wildcard origins in production for security
-    cors_origins = settings.CORS_ORIGINS
-    if settings.ENVIRONMENT == "production" and "*" in cors_origins:
-        logger.warning("Wildcard CORS origin detected in production, removing for security")
-        cors_origins = [o for o in cors_origins if o != "*"]
-
+    # Note: Wildcard origins are blocked in production by config validation
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=cors_origins,
+        allow_origins=settings.CORS_ORIGINS,
         allow_credentials=True,
         allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
         allow_headers=[
@@ -246,14 +241,43 @@ API 요청은 분당 60회로 제한됩니다.
     # Health check endpoint
     @app.get("/api/health", tags=["Health"])
     async def health_check() -> dict:
-        """Health check endpoint"""
-        return success_response(
-            {
-                "status": "healthy",
-                "version": settings.APP_VERSION,
-                "environment": settings.ENVIRONMENT,
-            }
-        )
+        """Health check endpoint with service status"""
+        from sqlalchemy import text
+
+        health_status = {
+            "status": "healthy",
+            "version": settings.APP_VERSION,
+            "environment": settings.ENVIRONMENT,
+            "services": {
+                "database": "unknown",
+                "redis": "unknown",
+            },
+        }
+
+        # Check database connectivity
+        try:
+            async with get_session_context() as session:
+                await session.execute(text("SELECT 1"))
+            health_status["services"]["database"] = "healthy"
+        except Exception as e:
+            health_status["services"]["database"] = "unhealthy"
+            health_status["status"] = "degraded"
+            logger.warning(f"Database health check failed: {e}")
+
+        # Check Redis connectivity
+        try:
+            redis = get_redis_client()
+            if redis and redis._client:
+                await redis._client.ping()
+                health_status["services"]["redis"] = "healthy"
+            else:
+                health_status["services"]["redis"] = "not_configured"
+        except Exception as e:
+            health_status["services"]["redis"] = "unhealthy"
+            health_status["status"] = "degraded"
+            logger.warning(f"Redis health check failed: {e}")
+
+        return success_response(health_status)
 
     # Root endpoint
     @app.get("/", tags=["Root"])

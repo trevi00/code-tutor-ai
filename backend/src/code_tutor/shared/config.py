@@ -3,7 +3,14 @@
 from functools import lru_cache
 from typing import Literal
 
+from pydantic import model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+
+class ConfigurationError(Exception):
+    """Configuration validation error"""
+
+    pass
 
 
 class Settings(BaseSettings):
@@ -64,6 +71,38 @@ class Settings(BaseSettings):
     SANDBOX_TIMEOUT_SECONDS: int = 5
     SANDBOX_MEMORY_LIMIT_MB: int = 256
     SANDBOX_CPU_LIMIT: float = 0.5
+
+    @model_validator(mode="after")
+    def validate_production_settings(self) -> "Settings":
+        """Validate critical settings in production environment"""
+        if self.ENVIRONMENT == "production":
+            # JWT secret must be changed from default
+            if self.JWT_SECRET_KEY == "change-this-secret-key-in-production":
+                raise ConfigurationError(
+                    "JWT_SECRET_KEY must be set to a secure value in production. "
+                    "Generate one with: openssl rand -hex 32"
+                )
+
+            # JWT secret should be at least 32 characters
+            if len(self.JWT_SECRET_KEY) < 32:
+                raise ConfigurationError(
+                    "JWT_SECRET_KEY must be at least 32 characters in production"
+                )
+
+            # CORS wildcard not allowed in production
+            if "*" in self.CORS_ORIGINS:
+                raise ConfigurationError(
+                    "Wildcard (*) CORS origin is not allowed in production. "
+                    "Please specify explicit origins."
+                )
+
+            # Database URL should not be localhost in production
+            if "localhost" in self.DATABASE_URL or "127.0.0.1" in self.DATABASE_URL:
+                raise ConfigurationError(
+                    "DATABASE_URL should not use localhost in production"
+                )
+
+        return self
 
 
 @lru_cache
