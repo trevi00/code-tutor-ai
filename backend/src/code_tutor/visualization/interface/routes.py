@@ -17,7 +17,14 @@ router = APIRouter(prefix="/visualization", tags=["Visualization"])
 visualization_service = VisualizationService()
 
 
-@router.get("/algorithms")
+@router.get(
+    "/algorithms",
+    summary="알고리즘 목록 조회",
+    description="시각화 가능한 알고리즘 목록을 조회합니다. 카테고리(정렬, 탐색, 그래프)별 필터링 가능합니다.",
+    responses={
+        200: {"description": "알고리즘 목록 반환"},
+    },
+)
 async def list_algorithms(
     category: AlgorithmCategory | None = None,
 ):
@@ -33,7 +40,15 @@ async def list_algorithms(
     })
 
 
-@router.get("/algorithms/{algorithm_id}")
+@router.get(
+    "/algorithms/{algorithm_id}",
+    summary="알고리즘 정보 조회",
+    description="특정 알고리즘의 상세 정보(이름, 시간/공간 복잡도, 설명)를 조회합니다.",
+    responses={
+        200: {"description": "알고리즘 정보 반환"},
+        404: {"description": "알고리즘을 찾을 수 없음"},
+    },
+)
 async def get_algorithm_info(algorithm_id: str):
     """Get information about a specific algorithm."""
     try:
@@ -58,7 +73,15 @@ async def get_algorithm_info(algorithm_id: str):
     })
 
 
-@router.get("/random-array")
+@router.get(
+    "/random-array",
+    summary="랜덤 배열 생성",
+    description="시각화에 사용할 랜덤 배열을 생성합니다. 크기와 값의 범위를 지정할 수 있습니다.",
+    responses={
+        200: {"description": "랜덤 배열 반환"},
+        400: {"description": "잘못된 파라미터"},
+    },
+)
 async def generate_random_array(
     size: int = Query(default=10, ge=3, le=50),
     min_val: int = Query(default=1, ge=0, le=100),
@@ -75,7 +98,15 @@ async def generate_random_array(
     })
 
 
-@router.post("/sorting")
+@router.post(
+    "/sorting",
+    summary="정렬 알고리즘 시각화 생성",
+    description="정렬 알고리즘(버블, 선택, 삽입, 퀵, 병합 등)의 단계별 시각화 데이터를 생성합니다.",
+    responses={
+        200: {"description": "시각화 데이터 반환"},
+        400: {"description": "잘못된 알고리즘 또는 데이터"},
+    },
+)
 async def generate_sorting_visualization(request: GenerateSortingRequest):
     """Generate visualization for a sorting algorithm."""
     try:
@@ -89,7 +120,15 @@ async def generate_sorting_visualization(request: GenerateSortingRequest):
         raise HTTPException(status_code=400, detail=str(e))
 
 
-@router.post("/searching")
+@router.post(
+    "/searching",
+    summary="탐색 알고리즘 시각화 생성",
+    description="탐색 알고리즘(선형 탐색, 이진 탐색)의 단계별 시각화 데이터를 생성합니다.",
+    responses={
+        200: {"description": "시각화 데이터 반환"},
+        400: {"description": "잘못된 알고리즘 또는 데이터"},
+    },
+)
 async def generate_search_visualization(request: GenerateSearchRequest):
     """Generate visualization for a search algorithm."""
     try:
@@ -104,7 +143,15 @@ async def generate_search_visualization(request: GenerateSearchRequest):
         raise HTTPException(status_code=400, detail=str(e))
 
 
-@router.post("/graph")
+@router.post(
+    "/graph",
+    summary="그래프 알고리즘 시각화 생성",
+    description="그래프 알고리즘(BFS, DFS)의 단계별 시각화 데이터를 생성합니다.",
+    responses={
+        200: {"description": "시각화 데이터 반환"},
+        400: {"description": "잘못된 알고리즘 또는 데이터"},
+    },
+)
 async def generate_graph_visualization(request: GenerateGraphRequest):
     """Generate visualization for a graph algorithm."""
     try:
@@ -117,7 +164,15 @@ async def generate_graph_visualization(request: GenerateGraphRequest):
         raise HTTPException(status_code=400, detail=str(e))
 
 
-@router.get("/sorting/{algorithm_id}")
+@router.get(
+    "/sorting/{algorithm_id}",
+    summary="정렬 시각화 빠른 조회",
+    description="랜덤 데이터로 정렬 알고리즘 시각화를 빠르게 생성합니다.",
+    responses={
+        200: {"description": "시각화 데이터 반환"},
+        404: {"description": "알고리즘을 찾을 수 없음"},
+    },
+)
 async def get_sorting_visualization(
     algorithm_id: str,
     size: int = Query(default=10, ge=3, le=50),
@@ -138,7 +193,15 @@ async def get_sorting_visualization(
         raise HTTPException(status_code=400, detail=str(e))
 
 
-@router.get("/searching/{algorithm_id}")
+@router.get(
+    "/searching/{algorithm_id}",
+    summary="탐색 시각화 빠른 조회",
+    description="랜덤 데이터로 탐색 알고리즘 시각화를 빠르게 생성합니다.",
+    responses={
+        200: {"description": "시각화 데이터 반환"},
+        404: {"description": "알고리즘을 찾을 수 없음"},
+    },
+)
 async def get_search_visualization(
     algorithm_id: str,
     size: int = Query(default=10, ge=3, le=50),
@@ -161,7 +224,15 @@ async def get_search_visualization(
         raise HTTPException(status_code=400, detail=str(e))
 
 
-@router.get("/graph/{algorithm_id}")
+@router.get(
+    "/graph/{algorithm_id}",
+    summary="그래프 시각화 빠른 조회",
+    description="샘플 그래프로 그래프 알고리즘 시각화를 빠르게 생성합니다.",
+    responses={
+        200: {"description": "시각화 데이터 반환"},
+        404: {"description": "알고리즘을 찾을 수 없음"},
+    },
+)
 async def get_graph_visualization(
     algorithm_id: str,
     start_node: str = "A",

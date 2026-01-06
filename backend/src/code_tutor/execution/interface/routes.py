@@ -23,7 +23,13 @@ def get_execution_service() -> ExecutionService:
 
 @router.post(
     "/run",
-    summary="Execute code in sandbox",
+    summary="코드 실행",
+    description="샌드박스 환경에서 코드를 안전하게 실행합니다. Docker 컨테이너에서 격리 실행되며, 네트워크 접근이 차단되고 리소스 제한이 적용됩니다.",
+    responses={
+        200: {"description": "실행 결과 반환 (stdout, stderr, 실행시간)"},
+        401: {"description": "인증 필요"},
+        400: {"description": "잘못된 코드 또는 언어"},
+    },
 )
 async def execute_code(
     request: ExecuteCodeRequest,

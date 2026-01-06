@@ -37,7 +37,7 @@ from code_tutor.gamification.infrastructure.repository import (
 from code_tutor.gamification.domain.value_objects import ChallengeType
 
 
-router = APIRouter(prefix="/gamification", tags=["gamification"])
+router = APIRouter(prefix="/gamification", tags=["Gamification"])
 
 
 def get_badge_service(db=Depends(get_db)) -> BadgeService:
@@ -84,7 +84,15 @@ def get_gamification_service(
 
 
 # Overview
-@router.get("/overview")
+@router.get(
+    "/overview",
+    summary="게이미피케이션 전체 현황",
+    description="현재 사용자의 XP, 레벨, 뱃지, 챌린지 등 게이미피케이션 전체 현황을 조회합니다.",
+    responses={
+        200: {"description": "게이미피케이션 현황 반환"},
+        401: {"description": "인증 필요"},
+    },
+)
 async def get_gamification_overview(
     current_user: UserResponse = Depends(get_current_user),
     service: GamificationService = Depends(get_gamification_service),
@@ -95,7 +103,14 @@ async def get_gamification_overview(
 
 
 # Badges
-@router.get("/badges")
+@router.get(
+    "/badges",
+    summary="전체 뱃지 목록",
+    description="획득 가능한 모든 뱃지 목록과 획득 조건을 조회합니다.",
+    responses={
+        200: {"description": "뱃지 목록 반환"},
+    },
+)
 async def get_all_badges(
     badge_service: BadgeService = Depends(get_badge_service),
 ):
@@ -104,7 +119,15 @@ async def get_all_badges(
     return success_response(data)
 
 
-@router.get("/badges/me")
+@router.get(
+    "/badges/me",
+    summary="내 뱃지 목록",
+    description="현재 사용자가 획득한 뱃지 목록을 조회합니다.",
+    responses={
+        200: {"description": "획득한 뱃지 목록 반환"},
+        401: {"description": "인증 필요"},
+    },
+)
 async def get_my_badges(
     current_user: UserResponse = Depends(get_current_user),
     badge_service: BadgeService = Depends(get_badge_service),
@@ -114,7 +137,15 @@ async def get_my_badges(
     return success_response(data)
 
 
-@router.post("/badges/check")
+@router.post(
+    "/badges/check",
+    summary="뱃지 획득 확인",
+    description="현재 사용자의 활동을 기반으로 새로 획득 가능한 뱃지를 확인하고 부여합니다.",
+    responses={
+        200: {"description": "새로 획득한 뱃지 목록 반환"},
+        401: {"description": "인증 필요"},
+    },
+)
 async def check_badges(
     current_user: UserResponse = Depends(get_current_user),
     badge_service: BadgeService = Depends(get_badge_service),
@@ -125,7 +156,15 @@ async def check_badges(
 
 
 # Stats & XP
-@router.get("/stats")
+@router.get(
+    "/stats",
+    summary="내 게이미피케이션 통계",
+    description="현재 사용자의 XP, 레벨, 총 문제 풀이 수 등 통계를 조회합니다.",
+    responses={
+        200: {"description": "통계 반환"},
+        401: {"description": "인증 필요"},
+    },
+)
 async def get_my_stats(
     current_user: UserResponse = Depends(get_current_user),
     xp_service: XPService = Depends(get_xp_service),
@@ -135,7 +174,15 @@ async def get_my_stats(
     return success_response(data)
 
 
-@router.post("/xp")
+@router.post(
+    "/xp",
+    summary="XP 추가",
+    description="특정 활동에 대해 XP를 추가합니다. 내부 또는 관리자용입니다.",
+    responses={
+        200: {"description": "XP 추가 결과 반환"},
+        401: {"description": "인증 필요"},
+    },
+)
 async def add_xp(
     request: AddXPRequest,
     current_user: UserResponse = Depends(get_current_user),
@@ -148,7 +195,15 @@ async def add_xp(
     return success_response(data)
 
 
-@router.post("/activity/{action}")
+@router.post(
+    "/activity/{action}",
+    summary="활동 기록",
+    description="활동(problem_solved, lesson_completed 등)을 기록하고 XP를 부여합니다.",
+    responses={
+        200: {"description": "활동 기록 및 XP 부여 결과"},
+        401: {"description": "인증 필요"},
+    },
+)
 async def record_activity(
     action: str,
     current_user: UserResponse = Depends(get_current_user),
@@ -160,7 +215,14 @@ async def record_activity(
 
 
 # Leaderboard
-@router.get("/leaderboard")
+@router.get(
+    "/leaderboard",
+    summary="리더보드 조회",
+    description="XP 기준 리더보드를 조회합니다. 전체, 주간, 월간 기간별 조회가 가능합니다.",
+    responses={
+        200: {"description": "리더보드 반환"},
+    },
+)
 async def get_leaderboard(
     period: str = Query("all", pattern="^(all|weekly|monthly)$"),
     limit: int = Query(100, ge=1, le=500),
@@ -177,7 +239,15 @@ async def get_leaderboard(
 
 
 # Challenges
-@router.get("/challenges")
+@router.get(
+    "/challenges",
+    summary="내 챌린지 목록",
+    description="현재 사용자가 참여 중인 챌린지 목록과 진행 상황을 조회합니다.",
+    responses={
+        200: {"description": "챌린지 목록 반환"},
+        401: {"description": "인증 필요"},
+    },
+)
 async def get_my_challenges(
     current_user: UserResponse = Depends(get_current_user),
     challenge_service: ChallengeService = Depends(get_challenge_service),
@@ -187,7 +257,16 @@ async def get_my_challenges(
     return success_response(data)
 
 
-@router.post("/challenges/{challenge_id}/join")
+@router.post(
+    "/challenges/{challenge_id}/join",
+    summary="챌린지 참여",
+    description="특정 챌린지에 참여합니다. 챌린지 완료 시 보상 XP를 획득합니다.",
+    responses={
+        200: {"description": "챌린지 참여 성공"},
+        401: {"description": "인증 필요"},
+        404: {"description": "챌린지를 찾을 수 없음"},
+    },
+)
 async def join_challenge(
     challenge_id: UUID,
     current_user: UserResponse = Depends(get_current_user),
@@ -202,7 +281,16 @@ async def join_challenge(
 
 
 # Admin: Seed badges
-@router.post("/admin/seed-badges")
+@router.post(
+    "/admin/seed-badges",
+    summary="뱃지 시드 (관리자)",
+    description="미리 정의된 뱃지를 데이터베이스에 시딩합니다. 관리자 전용입니다.",
+    responses={
+        200: {"description": "시딩된 뱃지 수 반환"},
+        401: {"description": "인증 필요"},
+        403: {"description": "관리자 권한 필요"},
+    },
+)
 async def seed_badges(
     current_user: UserResponse = Depends(get_admin_user),
     badge_service: BadgeService = Depends(get_badge_service),
@@ -215,7 +303,16 @@ async def seed_badges(
 
 
 # Admin: Create challenge
-@router.post("/admin/challenges")
+@router.post(
+    "/admin/challenges",
+    summary="챌린지 생성 (관리자)",
+    description="새로운 챌린지를 생성합니다. 관리자 전용입니다.",
+    responses={
+        200: {"description": "챌린지 생성 성공"},
+        401: {"description": "인증 필요"},
+        403: {"description": "관리자 권한 필요"},
+    },
+)
 async def create_challenge(
     name: str,
     description: str,
