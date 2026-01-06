@@ -283,6 +283,29 @@ class SQLAlchemyTypingAttemptRepository(TypingAttemptRepository):
             "best_wpm": max((a.wpm for a in attempts), default=0.0),
         }
 
+    async def get_mastered_exercise_ids(self, user_id: UUID) -> list[str]:
+        """
+        Get list of mastered exercise IDs for a user.
+        Optimized single query instead of N+1 queries.
+        """
+        # Single query with GROUP BY and HAVING to find mastered exercises
+        stmt = select(
+            TypingAttemptModel.exercise_id,
+            func.count(TypingAttemptModel.id).label("completion_count"),
+        ).where(
+            TypingAttemptModel.user_id == str(user_id),
+            TypingAttemptModel.status == AttemptStatus.COMPLETED.value,
+        ).group_by(
+            TypingAttemptModel.exercise_id
+        ).having(
+            func.count(TypingAttemptModel.id) >= 5  # Default mastery threshold
+        )
+
+        result = await self.session.execute(stmt)
+        rows = result.all()
+
+        return [str(row.exercise_id) for row in rows]
+
     async def get_leaderboard(self, limit: int = 10) -> list[dict]:
         """Get top performers by WPM."""
         # This would need to join with users table for username

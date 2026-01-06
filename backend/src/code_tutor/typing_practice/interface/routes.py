@@ -191,18 +191,8 @@ async def get_mastered_exercises(
 ):
     """Get list of mastered exercise IDs for current user."""
     attempt_repo = SQLAlchemyTypingAttemptRepository(db)
-    exercise_repo = SQLAlchemyTypingExerciseRepository(db)
-
-    # Get all exercises
-    exercises = await exercise_repo.list_all(limit=100)
-    mastered_ids = []
-
-    for exercise in exercises:
-        progress = await attempt_repo.get_user_progress(current_user.id, exercise.id)
-        if progress and progress.is_mastered:
-            mastered_ids.append(str(exercise.id))
-
-    return mastered_ids
+    # Optimized: single GROUP BY query instead of N+1 queries
+    return await attempt_repo.get_mastered_exercise_ids(current_user.id)
 
 
 @router.get("/leaderboard", response_model=LeaderboardResponse)
