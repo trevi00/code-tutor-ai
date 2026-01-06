@@ -6,6 +6,7 @@ from uuid import UUID
 from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from code_tutor.shared.constants import TypingPractice as TypingConstants
 from code_tutor.typing_practice.domain.entities import (
     TypingExercise,
     TypingAttempt,
@@ -267,11 +268,11 @@ class SQLAlchemyTypingAttemptRepository(TypingAttemptRepository):
         total_wpm = sum(a.wpm for a in attempts)
         total_time = sum(a.time_seconds for a in attempts)
 
-        # Count mastered exercises (5+ completions)
+        # Count mastered exercises (MASTERY_THRESHOLD+ completions)
         exercise_counts = {}
         for a in attempts:
             exercise_counts[a.exercise_id] = exercise_counts.get(a.exercise_id, 0) + 1
-        mastered = sum(1 for count in exercise_counts.values() if count >= 5)
+        mastered = sum(1 for count in exercise_counts.values() if count >= TypingConstants.MASTERY_THRESHOLD)
 
         return {
             "total_exercises_attempted": len(unique_exercises),
@@ -298,7 +299,7 @@ class SQLAlchemyTypingAttemptRepository(TypingAttemptRepository):
         ).group_by(
             TypingAttemptModel.exercise_id
         ).having(
-            func.count(TypingAttemptModel.id) >= 5  # Default mastery threshold
+            func.count(TypingAttemptModel.id) >= TypingConstants.MASTERY_THRESHOLD
         )
 
         result = await self.session.execute(stmt)

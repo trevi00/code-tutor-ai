@@ -36,6 +36,7 @@ from code_tutor.debugger.interface import router as debugger_router
 from code_tutor.performance.interface import router as performance_router
 from code_tutor.shared.api_response import success_response
 from code_tutor.shared.config import get_settings
+from code_tutor.shared.constants import RateLimiting
 from code_tutor.shared.exception_handlers import register_exception_handlers
 from code_tutor.shared.infrastructure.database import close_db, get_session_context, init_db
 from code_tutor.shared.infrastructure.logging import configure_logging, get_logger
@@ -137,8 +138,8 @@ def create_app() -> FastAPI:
     # Add rate limiting middleware
     app.add_middleware(
         RateLimitMiddleware,
-        requests_per_minute=60,
-        burst_size=20,
+        requests_per_minute=RateLimiting.DEFAULT_REQUESTS_PER_MINUTE,
+        burst_size=RateLimiting.DEFAULT_BURST_SIZE,
         exclude_paths=["/api/health", "/docs", "/redoc", "/openapi.json", "/"],
     )
 

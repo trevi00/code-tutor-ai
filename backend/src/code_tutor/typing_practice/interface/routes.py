@@ -6,6 +6,7 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from code_tutor.shared.constants import Pagination, TypingPractice as TypingConstants
 from code_tutor.shared.infrastructure.database import get_async_session as get_db
 from code_tutor.identity.interface.dependencies import get_current_user, get_admin_user
 from code_tutor.identity.application.dto import UserResponse
@@ -57,8 +58,8 @@ def get_xp_service(db: AsyncSession = Depends(get_db)) -> XPService:
 @router.get("/exercises", response_model=TypingExerciseListResponse)
 async def list_exercises(
     category: Optional[ExerciseCategory] = Query(None, description="Filter by category"),
-    page: int = Query(1, ge=1, description="Page number"),
-    page_size: int = Query(20, ge=1, le=100, description="Items per page"),
+    page: int = Query(Pagination.DEFAULT_PAGE, ge=1, description="Page number"),
+    page_size: int = Query(Pagination.DEFAULT_PAGE_SIZE, ge=1, le=Pagination.MAX_PAGE_SIZE, description="Items per page"),
     service: TypingPracticeService = Depends(get_typing_service),
 ):
     """List all typing exercises."""
@@ -154,13 +155,13 @@ async def complete_attempt(
         # Base XP for attempt completion
         await xp_service.add_xp(current_user.id, "typing_attempt_completed")
 
-        # Bonus XP for high accuracy (95%+)
-        if request.accuracy >= 95:
+        # Bonus XP for high accuracy
+        if request.accuracy >= TypingConstants.HIGH_ACCURACY_THRESHOLD:
             await xp_service.add_xp(current_user.id, "typing_high_accuracy")
 
         # Check if exercise is now mastered
         progress = await service.get_user_progress(current_user.id, attempt.exercise_id)
-        if progress and progress.is_mastered and progress.completed_attempts == 5:
+        if progress and progress.is_mastered and progress.completed_attempts == TypingConstants.MASTERY_THRESHOLD:
             # Just reached mastery (5th completion)
             await xp_service.add_xp(current_user.id, "typing_exercise_mastered")
 
@@ -197,7 +198,7 @@ async def get_mastered_exercises(
 
 @router.get("/leaderboard", response_model=LeaderboardResponse)
 async def get_leaderboard(
-    limit: int = Query(10, ge=1, le=100, description="Number of entries"),
+    limit: int = Query(Pagination.LEADERBOARD_DEFAULT_LIMIT, ge=1, le=Pagination.LEADERBOARD_MAX_LIMIT, description="Number of entries"),
     db: AsyncSession = Depends(get_db),
 ):
     """Get typing practice leaderboard."""
