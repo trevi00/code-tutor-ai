@@ -24,7 +24,9 @@ class DockerSandbox:
     Runs user code in isolated containers with resource limits.
     """
 
-    DOCKER_IMAGE = "python:3.11-slim"
+    # Pin to specific version for reproducibility
+    # Update periodically after testing (check: https://hub.docker.com/_/python)
+    DOCKER_IMAGE = "python:3.11.9-slim"
 
     def __init__(self) -> None:
         self._settings = get_settings()

@@ -1,5 +1,6 @@
 """LLM Service for AI Tutor responses"""
 
+import asyncio
 from abc import ABC, abstractmethod
 from enum import IntEnum
 from pathlib import Path
@@ -12,6 +13,108 @@ from code_tutor.shared.config import get_settings
 from code_tutor.shared.infrastructure.logging import get_logger
 
 logger = get_logger(__name__)
+
+
+# ============== Retry Configuration ==============
+
+class RetryConfig:
+    """Configuration for retry with exponential backoff."""
+
+    def __init__(
+        self,
+        max_retries: int = 3,
+        base_delay: float = 1.0,
+        max_delay: float = 30.0,
+        exponential_base: float = 2.0,
+        retryable_exceptions: tuple = (
+            httpx.TimeoutException,
+            httpx.ConnectError,
+            httpx.ReadTimeout,
+        ),
+        retryable_status_codes: tuple = (429, 500, 502, 503, 504),
+    ):
+        self.max_retries = max_retries
+        self.base_delay = base_delay
+        self.max_delay = max_delay
+        self.exponential_base = exponential_base
+        self.retryable_exceptions = retryable_exceptions
+        self.retryable_status_codes = retryable_status_codes
+
+    def get_delay(self, attempt: int) -> float:
+        """Calculate delay with exponential backoff."""
+        delay = self.base_delay * (self.exponential_base ** attempt)
+        return min(delay, self.max_delay)
+
+
+async def retry_with_backoff(
+    func,
+    config: RetryConfig,
+    operation_name: str = "operation",
+):
+    """Execute a function with retry and exponential backoff.
+
+    Args:
+        func: Async function to execute (should be a coroutine function call)
+        config: Retry configuration
+        operation_name: Name for logging
+
+    Returns:
+        Result of the function call
+
+    Raises:
+        Last exception if all retries fail
+    """
+    last_exception = None
+
+    for attempt in range(config.max_retries + 1):
+        try:
+            return await func()
+        except config.retryable_exceptions as e:
+            last_exception = e
+            if attempt < config.max_retries:
+                delay = config.get_delay(attempt)
+                logger.warning(
+                    f"{operation_name} failed, retrying",
+                    attempt=attempt + 1,
+                    max_retries=config.max_retries,
+                    delay=delay,
+                    error=str(e),
+                )
+                await asyncio.sleep(delay)
+            else:
+                logger.error(
+                    f"{operation_name} failed after all retries",
+                    attempts=config.max_retries + 1,
+                    error=str(e),
+                )
+        except httpx.HTTPStatusError as e:
+            if e.response.status_code in config.retryable_status_codes:
+                last_exception = e
+                if attempt < config.max_retries:
+                    delay = config.get_delay(attempt)
+                    # Use Retry-After header if available
+                    if "Retry-After" in e.response.headers:
+                        try:
+                            delay = float(e.response.headers["Retry-After"])
+                        except ValueError:
+                            pass
+                    logger.warning(
+                        f"{operation_name} got retryable status code",
+                        status_code=e.response.status_code,
+                        attempt=attempt + 1,
+                        delay=delay,
+                    )
+                    await asyncio.sleep(delay)
+                else:
+                    logger.error(
+                        f"{operation_name} failed with status code after retries",
+                        status_code=e.response.status_code,
+                    )
+            else:
+                raise
+
+    if last_exception:
+        raise last_exception
 
 
 # ============== Progressive Hint System ==============
@@ -1081,6 +1184,7 @@ class OpenAILLMService(LLMService):
     OpenAI-based LLM service for cloud model inference.
 
     Uses OpenAI API to generate responses using models like GPT-4o-mini.
+    Features retry with exponential backoff for transient failures.
     """
 
     def __init__(self) -> None:
@@ -1089,11 +1193,21 @@ class OpenAILLMService(LLMService):
         self._model = self._settings.OPENAI_MODEL
         self._max_tokens = self._settings.LLM_MAX_TOKENS
         self._client = httpx.AsyncClient(
-            timeout=60.0,
+            timeout=httpx.Timeout(
+                connect=10.0,
+                read=60.0,
+                write=10.0,
+                pool=10.0,
+            ),
             headers={
                 "Authorization": f"Bearer {self._api_key}",
                 "Content-Type": "application/json",
             },
+        )
+        self._retry_config = RetryConfig(
+            max_retries=3,
+            base_delay=1.0,
+            max_delay=30.0,
         )
 
     async def generate_response(
@@ -1102,33 +1216,32 @@ class OpenAILLMService(LLMService):
         context: str | None = None,
         conversation_history: list[dict[str, str]] | None = None,
     ) -> str:
-        """Generate response using OpenAI API"""
+        """Generate response using OpenAI API with retry."""
         if not self._api_key:
             logger.warning("OpenAI API key not configured")
             return await self._generate_fallback(user_message)
 
-        try:
-            # Build messages
-            messages = [{"role": "system", "content": TUTOR_SYSTEM_PROMPT}]
+        # Build messages
+        messages = [{"role": "system", "content": TUTOR_SYSTEM_PROMPT}]
 
-            # Add conversation history
-            if conversation_history:
-                for msg in conversation_history[-5:]:  # Last 5 messages for context
-                    messages.append(
-                        {
-                            "role": msg.get("role", "user"),
-                            "content": msg.get("content", ""),
-                        }
-                    )
+        # Add conversation history
+        if conversation_history:
+            for msg in conversation_history[-5:]:  # Last 5 messages for context
+                messages.append(
+                    {
+                        "role": msg.get("role", "user"),
+                        "content": msg.get("content", ""),
+                    }
+                )
 
-            # Add context if available
-            user_content = user_message
-            if context:
-                user_content = f"{user_message}\n\n관련 코드:\n{context}"
+        # Add context if available
+        user_content = user_message
+        if context:
+            user_content = f"{user_message}\n\n관련 코드:\n{context}"
 
-            messages.append({"role": "user", "content": user_content})
+        messages.append({"role": "user", "content": user_content})
 
-            # Call OpenAI API
+        async def make_request():
             response = await self._client.post(
                 "https://api.openai.com/v1/chat/completions",
                 json={
@@ -1140,14 +1253,21 @@ class OpenAILLMService(LLMService):
                 },
             )
             response.raise_for_status()
+            return response
 
+        try:
+            response = await retry_with_backoff(
+                make_request,
+                self._retry_config,
+                operation_name="OpenAI API call",
+            )
             result = response.json()
             return result.get("choices", [{}])[0].get("message", {}).get(
                 "content", "응답을 생성할 수 없습니다."
             )
 
         except httpx.TimeoutException:
-            logger.error("OpenAI request timed out")
+            logger.error("OpenAI request timed out after retries")
             return "죄송합니다. 응답 생성에 시간이 너무 오래 걸립니다. 잠시 후 다시 시도해주세요."
         except httpx.HTTPStatusError as e:
             logger.error(f"OpenAI HTTP error: {e.response.status_code} - {e.response.text}")
@@ -1248,6 +1368,7 @@ class OllamaLLMService(LLMService):
     Ollama-based LLM service for local model inference.
 
     Uses Ollama API to generate responses using local models like Llama3.
+    Features retry with exponential backoff for transient failures.
     """
 
     def __init__(self) -> None:
@@ -1255,7 +1376,19 @@ class OllamaLLMService(LLMService):
         self._base_url = self._settings.OLLAMA_BASE_URL
         self._model = self._settings.OLLAMA_MODEL
         self._timeout = self._settings.OLLAMA_TIMEOUT
-        self._client = httpx.AsyncClient(timeout=self._timeout)
+        self._client = httpx.AsyncClient(
+            timeout=httpx.Timeout(
+                connect=10.0,
+                read=float(self._timeout),
+                write=10.0,
+                pool=10.0,
+            )
+        )
+        self._retry_config = RetryConfig(
+            max_retries=3,
+            base_delay=1.0,
+            max_delay=30.0,
+        )
 
     async def generate_response(
         self,
@@ -1263,29 +1396,28 @@ class OllamaLLMService(LLMService):
         context: str | None = None,
         conversation_history: list[dict[str, str]] | None = None,
     ) -> str:
-        """Generate response using Ollama API"""
-        try:
-            # Build messages
-            messages = [{"role": "system", "content": TUTOR_SYSTEM_PROMPT}]
+        """Generate response using Ollama API with retry."""
+        # Build messages
+        messages = [{"role": "system", "content": TUTOR_SYSTEM_PROMPT}]
 
-            # Add conversation history
-            if conversation_history:
-                for msg in conversation_history[-5:]:  # Last 5 messages for context
-                    messages.append(
-                        {
-                            "role": msg.get("role", "user"),
-                            "content": msg.get("content", ""),
-                        }
-                    )
+        # Add conversation history
+        if conversation_history:
+            for msg in conversation_history[-5:]:  # Last 5 messages for context
+                messages.append(
+                    {
+                        "role": msg.get("role", "user"),
+                        "content": msg.get("content", ""),
+                    }
+                )
 
-            # Add context if available
-            user_content = user_message
-            if context:
-                user_content = f"{user_message}\n\n관련 코드:\n{context}"
+        # Add context if available
+        user_content = user_message
+        if context:
+            user_content = f"{user_message}\n\n관련 코드:\n{context}"
 
-            messages.append({"role": "user", "content": user_content})
+        messages.append({"role": "user", "content": user_content})
 
-            # Call Ollama API
+        async def make_request():
             response = await self._client.post(
                 f"{self._base_url}/api/chat",
                 json={
@@ -1300,14 +1432,21 @@ class OllamaLLMService(LLMService):
                 },
             )
             response.raise_for_status()
+            return response
 
+        try:
+            response = await retry_with_backoff(
+                make_request,
+                self._retry_config,
+                operation_name="Ollama API call",
+            )
             result = response.json()
             return result.get("message", {}).get(
                 "content", "응답을 생성할 수 없습니다."
             )
 
         except httpx.TimeoutException:
-            logger.error("Ollama request timed out")
+            logger.error("Ollama request timed out after retries")
             return "죄송합니다. 응답 생성에 시간이 너무 오래 걸립니다. 잠시 후 다시 시도해주세요."
         except httpx.HTTPStatusError as e:
             logger.error(f"Ollama HTTP error: {e}")

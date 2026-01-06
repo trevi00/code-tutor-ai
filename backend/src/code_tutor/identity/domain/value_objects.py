@@ -105,6 +105,16 @@ class Password(ValueObject):
 
     MIN_LENGTH = 8
     MAX_LENGTH = 128
+    SPECIAL_CHARACTERS = "!@#$%^&*()_+-=[]{}|;:,.<>?"
+
+    # Common weak passwords to block
+    COMMON_PASSWORDS = frozenset([
+        "password", "123456", "12345678", "qwerty", "abc123",
+        "password1", "password123", "admin", "letmein", "welcome",
+        "monkey", "dragon", "master", "iloveyou", "sunshine",
+        "princess", "football", "baseball", "shadow", "michael",
+        "test1234", "test123", "qwerty123", "pass1234", "admin123",
+    ])
 
     def __post_init__(self) -> None:
         if not self.value:
@@ -119,15 +129,35 @@ class Password(ValueObject):
             )
 
     def validate_strength(self) -> None:
-        """Validate password strength"""
+        """Validate password strength
+
+        Requirements:
+        - At least one uppercase letter
+        - At least one lowercase letter
+        - At least one digit
+        - At least one special character
+        - Not a common weak password
+        """
         has_upper = any(c.isupper() for c in self.value)
         has_lower = any(c.islower() for c in self.value)
         has_digit = any(c.isdigit() for c in self.value)
+        has_special = any(c in self.SPECIAL_CHARACTERS for c in self.value)
 
-        if not (has_upper and has_lower and has_digit):
+        if not has_upper:
+            raise ValidationError("Password must contain at least one uppercase letter")
+        if not has_lower:
+            raise ValidationError("Password must contain at least one lowercase letter")
+        if not has_digit:
+            raise ValidationError("Password must contain at least one digit")
+        if not has_special:
             raise ValidationError(
-                "Password must contain at least one uppercase letter, "
-                "one lowercase letter, and one digit"
+                f"Password must contain at least one special character ({self.SPECIAL_CHARACTERS})"
+            )
+
+        # Check against common passwords
+        if self.value.lower() in self.COMMON_PASSWORDS:
+            raise ValidationError(
+                "Password is too common. Please choose a stronger password"
             )
 
 

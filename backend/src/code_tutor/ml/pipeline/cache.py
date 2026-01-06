@@ -18,6 +18,71 @@ from code_tutor.shared.infrastructure.redis import RedisClient
 logger = structlog.get_logger()
 
 
+class CacheMetrics:
+    """Cache hit/miss metrics for monitoring."""
+
+    def __init__(self) -> None:
+        self._hits: dict[str, int] = {}
+        self._misses: dict[str, int] = {}
+
+    def record_hit(self, cache_type: str) -> None:
+        """Record a cache hit."""
+        self._hits[cache_type] = self._hits.get(cache_type, 0) + 1
+
+    def record_miss(self, cache_type: str) -> None:
+        """Record a cache miss."""
+        self._misses[cache_type] = self._misses.get(cache_type, 0) + 1
+
+    def get_hit_rate(self, cache_type: str) -> float:
+        """Get hit rate for a specific cache type."""
+        hits = self._hits.get(cache_type, 0)
+        misses = self._misses.get(cache_type, 0)
+        total = hits + misses
+        return hits / total if total > 0 else 0.0
+
+    def get_stats(self) -> dict:
+        """Get all cache statistics."""
+        all_types = set(self._hits.keys()) | set(self._misses.keys())
+        stats = {}
+        for cache_type in all_types:
+            hits = self._hits.get(cache_type, 0)
+            misses = self._misses.get(cache_type, 0)
+            total = hits + misses
+            stats[cache_type] = {
+                "hits": hits,
+                "misses": misses,
+                "total": total,
+                "hit_rate": round(hits / total, 4) if total > 0 else 0.0,
+            }
+
+        # Add overall stats
+        total_hits = sum(self._hits.values())
+        total_misses = sum(self._misses.values())
+        total_requests = total_hits + total_misses
+        stats["overall"] = {
+            "hits": total_hits,
+            "misses": total_misses,
+            "total": total_requests,
+            "hit_rate": round(total_hits / total_requests, 4) if total_requests > 0 else 0.0,
+        }
+
+        return stats
+
+    def reset(self) -> None:
+        """Reset all metrics."""
+        self._hits.clear()
+        self._misses.clear()
+
+
+# Global cache metrics instance
+_cache_metrics = CacheMetrics()
+
+
+def get_cache_metrics() -> CacheMetrics:
+    """Get the global cache metrics instance."""
+    return _cache_metrics
+
+
 class RecommendationCache:
     """Cache layer for ML recommendations and predictions."""
 
@@ -35,6 +100,7 @@ class RecommendationCache:
 
     def __init__(self, redis_client: RedisClient):
         self.redis = redis_client
+        self._metrics = get_cache_metrics()
 
     @classmethod
     async def create(cls) -> "RecommendationCache":
@@ -69,10 +135,12 @@ class RecommendationCache:
         cached = await self.redis.get_json(key)
 
         if cached:
-            logger.debug("cache_hit", key=key)
+            self._metrics.record_hit("recommendations")
+            logger.debug("cache_hit", key=key, cache_type="recommendations")
             return cached.get("recommendations")
 
-        logger.debug("cache_miss", key=key)
+        self._metrics.record_miss("recommendations")
+        logger.debug("cache_miss", key=key, cache_type="recommendations")
         return None
 
     async def set_recommendations(
@@ -147,9 +215,11 @@ class RecommendationCache:
         cached = await self.redis.get_json(key)
 
         if cached:
-            logger.debug("prediction_cache_hit", key=key)
+            self._metrics.record_hit("predictions")
+            logger.debug("prediction_cache_hit", key=key, cache_type="predictions")
             return cached
 
+        self._metrics.record_miss("predictions")
         return None
 
     async def set_predictions(
@@ -205,8 +275,10 @@ class RecommendationCache:
         cached = await self.redis.get_json(key)
 
         if cached:
+            self._metrics.record_hit("user_stats")
             return cached.get("sequence")
 
+        self._metrics.record_miss("user_stats")
         return None
 
     async def set_user_stats_sequence(
@@ -270,6 +342,28 @@ class RecommendationCache:
     async def invalidate_interaction_matrix(self) -> int:
         """Invalidate interaction matrix cache."""
         return await self.redis.delete(self.PREFIX_INTERACTION_MATRIX)
+
+    # ============== Metrics ==============
+
+    def get_metrics(self) -> dict:
+        """Get cache hit/miss statistics.
+
+        Returns:
+            Dictionary with hit/miss counts and hit rates per cache type.
+
+        Example:
+            {
+                "recommendations": {"hits": 100, "misses": 20, "total": 120, "hit_rate": 0.8333},
+                "predictions": {"hits": 50, "misses": 10, "total": 60, "hit_rate": 0.8333},
+                "overall": {"hits": 150, "misses": 30, "total": 180, "hit_rate": 0.8333}
+            }
+        """
+        return self._metrics.get_stats()
+
+    def reset_metrics(self) -> None:
+        """Reset all cache metrics."""
+        self._metrics.reset()
+        logger.info("cache_metrics_reset")
 
     # ============== Bulk Operations ==============
 
