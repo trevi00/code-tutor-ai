@@ -1,5 +1,6 @@
 """Rate limiting middleware"""
 
+import hashlib
 import time
 from collections import defaultdict
 from collections.abc import Callable
@@ -127,9 +128,10 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         # Try to get user ID from auth header
         auth_header = request.headers.get("Authorization", "")
         if auth_header.startswith("Bearer "):
-            # Use a hash of the token for privacy
+            # Use SHA256 hash of the token for consistent identification
             token = auth_header[7:]
-            return f"user:{hash(token) % 1000000}"
+            token_hash = hashlib.sha256(token.encode()).hexdigest()[:16]
+            return f"user:{token_hash}"
 
         # Fall back to IP address
         forwarded = request.headers.get("X-Forwarded-For")
@@ -178,7 +180,8 @@ def _get_client_id_from_request(request: Request) -> str:
     auth_header = request.headers.get("Authorization", "")
     if auth_header.startswith("Bearer "):
         token = auth_header[7:]
-        return f"user:{hash(token) % 1000000}"
+        token_hash = hashlib.sha256(token.encode()).hexdigest()[:16]
+        return f"user:{token_hash}"
     forwarded = request.headers.get("X-Forwarded-For")
     if forwarded:
         return f"ip:{forwarded.split(',')[0].strip()}"
