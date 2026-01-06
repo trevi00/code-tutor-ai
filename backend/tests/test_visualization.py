@@ -900,3 +900,314 @@ class TestVisualizationService:
         """Test generic visualization with unsupported algorithm."""
         with pytest.raises(ValueError, match="Unsupported algorithm"):
             service.generate_visualization(AlgorithmType.DIJKSTRA)
+
+
+# =====================
+# API Route Tests
+# =====================
+
+@pytest.fixture
+def test_client():
+    """Create test client for API testing."""
+    from fastapi.testclient import TestClient
+    from code_tutor.visualization.interface.routes import router
+    from fastapi import FastAPI
+
+    app = FastAPI()
+    app.include_router(router)
+    return TestClient(app)
+
+
+class TestVisualizationRoutes:
+    """Tests for Visualization API routes."""
+
+    def test_list_algorithms(self, test_client):
+        """Test GET /visualization/algorithms."""
+        response = test_client.get("/visualization/algorithms")
+        assert response.status_code == 200
+
+        data = response.json()
+        assert "data" in data
+        assert "algorithms" in data["data"]
+        assert "total" in data["data"]
+        assert data["data"]["total"] > 0
+
+    def test_list_algorithms_by_category_sorting(self, test_client):
+        """Test filtering algorithms by sorting category."""
+        response = test_client.get("/visualization/algorithms?category=sorting")
+        assert response.status_code == 200
+
+        data = response.json()
+        algorithms = data["data"]["algorithms"]
+        assert all(a["category"] == "sorting" for a in algorithms)
+
+    def test_list_algorithms_by_category_searching(self, test_client):
+        """Test filtering algorithms by searching category."""
+        response = test_client.get("/visualization/algorithms?category=searching")
+        assert response.status_code == 200
+
+        data = response.json()
+        algorithms = data["data"]["algorithms"]
+        assert all(a["category"] == "searching" for a in algorithms)
+
+    def test_list_algorithms_by_category_graph(self, test_client):
+        """Test filtering algorithms by graph category."""
+        response = test_client.get("/visualization/algorithms?category=graph")
+        assert response.status_code == 200
+
+        data = response.json()
+        algorithms = data["data"]["algorithms"]
+        assert all(a["category"] == "graph" for a in algorithms)
+
+    def test_get_algorithm_info_bubble_sort(self, test_client):
+        """Test GET /visualization/algorithms/bubble_sort."""
+        response = test_client.get("/visualization/algorithms/bubble_sort")
+        assert response.status_code == 200
+
+        data = response.json()
+        assert data["data"]["id"] == "bubble_sort"
+        assert data["data"]["name"] == "버블 정렬"
+        assert data["data"]["time_complexity"] == "O(n²)"
+
+    def test_get_algorithm_info_not_found(self, test_client):
+        """Test GET /visualization/algorithms with unknown algorithm."""
+        response = test_client.get("/visualization/algorithms/unknown_algorithm")
+        assert response.status_code == 404
+
+    def test_get_algorithm_info_no_info(self, test_client):
+        """Test GET /visualization/algorithms with algorithm that has no info."""
+        # dijkstra exists in AlgorithmType but not in ALGORITHM_INFO
+        response = test_client.get("/visualization/algorithms/dijkstra")
+        assert response.status_code == 404
+
+    def test_generate_random_array(self, test_client):
+        """Test GET /visualization/random-array."""
+        response = test_client.get("/visualization/random-array")
+        assert response.status_code == 200
+
+        data = response.json()
+        assert "array" in data["data"]
+        assert "size" in data["data"]
+        assert data["data"]["size"] == 10  # default size
+
+    def test_generate_random_array_custom_size(self, test_client):
+        """Test random array with custom size."""
+        response = test_client.get("/visualization/random-array?size=5")
+        assert response.status_code == 200
+
+        data = response.json()
+        assert data["data"]["size"] == 5
+
+    def test_generate_random_array_custom_range(self, test_client):
+        """Test random array with custom value range."""
+        response = test_client.get("/visualization/random-array?size=10&min_val=1&max_val=10")
+        assert response.status_code == 200
+
+        data = response.json()
+        arr = data["data"]["array"]
+        assert all(1 <= x <= 10 for x in arr)
+
+    def test_generate_random_array_invalid_range(self, test_client):
+        """Test random array with invalid range (min > max)."""
+        response = test_client.get("/visualization/random-array?min_val=100&max_val=1")
+        assert response.status_code == 400
+
+    def test_post_sorting_visualization(self, test_client):
+        """Test POST /visualization/sorting."""
+        response = test_client.post(
+            "/visualization/sorting",
+            json={
+                "algorithm": "bubble_sort",
+                "data": [5, 3, 8, 1],
+            },
+        )
+        assert response.status_code == 200
+
+        data = response.json()
+        assert data["data"]["algorithm_type"] == "bubble_sort"
+        assert data["data"]["final_data"] == [1, 3, 5, 8]
+
+    def test_post_sorting_visualization_with_size(self, test_client):
+        """Test POST /visualization/sorting with random data."""
+        response = test_client.post(
+            "/visualization/sorting",
+            json={
+                "algorithm": "selection_sort",
+                "size": 6,
+            },
+        )
+        assert response.status_code == 200
+
+        data = response.json()
+        assert data["data"]["algorithm_type"] == "selection_sort"
+        assert len(data["data"]["initial_data"]) == 6
+
+    def test_post_sorting_visualization_invalid_algorithm(self, test_client):
+        """Test POST /visualization/sorting with invalid algorithm."""
+        response = test_client.post(
+            "/visualization/sorting",
+            json={
+                "algorithm": "bfs",  # Not a sorting algorithm
+                "data": [1, 2, 3],
+            },
+        )
+        assert response.status_code == 400
+
+    def test_post_search_visualization(self, test_client):
+        """Test POST /visualization/searching."""
+        response = test_client.post(
+            "/visualization/searching",
+            json={
+                "algorithm": "linear_search",
+                "data": [5, 3, 8, 1],
+                "target": 8,
+            },
+        )
+        assert response.status_code == 200
+
+        data = response.json()
+        assert data["data"]["algorithm_type"] == "linear_search"
+
+    def test_post_search_visualization_binary(self, test_client):
+        """Test POST /visualization/searching with binary search."""
+        response = test_client.post(
+            "/visualization/searching",
+            json={
+                "algorithm": "binary_search",
+                "data": [1, 3, 5, 7, 9],
+                "target": 5,
+            },
+        )
+        assert response.status_code == 200
+
+        data = response.json()
+        assert data["data"]["algorithm_type"] == "binary_search"
+
+    def test_post_search_visualization_invalid_algorithm(self, test_client):
+        """Test POST /visualization/searching with invalid algorithm."""
+        response = test_client.post(
+            "/visualization/searching",
+            json={
+                "algorithm": "bubble_sort",  # Not a search algorithm
+                "target": 5,
+            },
+        )
+        assert response.status_code == 400
+
+    def test_post_graph_visualization_bfs(self, test_client):
+        """Test POST /visualization/graph with BFS."""
+        response = test_client.post(
+            "/visualization/graph",
+            json={
+                "algorithm": "bfs",
+                "start_node": "A",
+            },
+        )
+        assert response.status_code == 200
+
+        data = response.json()
+        assert data["data"]["algorithm_type"] == "bfs"
+        assert len(data["data"]["nodes"]) == 7
+
+    def test_post_graph_visualization_dfs(self, test_client):
+        """Test POST /visualization/graph with DFS."""
+        response = test_client.post(
+            "/visualization/graph",
+            json={
+                "algorithm": "dfs",
+                "start_node": "A",
+            },
+        )
+        assert response.status_code == 200
+
+        data = response.json()
+        assert data["data"]["algorithm_type"] == "dfs"
+
+    def test_post_graph_visualization_invalid_algorithm(self, test_client):
+        """Test POST /visualization/graph with invalid algorithm."""
+        response = test_client.post(
+            "/visualization/graph",
+            json={
+                "algorithm": "bubble_sort",  # Not a graph algorithm
+                "start_node": "A",
+            },
+        )
+        assert response.status_code == 400
+
+    def test_get_sorting_visualization_quick(self, test_client):
+        """Test GET /visualization/sorting/{algorithm_id}."""
+        response = test_client.get("/visualization/sorting/bubble_sort")
+        assert response.status_code == 200
+
+        data = response.json()
+        assert data["data"]["algorithm_type"] == "bubble_sort"
+
+    def test_get_sorting_visualization_with_size(self, test_client):
+        """Test GET /visualization/sorting with custom size."""
+        response = test_client.get("/visualization/sorting/quick_sort?size=8")
+        assert response.status_code == 200
+
+        data = response.json()
+        assert len(data["data"]["initial_data"]) == 8
+
+    def test_get_sorting_visualization_not_found(self, test_client):
+        """Test GET /visualization/sorting with unknown algorithm."""
+        response = test_client.get("/visualization/sorting/unknown")
+        assert response.status_code == 404
+
+    def test_get_sorting_visualization_invalid_type(self, test_client):
+        """Test GET /visualization/sorting with non-sorting algorithm."""
+        response = test_client.get("/visualization/sorting/bfs")
+        assert response.status_code == 400
+
+    def test_get_search_visualization_quick(self, test_client):
+        """Test GET /visualization/searching/{algorithm_id}."""
+        response = test_client.get("/visualization/searching/linear_search")
+        assert response.status_code == 200
+
+        data = response.json()
+        assert data["data"]["algorithm_type"] == "linear_search"
+
+    def test_get_search_visualization_with_target(self, test_client):
+        """Test GET /visualization/searching with target."""
+        response = test_client.get("/visualization/searching/binary_search?target=5")
+        assert response.status_code == 200
+
+        data = response.json()
+        assert data["data"]["algorithm_type"] == "binary_search"
+
+    def test_get_search_visualization_not_found(self, test_client):
+        """Test GET /visualization/searching with unknown algorithm."""
+        response = test_client.get("/visualization/searching/unknown")
+        assert response.status_code == 404
+
+    def test_get_search_visualization_invalid_type(self, test_client):
+        """Test GET /visualization/searching with non-search algorithm."""
+        response = test_client.get("/visualization/searching/bubble_sort")
+        assert response.status_code == 400
+
+    def test_get_graph_visualization_quick(self, test_client):
+        """Test GET /visualization/graph/{algorithm_id}."""
+        response = test_client.get("/visualization/graph/bfs")
+        assert response.status_code == 200
+
+        data = response.json()
+        assert data["data"]["algorithm_type"] == "bfs"
+
+    def test_get_graph_visualization_with_start(self, test_client):
+        """Test GET /visualization/graph with custom start node."""
+        response = test_client.get("/visualization/graph/dfs?start_node=B")
+        assert response.status_code == 200
+
+        data = response.json()
+        assert data["data"]["algorithm_type"] == "dfs"
+
+    def test_get_graph_visualization_not_found(self, test_client):
+        """Test GET /visualization/graph with unknown algorithm."""
+        response = test_client.get("/visualization/graph/unknown")
+        assert response.status_code == 404
+
+    def test_get_graph_visualization_invalid_type(self, test_client):
+        """Test GET /visualization/graph with non-graph algorithm."""
+        response = test_client.get("/visualization/graph/bubble_sort")
+        assert response.status_code == 400
