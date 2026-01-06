@@ -6,7 +6,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 
 from code_tutor.shared.api_response import success_response
 from code_tutor.shared.infrastructure.database import get_async_session as get_db
-from code_tutor.identity.interface.dependencies import get_current_user
+from code_tutor.identity.interface.dependencies import get_current_user, get_admin_user
 from code_tutor.identity.application.dto import UserResponse
 from code_tutor.gamification.application.dto import (
     BadgeResponse,
@@ -204,6 +204,7 @@ async def join_challenge(
 # Admin: Seed badges
 @router.post("/admin/seed-badges")
 async def seed_badges(
+    current_user: UserResponse = Depends(get_admin_user),
     badge_service: BadgeService = Depends(get_badge_service),
     db=Depends(get_db),
 ):
@@ -223,6 +224,7 @@ async def create_challenge(
     target_value: int,
     xp_reward: int,
     duration_days: int = 7,
+    current_user: UserResponse = Depends(get_admin_user),
     challenge_service: ChallengeService = Depends(get_challenge_service),
     db=Depends(get_db),
 ):

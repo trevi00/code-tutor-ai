@@ -7,8 +7,8 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from code_tutor.shared.infrastructure.database import get_async_session as get_db
-from code_tutor.identity.interface.dependencies import get_current_user
-from code_tutor.identity.domain.entities import User
+from code_tutor.identity.interface.dependencies import get_current_user, get_admin_user
+from code_tutor.identity.application.dto import UserResponse
 from code_tutor.typing_practice.domain.value_objects import ExerciseCategory
 from code_tutor.typing_practice.application.dto import (
     CreateExerciseRequest,
@@ -91,18 +91,17 @@ async def get_exercise(
 @router.post("/exercises", response_model=TypingExerciseResponse, status_code=status.HTTP_201_CREATED)
 async def create_exercise(
     request: CreateExerciseRequest,
-    current_user: User = Depends(get_current_user),
+    current_user: UserResponse = Depends(get_admin_user),
     service: TypingPracticeService = Depends(get_typing_service),
 ):
     """Create a new typing exercise (admin only)."""
-    # TODO: Add admin check
     return await service.create_exercise(request)
 
 
 @router.get("/exercises/{exercise_id}/progress", response_model=UserProgressResponse)
 async def get_exercise_progress(
     exercise_id: UUID,
-    current_user: User = Depends(get_current_user),
+    current_user: UserResponse = Depends(get_current_user),
     service: TypingPracticeService = Depends(get_typing_service),
 ):
     """Get current user's progress on an exercise."""
@@ -123,7 +122,7 @@ async def get_exercise_progress(
 @router.post("/attempts", response_model=TypingAttemptResponse, status_code=status.HTTP_201_CREATED)
 async def start_attempt(
     request: StartAttemptRequest,
-    current_user: User = Depends(get_current_user),
+    current_user: UserResponse = Depends(get_current_user),
     service: TypingPracticeService = Depends(get_typing_service),
 ):
     """Start a new typing attempt."""
@@ -137,7 +136,7 @@ async def start_attempt(
 async def complete_attempt(
     attempt_id: UUID,
     request: CompleteAttemptRequest,
-    current_user: User = Depends(get_current_user),
+    current_user: UserResponse = Depends(get_current_user),
     service: TypingPracticeService = Depends(get_typing_service),
     xp_service: XPService = Depends(get_xp_service),
     db: AsyncSession = Depends(get_db),
@@ -178,7 +177,7 @@ async def complete_attempt(
 
 @router.get("/stats", response_model=UserTypingStatsResponse)
 async def get_user_stats(
-    current_user: User = Depends(get_current_user),
+    current_user: UserResponse = Depends(get_current_user),
     service: TypingPracticeService = Depends(get_typing_service),
 ):
     """Get current user's typing statistics."""
@@ -187,7 +186,7 @@ async def get_user_stats(
 
 @router.get("/mastered", response_model=list[str])
 async def get_mastered_exercises(
-    current_user: User = Depends(get_current_user),
+    current_user: UserResponse = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
     """Get list of mastered exercise IDs for current user."""

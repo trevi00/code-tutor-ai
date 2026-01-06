@@ -8,7 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from code_tutor.execution.application.services import SubmissionEvaluator
 from code_tutor.identity.application.dto import UserResponse
-from code_tutor.identity.interface.dependencies import get_current_active_user
+from code_tutor.identity.interface.dependencies import get_current_active_user, get_admin_user
 from code_tutor.learning.application.dashboard_service import DashboardService
 from code_tutor.learning.application.dto import (
     CreateProblemRequest,
@@ -183,14 +183,9 @@ async def get_problem(
 async def create_problem(
     request: CreateProblemRequest,
     service: Annotated[ProblemService, Depends(get_problem_service)],
-    current_user: Annotated[UserResponse, Depends(get_current_active_user)],
+    current_user: Annotated[UserResponse, Depends(get_admin_user)],
 ) -> ProblemResponse:
     """Create a new problem (requires admin role)"""
-    if current_user.role != "admin":
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Admin access required",
-        )
     return await service.create_problem(request)
 
 
@@ -309,14 +304,9 @@ async def get_problem_hints(
 async def publish_problem(
     problem_id: UUID,
     service: Annotated[ProblemService, Depends(get_problem_service)],
-    current_user: Annotated[UserResponse, Depends(get_current_active_user)],
+    current_user: Annotated[UserResponse, Depends(get_admin_user)],
 ) -> ProblemResponse:
-    """Publish a problem"""
-    if current_user.role != "admin":
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Admin access required",
-        )
+    """Publish a problem (requires admin role)"""
     try:
         return await service.publish_problem(problem_id)
     except AppException as e:

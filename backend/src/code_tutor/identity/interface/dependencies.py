@@ -93,6 +93,23 @@ async def get_current_active_user(
     return current_user
 
 
+async def get_admin_user(
+    current_user: Annotated[UserResponse, Depends(get_current_user)],
+) -> UserResponse:
+    """Get current user and verify admin role"""
+    if not current_user.is_active:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Account is deactivated",
+        )
+    if current_user.role != "admin":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Admin privileges required",
+        )
+    return current_user
+
+
 async def get_optional_user(
     credentials: Annotated[HTTPAuthorizationCredentials | None, Depends(HTTPBearer(auto_error=False))],
     user_repo: Annotated[UserRepository, Depends(get_user_repository)],
