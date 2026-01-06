@@ -108,13 +108,30 @@ def create_app() -> FastAPI:
         lifespan=lifespan,
     )
 
-    # Configure CORS
+    # Configure CORS with explicit allowed methods and headers
+    # Block wildcard origins in production for security
+    cors_origins = settings.CORS_ORIGINS
+    if settings.ENVIRONMENT == "production" and "*" in cors_origins:
+        logger.warning("Wildcard CORS origin detected in production, removing for security")
+        cors_origins = [o for o in cors_origins if o != "*"]
+
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=settings.CORS_ORIGINS,
+        allow_origins=cors_origins,
         allow_credentials=True,
-        allow_methods=["*"],
-        allow_headers=["*"],
+        allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+        allow_headers=[
+            "Authorization",
+            "Content-Type",
+            "Accept",
+            "Origin",
+            "X-Requested-With",
+        ],
+        expose_headers=[
+            "X-RateLimit-Limit",
+            "X-RateLimit-Remaining",
+            "Retry-After",
+        ],
     )
 
     # Add rate limiting middleware
