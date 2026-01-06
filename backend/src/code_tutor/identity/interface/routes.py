@@ -49,7 +49,13 @@ def get_user_service(
     "/register",
     response_model=UserResponse,
     status_code=status.HTTP_201_CREATED,
-    summary="Register a new user",
+    summary="회원가입",
+    description="새로운 사용자 계정을 생성합니다. 이메일과 사용자명은 고유해야 합니다.",
+    responses={
+        201: {"description": "회원가입 성공"},
+        400: {"description": "유효하지 않은 입력 데이터"},
+        409: {"description": "이메일 또는 사용자명 중복"},
+    },
 )
 async def register(
     request: RegisterRequest,
@@ -70,7 +76,12 @@ async def register(
 @router.post(
     "/login",
     response_model=LoginResponse,
-    summary="Login with email and password",
+    summary="로그인",
+    description="이메일과 비밀번호로 로그인하여 JWT 토큰을 발급받습니다.",
+    responses={
+        200: {"description": "로그인 성공, 액세스 토큰과 리프레시 토큰 반환"},
+        401: {"description": "이메일 또는 비밀번호 불일치"},
+    },
 )
 async def login(
     request: LoginRequest,
@@ -89,7 +100,12 @@ async def login(
 @router.post(
     "/refresh",
     response_model=TokenResponse,
-    summary="Refresh access token",
+    summary="토큰 갱신",
+    description="리프레시 토큰을 사용하여 새로운 액세스 토큰을 발급받습니다.",
+    responses={
+        200: {"description": "토큰 갱신 성공"},
+        401: {"description": "유효하지 않거나 만료된 리프레시 토큰"},
+    },
 )
 async def refresh_token(
     request: RefreshTokenRequest,
@@ -108,7 +124,12 @@ async def refresh_token(
 @router.post(
     "/logout",
     response_model=MessageResponse,
-    summary="Logout current user",
+    summary="로그아웃",
+    description="현재 세션을 종료하고 토큰을 무효화합니다.",
+    responses={
+        200: {"description": "로그아웃 성공"},
+        401: {"description": "인증 필요"},
+    },
 )
 async def logout(
     credentials: Annotated[HTTPAuthorizationCredentials, Depends(security)],
@@ -122,7 +143,12 @@ async def logout(
 @router.get(
     "/me",
     response_model=UserResponse,
-    summary="Get current user profile",
+    summary="내 프로필 조회",
+    description="현재 로그인한 사용자의 프로필 정보를 조회합니다.",
+    responses={
+        200: {"description": "프로필 조회 성공"},
+        401: {"description": "인증 필요"},
+    },
 )
 async def get_me(
     current_user: Annotated[UserResponse, Depends(get_current_active_user)],
@@ -134,7 +160,14 @@ async def get_me(
 @router.put(
     "/me",
     response_model=UserResponse,
-    summary="Update current user profile",
+    summary="내 프로필 수정",
+    description="현재 로그인한 사용자의 프로필(사용자명, 소개글)을 수정합니다.",
+    responses={
+        200: {"description": "프로필 수정 성공"},
+        400: {"description": "유효하지 않은 입력 데이터"},
+        401: {"description": "인증 필요"},
+        409: {"description": "사용자명 중복"},
+    },
 )
 async def update_profile(
     request: UpdateProfileRequest,
@@ -156,7 +189,13 @@ async def update_profile(
 @router.put(
     "/me/password",
     response_model=MessageResponse,
-    summary="Change current user password",
+    summary="비밀번호 변경",
+    description="현재 비밀번호를 확인한 후 새 비밀번호로 변경합니다.",
+    responses={
+        200: {"description": "비밀번호 변경 성공"},
+        400: {"description": "현재 비밀번호 불일치 또는 유효하지 않은 새 비밀번호"},
+        401: {"description": "인증 필요"},
+    },
 )
 async def change_password(
     request: ChangePasswordRequest,

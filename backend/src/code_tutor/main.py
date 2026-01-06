@@ -100,12 +100,94 @@ def create_app() -> FastAPI:
     """Create and configure FastAPI application"""
     settings = get_settings()
 
+    # OpenAPI tags metadata for API documentation
+    openapi_tags = [
+        {
+            "name": "Health",
+            "description": "서버 상태 확인 엔드포인트",
+        },
+        {
+            "name": "Authentication",
+            "description": "사용자 인증 및 계정 관리 (회원가입, 로그인, 토큰 갱신, 프로필)",
+        },
+        {
+            "name": "Problems",
+            "description": "알고리즘 문제 관리 및 제출 (문제 목록, 상세, 코드 제출, 채점)",
+        },
+        {
+            "name": "AI Tutor",
+            "description": "AI 기반 학습 도우미 (힌트, 코드 리뷰, 질문 답변)",
+        },
+        {
+            "name": "Code Execution",
+            "description": "코드 실행 및 테스트 (샌드박스 환경에서 안전한 코드 실행)",
+        },
+        {
+            "name": "Typing Practice",
+            "description": "타이핑 연습 (코드 타이핑 훈련, 속도/정확도 측정)",
+        },
+        {
+            "name": "gamification",
+            "description": "게이미피케이션 (XP, 레벨, 뱃지, 리더보드, 챌린지)",
+        },
+        {
+            "name": "Roadmap",
+            "description": "학습 로드맵 (체계적인 학습 경로, 진행 상황 추적)",
+        },
+        {
+            "name": "Playground",
+            "description": "코드 플레이그라운드 (자유로운 코드 작성 및 실행 환경)",
+        },
+        {
+            "name": "Collaboration",
+            "description": "실시간 협업 (페어 프로그래밍, 코드 공유)",
+        },
+        {
+            "name": "Visualization",
+            "description": "알고리즘 시각화 (정렬, 탐색 등 알고리즘 동작 시각화)",
+        },
+        {
+            "name": "Debugger",
+            "description": "코드 디버거 (단계별 실행, 변수 추적)",
+        },
+        {
+            "name": "Performance",
+            "description": "성능 분석 (시간/공간 복잡도 분석, 최적화 제안)",
+        },
+    ]
+
     app = FastAPI(
         title=settings.APP_NAME,
         version=settings.APP_VERSION,
-        description="AI-based Python Algorithm Learning Platform API",
+        description="""
+# Code Tutor AI API
+
+AI 기반 Python 알고리즘 학습 플랫폼 API입니다.
+
+## 주요 기능
+
+- **🔐 인증**: JWT 기반 사용자 인증
+- **📚 문제 풀이**: 난이도별 알고리즘 문제 제공 및 자동 채점
+- **🤖 AI 튜터**: 힌트, 코드 리뷰, 질문 답변
+- **⌨️ 타이핑 연습**: 코드 타이핑 속도/정확도 향상
+- **🎮 게이미피케이션**: XP, 레벨, 뱃지, 리더보드
+- **🗺️ 학습 로드맵**: 체계적인 학습 경로
+- **🎨 시각화**: 알고리즘 동작 시각화
+- **🐛 디버거**: 단계별 코드 실행
+
+## 인증
+
+대부분의 API는 JWT 토큰 인증이 필요합니다.
+`Authorization: Bearer <access_token>` 헤더를 포함해주세요.
+
+## Rate Limiting
+
+API 요청은 분당 60회로 제한됩니다.
+`X-RateLimit-Remaining` 헤더에서 남은 요청 수를 확인할 수 있습니다.
+        """,
         docs_url="/docs" if settings.DEBUG else None,
         redoc_url="/redoc" if settings.DEBUG else None,
+        openapi_tags=openapi_tags,
         lifespan=lifespan,
     )
 
