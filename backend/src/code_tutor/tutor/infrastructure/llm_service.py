@@ -10,6 +10,7 @@ from uuid import UUID
 import httpx
 
 from code_tutor.shared.config import get_settings
+from code_tutor.shared.constants import Truncation
 from code_tutor.shared.infrastructure.logging import get_logger
 
 logger = get_logger(__name__)
@@ -344,7 +345,7 @@ class ProgressiveHintSystem:
             format_data.update({
                 "pattern_name": pattern_data.get("name_ko", pattern_data.get("name", "")),
                 "pattern_description": pattern_data.get("description_ko", ""),
-                "pattern_key_idea": pattern_data.get("description", "")[:200],
+                "pattern_key_idea": pattern_data.get("description", "")[:Truncation.DESCRIPTION_MAX],
                 "pseudocode": self._generate_pseudocode(problem_data, pattern_data),
                 "partial_code": self._generate_partial_code(problem_data, pattern_data),
             })
@@ -741,10 +742,10 @@ class PatternBasedLLMService(LLMService):
 
         response = f"""## {title}
 
-{sections.get("개요", "").strip()[:500]}
+{sections.get("개요", "").strip()[:Truncation.PATTERN_OVERVIEW_MAX]}
 
 ### 언제 사용하나요?
-{sections.get("언제 사용", "").strip()[:300] or "이 패턴은 특정 조건에서 효율적인 솔루션을 제공합니다."}
+{sections.get("언제 사용", "").strip()[:Truncation.CODE_SNIPPET_MAX] or "이 패턴은 특정 조건에서 효율적인 솔루션을 제공합니다."}
 
 더 자세한 설명이 필요하시면 말씀해주세요! 템플릿 코드나 예제 문제도 보여드릴 수 있습니다."""
 
@@ -786,7 +787,7 @@ class PatternBasedLLMService(LLMService):
         if context and "code" in lower_msg:
             return f"""코드를 분석해보겠습니다.
 
-{context[:200] if context else ""}
+{context[:Truncation.DESCRIPTION_MAX] if context else ""}
 
 **리뷰 포인트:**
 1. 변수명이 명확한지 확인하세요
@@ -986,7 +987,7 @@ class RAGBasedLLMService(LLMService):
 
             if main_pattern.get("example_code"):
                 response_parts.append(
-                    f"\n**참고 코드**:\n```python\n{main_pattern['example_code'][:300]}...\n```"
+                    f"\n**참고 코드**:\n```python\n{main_pattern['example_code'][:Truncation.CODE_SNIPPET_MAX]}...\n```"
                 )
 
         return "\n".join(response_parts)

@@ -117,3 +117,15 @@ class RateLimiting:
 
     DEFAULT_REQUESTS_PER_MINUTE: int = 60
     DEFAULT_BURST_SIZE: int = 20
+
+
+# =============================================================================
+# Text Truncation
+# =============================================================================
+class Truncation:
+    """Text truncation limits for logs and responses."""
+
+    ERROR_MESSAGE_MAX: int = 500  # Maximum length for error messages
+    CODE_SNIPPET_MAX: int = 300  # Maximum length for code snippets in responses
+    DESCRIPTION_MAX: int = 200  # Maximum length for descriptions
+    PATTERN_OVERVIEW_MAX: int = 500  # Maximum length for pattern overviews
