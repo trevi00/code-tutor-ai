@@ -1,6 +1,6 @@
 """Dashboard application service"""
 
-from datetime import UTC, datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from uuid import UUID
 
 from sqlalchemy import and_, case, distinct, func, select
@@ -239,7 +239,7 @@ class DashboardService:
             else:
                 dates.append(d)
 
-        today = datetime.now(UTC).date()
+        today = datetime.now(timezone.utc).date()
         last_activity = dates[0]
 
         # Calculate current streak
@@ -268,7 +268,7 @@ class DashboardService:
             current_streak=current_streak,
             longest_streak=max(longest_streak, current_streak),
             last_activity_date=datetime.combine(
-                last_activity, datetime.min.time(), tzinfo=UTC
+                last_activity, datetime.min.time(), tzinfo=timezone.utc
             ),
         )
 
@@ -276,7 +276,7 @@ class DashboardService:
         self, user_id: UUID, days: int = 365
     ) -> list[HeatmapData]:
         """Get activity heatmap data for the past year"""
-        end_date = datetime.now(UTC).date()
+        end_date = datetime.now(timezone.utc).date()
         start_date = end_date - timedelta(days=days)
 
         # Get submission counts per day

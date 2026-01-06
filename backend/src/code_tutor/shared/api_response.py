@@ -1,6 +1,6 @@
 """Standardized API Response format following PRD specification"""
 
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 from typing import Any, Generic, TypeVar
 from uuid import uuid4
 
@@ -13,7 +13,7 @@ class ResponseMeta(BaseModel):
     """Response metadata"""
 
     request_id: str = Field(default_factory=lambda: f"req-{uuid4().hex[:12]}")
-    timestamp: datetime = Field(default_factory=lambda: datetime.now(UTC))
+    timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 
 class ErrorDetail(BaseModel):
