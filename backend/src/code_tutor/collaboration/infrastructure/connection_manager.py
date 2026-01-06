@@ -12,10 +12,11 @@ def utc_now() -> datetime:
     """Get current UTC time (timezone-aware)"""
     return datetime.now(timezone.utc)
 
-import structlog
 from fastapi import WebSocket
 
-logger = structlog.get_logger()
+from code_tutor.shared.infrastructure.logging import get_logger
+
+logger = get_logger(__name__)
 
 
 @dataclass

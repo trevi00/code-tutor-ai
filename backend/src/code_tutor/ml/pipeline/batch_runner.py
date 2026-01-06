@@ -7,13 +7,12 @@ import asyncio
 from datetime import date, timedelta
 from uuid import UUID
 
-import structlog
-
 from code_tutor.ml.pipeline.daily_stats_service import DailyStatsService
 from code_tutor.ml.pipeline.data_aggregator import DataAggregator
 from code_tutor.shared.infrastructure.database import get_session_context
+from code_tutor.shared.infrastructure.logging import get_logger
 
-logger = structlog.get_logger()
+logger = get_logger(__name__)
 
 
 async def run_daily_aggregation(target_date: date | None = None) -> dict:

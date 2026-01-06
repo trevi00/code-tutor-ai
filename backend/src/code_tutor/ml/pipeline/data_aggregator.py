@@ -11,7 +11,6 @@ def utc_now() -> datetime:
     """Get current UTC time (timezone-aware)"""
     return datetime.now(timezone.utc)
 
-import structlog
 from sqlalchemy import func, select
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.dialects.sqlite import insert as sqlite_insert
@@ -20,8 +19,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from code_tutor.learning.domain.value_objects import SubmissionStatus
 from code_tutor.learning.infrastructure.models import ProblemModel, SubmissionModel
 from code_tutor.ml.pipeline.models import UserInteractionModel
+from code_tutor.shared.infrastructure.logging import get_logger
 
-logger = structlog.get_logger()
+logger = get_logger(__name__)
 
 
 class DataAggregator:

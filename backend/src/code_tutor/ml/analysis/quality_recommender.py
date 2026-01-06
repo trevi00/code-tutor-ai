@@ -6,14 +6,14 @@ Identifies weak quality dimensions and suggests problems to improve them.
 
 from uuid import UUID
 
-import structlog
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from code_tutor.learning.infrastructure.models import ProblemModel
 from code_tutor.ml.pipeline.models import CodeQualityAnalysisModel
+from code_tutor.shared.infrastructure.logging import get_logger
 
-logger = structlog.get_logger()
+logger = get_logger(__name__)
 
 # Quality dimension thresholds
 WEAK_DIMENSION_THRESHOLD = 60  # Below this is considered weak

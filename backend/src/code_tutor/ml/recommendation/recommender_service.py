@@ -7,7 +7,6 @@ caching, and integration with the data pipeline.
 import asyncio
 from uuid import UUID
 
-import structlog
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -16,8 +15,9 @@ from code_tutor.learning.infrastructure.models import ProblemModel, SubmissionMo
 from code_tutor.ml.pipeline.cache import RecommendationCache
 from code_tutor.ml.pipeline.data_aggregator import DataAggregator
 from code_tutor.ml.recommendation.recommender import ProblemRecommender
+from code_tutor.shared.infrastructure.logging import get_logger
 
-logger = structlog.get_logger()
+logger = get_logger(__name__)
 
 # Global recommender instance (singleton)
 _recommender: ProblemRecommender | None = None

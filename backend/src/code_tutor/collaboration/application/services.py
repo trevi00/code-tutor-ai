@@ -9,8 +9,6 @@ def utc_now() -> datetime:
     """Get current UTC time (timezone-aware)"""
     return datetime.now(timezone.utc)
 
-import structlog
-
 from code_tutor.collaboration.application.dto import (
     CodeChangeRequest,
     CreateSessionRequest,
@@ -38,8 +36,9 @@ from code_tutor.collaboration.infrastructure.connection_manager import (
     connection_manager,
     create_message,
 )
+from code_tutor.shared.infrastructure.logging import get_logger
 
-logger = structlog.get_logger()
+logger = get_logger(__name__)
 
 # Predefined colors for participants
 PARTICIPANT_COLORS = [

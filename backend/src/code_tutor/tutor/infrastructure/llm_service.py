@@ -117,6 +117,34 @@ async def retry_with_backoff(
         raise last_exception
 
 
+# ============== Common Fallback Responses ==============
+
+def generate_simple_fallback_response(user_message: str) -> str:
+    """Generate a simple fallback response when LLM is unavailable.
+
+    This is a shared fallback used by OpenAI and Ollama services.
+    """
+    lower_msg = user_message.lower()
+
+    if any(word in lower_msg for word in ["안녕", "hello", "hi"]):
+        return """안녕하세요! 알고리즘 학습을 도와드리는 AI 튜터입니다.
+
+무엇을 도와드릴까요?
+- 알고리즘 패턴 설명
+- 코드 리뷰
+- 문제 풀이 힌트"""
+
+    return """좋은 질문입니다!
+
+알고리즘 문제 해결 단계:
+1. **문제 이해**: 입력/출력 파악
+2. **예제 분석**: 패턴 발견
+3. **접근법 선택**: 적합한 알고리즘 선택
+4. **구현**: 코드 작성
+
+어떤 부분을 더 자세히 알고 싶으신가요?"""
+
+
 # ============== Progressive Hint System ==============
 
 class HintLevel(IntEnum):
@@ -1282,25 +1310,7 @@ class OpenAILLMService(LLMService):
 
     async def _generate_fallback(self, user_message: str) -> str:
         """Fallback response when OpenAI is unavailable"""
-        lower_msg = user_message.lower()
-
-        if any(word in lower_msg for word in ["안녕", "hello", "hi"]):
-            return """안녕하세요! 알고리즘 학습을 도와드리는 AI 튜터입니다.
-
-무엇을 도와드릴까요?
-- 알고리즘 패턴 설명
-- 코드 리뷰
-- 문제 풀이 힌트"""
-
-        return """좋은 질문입니다!
-
-알고리즘 문제 해결 단계:
-1. **문제 이해**: 입력/출력 파악
-2. **예제 분석**: 패턴 발견
-3. **접근법 선택**: 적합한 알고리즘 선택
-4. **구현**: 코드 작성
-
-어떤 부분을 더 자세히 알고 싶으신가요?"""
+        return generate_simple_fallback_response(user_message)
 
     async def analyze_code(
         self,
@@ -1457,25 +1467,7 @@ class OllamaLLMService(LLMService):
 
     async def _generate_fallback(self, user_message: str) -> str:
         """Fallback response when Ollama is unavailable"""
-        lower_msg = user_message.lower()
-
-        if any(word in lower_msg for word in ["안녕", "hello", "hi"]):
-            return """안녕하세요! 알고리즘 학습을 도와드리는 AI 튜터입니다.
-
-무엇을 도와드릴까요?
-- 알고리즘 패턴 설명
-- 코드 리뷰
-- 문제 풀이 힌트"""
-
-        return """좋은 질문입니다!
-
-알고리즘 문제 해결 단계:
-1. **문제 이해**: 입력/출력 파악
-2. **예제 분석**: 패턴 발견
-3. **접근법 선택**: 적합한 알고리즘 선택
-4. **구현**: 코드 작성
-
-어떤 부분을 더 자세히 알고 싶으신가요?"""
+        return generate_simple_fallback_response(user_message)
 
     async def analyze_code(
         self,

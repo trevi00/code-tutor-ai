@@ -2,8 +2,6 @@
 
 from uuid import UUID, uuid4
 
-import structlog
-
 from code_tutor.execution.domain.value_objects import ExecutionRequest
 from code_tutor.execution.infrastructure.sandbox import DockerSandbox, MockSandbox
 from code_tutor.playground.application.dto import (
@@ -39,8 +37,9 @@ from code_tutor.playground.domain.value_objects import (
 )
 from code_tutor.shared.config import get_settings
 from code_tutor.shared.exceptions import ForbiddenError, NotFoundError
+from code_tutor.shared.infrastructure.logging import get_logger
 
-logger = structlog.get_logger()
+logger = get_logger(__name__)
 
 
 class PlaygroundService:

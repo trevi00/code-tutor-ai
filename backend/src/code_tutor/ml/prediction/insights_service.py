@@ -5,15 +5,15 @@ Integrates LSTM predictions with dashboard insights.
 
 from uuid import UUID
 
-import structlog
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from code_tutor.ml.pipeline.cache import RecommendationCache
 from code_tutor.ml.pipeline.daily_stats_service import DailyStatsService
 from code_tutor.ml.prediction.learning_predictor import LearningPredictor
 from code_tutor.ml.recommendation import RecommenderService
+from code_tutor.shared.infrastructure.logging import get_logger
 
-logger = structlog.get_logger()
+logger = get_logger(__name__)
 
 # Global predictor instance (singleton)
 _predictor: LearningPredictor | None = None

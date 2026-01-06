@@ -11,11 +11,10 @@ def utc_now() -> datetime:
     """Get current UTC time (timezone-aware)"""
     return datetime.now(timezone.utc)
 
-import structlog
-
+from code_tutor.shared.infrastructure.logging import get_logger
 from code_tutor.shared.infrastructure.redis import RedisClient
 
-logger = structlog.get_logger()
+logger = get_logger(__name__)
 
 
 class CacheMetrics:

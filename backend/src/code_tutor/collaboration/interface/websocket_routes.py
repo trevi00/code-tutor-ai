@@ -3,10 +3,10 @@
 import json
 from uuid import UUID
 
-import structlog
 from fastapi import APIRouter, Depends, WebSocket, WebSocketDisconnect
 
 from code_tutor.identity.interface.dependencies import get_current_user_ws
+from code_tutor.shared.infrastructure.logging import get_logger
 from code_tutor.collaboration.application.dto import (
     ChatMessageRequest,
     CodeChangeRequest,
@@ -25,7 +25,7 @@ from code_tutor.collaboration.infrastructure.repository import (
     SQLAlchemyCollaborationRepository,
 )
 
-logger = structlog.get_logger()
+logger = get_logger(__name__)
 
 router = APIRouter(prefix="/collaboration", tags=["collaboration-ws"])
 
