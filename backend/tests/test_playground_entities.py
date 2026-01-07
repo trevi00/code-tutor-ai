@@ -570,3 +570,89 @@ class TestHelperFunctions:
         now = utc_now()
         after = datetime.now(timezone.utc)
         assert before <= now <= after
+
+
+class TestTemplateSeeder:
+    """Tests for template seeder functions."""
+
+    def test_templates_constant_exists(self):
+        """Test that TEMPLATES constant exists and has data."""
+        from code_tutor.playground.infrastructure.template_seeder import TEMPLATES
+
+        assert isinstance(TEMPLATES, list)
+        assert len(TEMPLATES) > 0
+
+    def test_templates_have_required_fields(self):
+        """Test that all templates have required fields."""
+        from code_tutor.playground.infrastructure.template_seeder import TEMPLATES
+
+        required_fields = ["id", "title", "description", "code", "language", "category", "tags"]
+
+        for template in TEMPLATES:
+            for field in required_fields:
+                assert field in template, f"Template missing field: {field}"
+            assert len(template["title"]) > 0
+            assert len(template["code"]) > 0
+
+    def test_templates_have_valid_languages(self):
+        """Test that all templates have valid language values."""
+        from code_tutor.playground.infrastructure.template_seeder import TEMPLATES
+        from code_tutor.playground.domain.value_objects import PlaygroundLanguage
+
+        valid_languages = {lang.value for lang in PlaygroundLanguage}
+
+        for template in TEMPLATES:
+            assert template["language"] in valid_languages, f"Invalid language: {template['language']}"
+
+    def test_templates_have_valid_categories(self):
+        """Test that all templates have valid category values."""
+        from code_tutor.playground.infrastructure.template_seeder import TEMPLATES
+        from code_tutor.playground.domain.value_objects import TemplateCategory
+
+        valid_categories = {cat.value for cat in TemplateCategory}
+
+        for template in TEMPLATES:
+            assert template["category"] in valid_categories, f"Invalid category: {template['category']}"
+
+    @pytest.mark.asyncio
+    async def test_seed_templates_when_empty(self):
+        """Test seed_templates inserts templates when DB is empty."""
+        from unittest.mock import AsyncMock, MagicMock
+        from code_tutor.playground.infrastructure.template_seeder import seed_templates
+
+        # Mock session
+        mock_session = AsyncMock()
+
+        # Mock empty result (no existing templates)
+        mock_result = MagicMock()
+        mock_result.scalar_one_or_none.return_value = None
+        mock_session.execute.return_value = mock_result
+
+        count = await seed_templates(mock_session)
+
+        # Should have inserted templates
+        assert count > 0
+        mock_session.add.assert_called()
+        mock_session.commit.assert_called_once()
+
+    @pytest.mark.asyncio
+    async def test_seed_templates_when_exists(self):
+        """Test seed_templates skips when templates already exist."""
+        from unittest.mock import AsyncMock, MagicMock
+        from code_tutor.playground.infrastructure.template_seeder import seed_templates
+
+        # Mock session
+        mock_session = AsyncMock()
+
+        # Mock existing template
+        mock_result = MagicMock()
+        mock_existing_template = MagicMock()
+        mock_result.scalar_one_or_none.return_value = mock_existing_template
+        mock_session.execute.return_value = mock_result
+
+        count = await seed_templates(mock_session)
+
+        # Should return 0 and not insert
+        assert count == 0
+        mock_session.add.assert_not_called()
+        mock_session.commit.assert_not_called()
