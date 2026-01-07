@@ -223,6 +223,23 @@ class TestPlayground:
         assert playground.code == "code"
         assert playground.description == "Original description"
 
+    def test_playground_update_without_title(self):
+        """Test updating playground without changing title (title=None)."""
+        owner_id = uuid4()
+        playground = Playground.create(
+            owner_id=owner_id,
+            title="Original Title",
+            code="original code",
+            language=PlaygroundLanguage.PYTHON,
+        )
+
+        # Update description and code without changing title
+        playground.update(description="New description", code="new code")
+
+        assert playground.title == "Original Title"  # Title unchanged
+        assert playground.description == "New description"
+        assert playground.code == "new code"
+
     def test_playground_increment_run_count(self):
         """Test incrementing run count."""
         owner_id = uuid4()
