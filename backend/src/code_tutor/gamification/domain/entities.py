@@ -252,7 +252,10 @@ class Challenge:
     def is_active(self) -> bool:
         """Check if challenge is currently active."""
         now = utc_now()
-        return self.start_date <= now <= self.end_date
+        # Ensure timezone-aware comparison
+        start = self.start_date.replace(tzinfo=timezone.utc) if self.start_date.tzinfo is None else self.start_date
+        end = self.end_date.replace(tzinfo=timezone.utc) if self.end_date.tzinfo is None else self.end_date
+        return start <= now <= end
 
 
 @dataclass

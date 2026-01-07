@@ -150,7 +150,7 @@ class UserChallengeResponse(BaseModel):
     """User challenge response."""
 
     id: UUID
-    challenge: ChallengeResponse
+    challenge: Optional[ChallengeResponse] = None
     current_progress: int
     status: ChallengeStatus
     progress_percentage: float

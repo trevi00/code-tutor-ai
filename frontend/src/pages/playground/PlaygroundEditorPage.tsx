@@ -260,9 +260,9 @@ export default function PlaygroundEditorPage() {
   }
 
   return (
-    <div className="h-screen flex flex-col">
-      {/* Header */}
-      <div className="flex items-center justify-between px-4 py-2 bg-gray-800 text-white">
+    <div className="flex flex-col min-h-[calc(100vh-8rem)]">
+      {/* Header - z-[60] to be above the sticky nav (z-50) */}
+      <div className="flex items-center justify-between px-4 py-2 bg-gray-800 text-white relative z-[60]">
         <div className="flex items-center gap-4">
           <button
             onClick={() => navigate('/playground')}

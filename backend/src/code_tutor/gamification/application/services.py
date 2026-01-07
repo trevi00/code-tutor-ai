@@ -431,7 +431,10 @@ class ChallengeService:
     def _to_challenge_response(self, challenge: Challenge) -> ChallengeResponse:
         time_remaining = None
         if challenge.is_active:
-            delta = challenge.end_date - utc_now()
+            now = utc_now()
+            # Ensure timezone-aware comparison
+            end_date = challenge.end_date.replace(tzinfo=timezone.utc) if challenge.end_date.tzinfo is None else challenge.end_date
+            delta = end_date - now
             if delta.days > 0:
                 time_remaining = f"{delta.days}일 남음"
             elif delta.seconds > 3600:
@@ -455,9 +458,12 @@ class ChallengeService:
     def _to_user_challenge_response(
         self, user_challenge: UserChallenge
     ) -> UserChallengeResponse:
+        challenge_response = None
+        if user_challenge.challenge:
+            challenge_response = self._to_challenge_response(user_challenge.challenge)
         return UserChallengeResponse(
             id=user_challenge.id,
-            challenge=self._to_challenge_response(user_challenge.challenge),
+            challenge=challenge_response,
             current_progress=user_challenge.current_progress,
             status=user_challenge.status,
             progress_percentage=user_challenge.progress_percentage,
