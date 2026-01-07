@@ -364,6 +364,13 @@ class TestUserStats:
         stats.total_xp = 175
         assert stats.xp_percentage == 50.0
 
+    def test_user_stats_xp_percentage_at_max_level(self):
+        """Test XP percentage at max level returns 100%."""
+        # At max level, current and next thresholds are the same
+        stats = UserStats(id=uuid4(), user_id=uuid4(), total_xp=100000)
+        # At max level, xp_percentage should return 100.0
+        assert stats.xp_percentage == 100.0
+
     def test_user_stats_add_xp(self):
         """Test adding XP."""
         stats = UserStats(id=uuid4(), user_id=uuid4(), total_xp=100)
@@ -464,6 +471,19 @@ class TestUserStats:
 
         stats.set_path_level_completed("advanced")
         assert stats.advanced_path_completed is True
+
+    def test_user_stats_set_path_level_completed_unknown(self):
+        """Test setting unknown path level (no change but updates timestamp)."""
+        stats = UserStats(id=uuid4(), user_id=uuid4())
+
+        # Unknown level - should not change any flags but still update timestamp
+        stats.set_path_level_completed("unknown_level")
+        assert stats.beginner_path_completed is False
+        assert stats.elementary_path_completed is False
+        assert stats.intermediate_path_completed is False
+        assert stats.advanced_path_completed is False
+        # updated_at should be set (utc_now is called)
+        assert stats.updated_at is not None
 
 
 class TestChallenge:
@@ -1447,6 +1467,85 @@ class TestChallengeService:
         assert challenge_service._get_progress_for_action(stats, "complete_patterns") == 3
         assert challenge_service._get_progress_for_action(stats, "collaborate") == 2
         assert challenge_service._get_progress_for_action(stats, "unknown") == 0
+
+    def test_to_challenge_response_time_remaining_days(self, challenge_service):
+        """Test challenge response with days remaining."""
+        now = datetime.now(timezone.utc)
+        challenge = Challenge(
+            id=uuid4(),
+            name="Weekly Challenge",
+            description="Test",
+            challenge_type=ChallengeType.WEEKLY,
+            target_action="solve_problems",
+            target_value=10,
+            xp_reward=100,
+            start_date=now - timedelta(hours=1),
+            end_date=now + timedelta(days=3),
+        )
+
+        response = challenge_service._to_challenge_response(challenge)
+
+        assert response.time_remaining is not None
+        assert "일 남음" in response.time_remaining
+
+    def test_to_challenge_response_time_remaining_hours(self, challenge_service):
+        """Test challenge response with hours remaining."""
+        now = datetime.now(timezone.utc)
+        challenge = Challenge(
+            id=uuid4(),
+            name="Daily Challenge",
+            description="Test",
+            challenge_type=ChallengeType.DAILY,
+            target_action="solve_problems",
+            target_value=5,
+            xp_reward=50,
+            start_date=now - timedelta(hours=1),
+            end_date=now + timedelta(hours=5),
+        )
+
+        response = challenge_service._to_challenge_response(challenge)
+
+        assert response.time_remaining is not None
+        assert "시간 남음" in response.time_remaining
+
+    def test_to_challenge_response_time_remaining_minutes(self, challenge_service):
+        """Test challenge response with minutes remaining (less than 1 hour)."""
+        now = datetime.now(timezone.utc)
+        challenge = Challenge(
+            id=uuid4(),
+            name="Quick Challenge",
+            description="Test",
+            challenge_type=ChallengeType.DAILY,
+            target_action="solve_problems",
+            target_value=2,
+            xp_reward=20,
+            start_date=now - timedelta(hours=1),
+            end_date=now + timedelta(minutes=30),
+        )
+
+        response = challenge_service._to_challenge_response(challenge)
+
+        assert response.time_remaining is not None
+        assert "분 남음" in response.time_remaining
+
+    def test_to_challenge_response_inactive_challenge(self, challenge_service):
+        """Test challenge response for inactive challenge (no time remaining)."""
+        now = datetime.now(timezone.utc)
+        challenge = Challenge(
+            id=uuid4(),
+            name="Expired Challenge",
+            description="Test",
+            challenge_type=ChallengeType.DAILY,
+            target_action="solve_problems",
+            target_value=5,
+            xp_reward=50,
+            start_date=now - timedelta(days=2),
+            end_date=now - timedelta(days=1),
+        )
+
+        response = challenge_service._to_challenge_response(challenge)
+
+        assert response.time_remaining is None
 
 
 class TestGamificationService:
