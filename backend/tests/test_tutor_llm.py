@@ -950,3 +950,571 @@ if __name__ == "__main__":
 
         response = tutor_service._generate_fallback_response(ConversationType.GENERAL)
         assert "안녕" in response or "튜터" in response
+
+
+# ============== TutorService Main Methods Tests ==============
+
+
+class TestTutorServiceMainMethods:
+    """Tests for TutorService main business methods."""
+
+    @pytest.fixture
+    def mock_conversation_repo(self):
+        """Create mock conversation repository."""
+        return AsyncMock()
+
+    @pytest.fixture
+    def mock_llm_service(self):
+        """Create mock LLM service."""
+        mock = AsyncMock()
+        mock.generate_response = AsyncMock(return_value="AI 응답입니다.")
+        return mock
+
+    @pytest.fixture
+    def tutor_service(self, mock_conversation_repo, mock_llm_service):
+        """Create TutorService with mocks."""
+        from code_tutor.tutor.application.services import TutorService
+        return TutorService(mock_conversation_repo, mock_llm_service)
+
+    @pytest.fixture
+    def sample_conversation(self):
+        """Create a sample conversation."""
+        from code_tutor.tutor.domain.entities import Conversation
+        from code_tutor.tutor.domain.value_objects import ConversationType
+        user_id = uuid4()
+        conv = Conversation.create(
+            user_id=user_id,
+            conversation_type=ConversationType.GENERAL,
+            title="Test Conversation",
+        )
+        return conv
+
+    @pytest.mark.asyncio
+    async def test_chat_new_conversation(self, tutor_service, mock_conversation_repo, mock_llm_service):
+        """Test chat creates new conversation."""
+        from code_tutor.tutor.application.dto import ChatRequest
+        from code_tutor.tutor.domain.value_objects import ConversationType
+        from code_tutor.tutor.domain.entities import Conversation
+
+        user_id = uuid4()
+        request = ChatRequest(
+            message="안녕하세요",
+            conversation_type=ConversationType.GENERAL,
+        )
+
+        # Mock add returns conversation with ID
+        async def mock_add(conv):
+            return conv
+        mock_conversation_repo.add = mock_add
+
+        result = await tutor_service.chat(user_id, request)
+
+        assert result.is_new_conversation is True
+        assert result.message.role == "assistant"
+        assert result.message.content == "AI 응답입니다."
+
+    @pytest.mark.asyncio
+    async def test_chat_continue_existing_conversation(self, tutor_service, mock_conversation_repo, mock_llm_service, sample_conversation):
+        """Test chat continues existing conversation."""
+        from code_tutor.tutor.application.dto import ChatRequest
+
+        user_id = sample_conversation.user_id
+        request = ChatRequest(
+            message="계속 대화합니다",
+            conversation_id=sample_conversation.id,
+        )
+
+        mock_conversation_repo.get_by_id = AsyncMock(return_value=sample_conversation)
+
+        async def mock_update(conv):
+            return conv
+        mock_conversation_repo.update = mock_update
+
+        result = await tutor_service.chat(user_id, request)
+
+        assert result.is_new_conversation is False
+        assert result.conversation_id == sample_conversation.id
+
+    @pytest.mark.asyncio
+    async def test_chat_conversation_not_found(self, tutor_service, mock_conversation_repo):
+        """Test chat raises error when conversation not found."""
+        from code_tutor.tutor.application.dto import ChatRequest
+        from code_tutor.shared.exceptions import NotFoundError
+
+        user_id = uuid4()
+        fake_conv_id = uuid4()
+        request = ChatRequest(
+            message="Hello",
+            conversation_id=fake_conv_id,
+        )
+
+        mock_conversation_repo.get_by_id = AsyncMock(return_value=None)
+
+        with pytest.raises(NotFoundError):
+            await tutor_service.chat(user_id, request)
+
+    @pytest.mark.asyncio
+    async def test_chat_conversation_wrong_user(self, tutor_service, mock_conversation_repo, sample_conversation):
+        """Test chat raises error when conversation belongs to different user."""
+        from code_tutor.tutor.application.dto import ChatRequest
+        from code_tutor.shared.exceptions import NotFoundError
+
+        wrong_user_id = uuid4()
+        request = ChatRequest(
+            message="Hello",
+            conversation_id=sample_conversation.id,
+        )
+
+        mock_conversation_repo.get_by_id = AsyncMock(return_value=sample_conversation)
+
+        with pytest.raises(NotFoundError):
+            await tutor_service.chat(wrong_user_id, request)
+
+    @pytest.mark.asyncio
+    async def test_chat_with_code_context(self, tutor_service, mock_conversation_repo, mock_llm_service):
+        """Test chat with code context."""
+        from code_tutor.tutor.application.dto import ChatRequest, CodeContextRequest
+        from code_tutor.tutor.domain.value_objects import ConversationType
+
+        user_id = uuid4()
+        code_ctx = CodeContextRequest(
+            code="def foo(): pass",
+            language="python",
+        )
+        request = ChatRequest(
+            message="이 코드를 봐주세요",
+            conversation_type=ConversationType.CODE_REVIEW,
+            code_context=code_ctx,
+        )
+
+        async def mock_add(conv):
+            return conv
+        mock_conversation_repo.add = mock_add
+
+        result = await tutor_service.chat(user_id, request)
+
+        assert result.is_new_conversation is True
+
+    @pytest.mark.asyncio
+    async def test_get_conversation_success(self, tutor_service, mock_conversation_repo, sample_conversation):
+        """Test get_conversation returns conversation."""
+        mock_conversation_repo.get_by_id = AsyncMock(return_value=sample_conversation)
+
+        result = await tutor_service.get_conversation(sample_conversation.user_id, sample_conversation.id)
+
+        assert result.id == sample_conversation.id
+        assert result.is_active is True
+
+    @pytest.mark.asyncio
+    async def test_get_conversation_not_found(self, tutor_service, mock_conversation_repo):
+        """Test get_conversation raises error when not found."""
+        from code_tutor.shared.exceptions import NotFoundError
+
+        mock_conversation_repo.get_by_id = AsyncMock(return_value=None)
+
+        with pytest.raises(NotFoundError):
+            await tutor_service.get_conversation(uuid4(), uuid4())
+
+    @pytest.mark.asyncio
+    async def test_get_conversation_wrong_user(self, tutor_service, mock_conversation_repo, sample_conversation):
+        """Test get_conversation raises error for wrong user."""
+        from code_tutor.shared.exceptions import NotFoundError
+
+        mock_conversation_repo.get_by_id = AsyncMock(return_value=sample_conversation)
+
+        with pytest.raises(NotFoundError):
+            await tutor_service.get_conversation(uuid4(), sample_conversation.id)
+
+    @pytest.mark.asyncio
+    async def test_list_conversations_empty(self, tutor_service, mock_conversation_repo):
+        """Test list_conversations returns empty list."""
+        mock_conversation_repo.get_by_user = AsyncMock(return_value=[])
+
+        result = await tutor_service.list_conversations(uuid4(), limit=20, offset=0)
+
+        assert result == []
+
+    @pytest.mark.asyncio
+    async def test_list_conversations_with_results(self, tutor_service, mock_conversation_repo, sample_conversation):
+        """Test list_conversations returns conversation summaries."""
+        mock_conversation_repo.get_by_user = AsyncMock(return_value=[sample_conversation])
+
+        result = await tutor_service.list_conversations(
+            sample_conversation.user_id, limit=20, offset=0
+        )
+
+        assert len(result) == 1
+        assert result[0].id == sample_conversation.id
+        assert result[0].is_active is True
+
+    @pytest.mark.asyncio
+    async def test_close_conversation_success(self, tutor_service, mock_conversation_repo, sample_conversation):
+        """Test close_conversation closes the conversation."""
+        mock_conversation_repo.get_by_id = AsyncMock(return_value=sample_conversation)
+
+        async def mock_update(conv):
+            return conv
+        mock_conversation_repo.update = mock_update
+
+        result = await tutor_service.close_conversation(sample_conversation.user_id, sample_conversation.id)
+
+        assert result.is_active is False
+
+    @pytest.mark.asyncio
+    async def test_close_conversation_not_found(self, tutor_service, mock_conversation_repo):
+        """Test close_conversation raises error when not found."""
+        from code_tutor.shared.exceptions import NotFoundError
+
+        mock_conversation_repo.get_by_id = AsyncMock(return_value=None)
+
+        with pytest.raises(NotFoundError):
+            await tutor_service.close_conversation(uuid4(), uuid4())
+
+    @pytest.mark.asyncio
+    async def test_close_conversation_wrong_user(self, tutor_service, mock_conversation_repo, sample_conversation):
+        """Test close_conversation raises error for wrong user."""
+        from code_tutor.shared.exceptions import NotFoundError
+
+        mock_conversation_repo.get_by_id = AsyncMock(return_value=sample_conversation)
+
+        with pytest.raises(NotFoundError):
+            await tutor_service.close_conversation(uuid4(), sample_conversation.id)
+
+    @pytest.mark.asyncio
+    async def test_review_code_success(self, tutor_service):
+        """Test review_code returns review response."""
+        from code_tutor.tutor.application.dto import CodeReviewRequest
+
+        request = CodeReviewRequest(
+            code="def foo(x: int) -> int:\n    return x * 2",
+            language="python",
+        )
+
+        result = await tutor_service.review_code(uuid4(), request)
+
+        assert result.overall_score >= 0
+        assert result.overall_score <= 100
+        assert len(result.summary) > 0
+        assert isinstance(result.issues, list)
+        assert isinstance(result.strengths, list)
+        assert isinstance(result.improvements, list)
+
+    @pytest.mark.asyncio
+    async def test_review_code_with_issues(self, tutor_service):
+        """Test review_code detects issues."""
+        from code_tutor.tutor.application.dto import CodeReviewRequest
+
+        request = CodeReviewRequest(
+            code="from os import *\neval('1+1')",
+            language="python",
+        )
+
+        result = await tutor_service.review_code(uuid4(), request)
+
+        # Should have issues for wildcard import and eval
+        assert len(result.issues) >= 2
+        assert result.overall_score < 100
+
+    @pytest.mark.asyncio
+    async def test_generate_response_with_llm_service(self, tutor_service, mock_llm_service, sample_conversation):
+        """Test _generate_response uses LLM service."""
+        sample_conversation.add_user_message("테스트 메시지")
+
+        result = await tutor_service._generate_response(sample_conversation)
+
+        assert result == "AI 응답입니다."
+        mock_llm_service.generate_response.assert_called_once()
+
+    @pytest.mark.asyncio
+    async def test_generate_response_with_code_context(self, tutor_service, mock_llm_service, sample_conversation):
+        """Test _generate_response includes code context."""
+        from code_tutor.tutor.domain.value_objects import CodeContext
+
+        code_ctx = CodeContext(code="x = 1", language="python")
+        sample_conversation.add_user_message("코드 리뷰 부탁", code_context=code_ctx)
+
+        result = await tutor_service._generate_response(sample_conversation)
+
+        assert result == "AI 응답입니다."
+
+    @pytest.mark.asyncio
+    async def test_generate_response_llm_error_fallback(self, tutor_service, mock_llm_service, sample_conversation):
+        """Test _generate_response falls back on LLM error."""
+        from code_tutor.tutor.domain.value_objects import ConversationType
+
+        mock_llm_service.generate_response.side_effect = Exception("LLM Error")
+        sample_conversation.add_user_message("테스트")
+
+        result = await tutor_service._generate_response(sample_conversation)
+
+        # Should return fallback response
+        assert len(result) > 0
+
+    @pytest.mark.asyncio
+    async def test_generate_response_empty_messages(self, tutor_service, sample_conversation):
+        """Test _generate_response with no messages."""
+        result = await tutor_service._generate_response(sample_conversation)
+
+        assert "무엇을 도와드릴까요?" in result
+
+    def test_to_response_conversion(self, tutor_service, sample_conversation):
+        """Test _to_response converts entity to response."""
+        sample_conversation.add_user_message("Hello")
+        sample_conversation.add_assistant_message("Hi!", tokens_used=10)
+
+        result = tutor_service._to_response(sample_conversation)
+
+        assert result.id == sample_conversation.id
+        assert result.user_id == sample_conversation.user_id
+        assert len(result.messages) == 2
+        assert result.total_tokens == 10
+
+    def test_to_summary_conversion(self, tutor_service, sample_conversation):
+        """Test _to_summary converts entity to summary."""
+        sample_conversation.add_user_message("Hello")
+        sample_conversation.add_assistant_message("Hi!")
+
+        result = tutor_service._to_summary(sample_conversation)
+
+        assert result.id == sample_conversation.id
+        assert result.message_count == 2
+        assert result.is_active is True
+
+    def test_message_to_response_without_code_context(self, tutor_service):
+        """Test _message_to_response without code context."""
+        from code_tutor.tutor.domain.entities import Message
+        from code_tutor.tutor.domain.value_objects import MessageRole
+
+        message = Message(
+            conversation_id=uuid4(),
+            role=MessageRole.USER,
+            content="Test message",
+        )
+
+        result = tutor_service._message_to_response(message)
+
+        assert result.content == "Test message"
+        assert result.role == "user"
+        assert result.code_context is None
+
+    def test_message_to_response_with_code_context(self, tutor_service):
+        """Test _message_to_response with code context."""
+        from code_tutor.tutor.domain.entities import Message
+        from code_tutor.tutor.domain.value_objects import MessageRole, CodeContext
+
+        code_ctx = CodeContext(code="x = 1", language="python")
+        message = Message(
+            conversation_id=uuid4(),
+            role=MessageRole.USER,
+            content="Review this",
+            code_context=code_ctx,
+        )
+
+        result = tutor_service._message_to_response(message)
+
+        assert result.code_context is not None
+        assert result.code_context.code == "x = 1"
+        assert result.code_context.language == "python"
+
+
+# ============== Tutor Routes Unit Tests ==============
+
+
+class TestTutorRoutesUnit:
+    """Unit tests for tutor routes."""
+
+    @pytest.fixture
+    def mock_tutor_service(self):
+        """Create mock tutor service."""
+        return AsyncMock()
+
+    @pytest.fixture
+    def mock_user(self):
+        """Create mock user response."""
+        from code_tutor.identity.application.dto import UserResponse
+        mock = MagicMock(spec=UserResponse)
+        mock.id = uuid4()
+        mock.email = "test@example.com"
+        mock.username = "testuser"
+        return mock
+
+    @pytest.mark.asyncio
+    async def test_get_conversation_repository(self):
+        """Test get_conversation_repository dependency."""
+        from code_tutor.tutor.interface.routes import get_conversation_repository
+        from code_tutor.tutor.infrastructure.repository import SQLAlchemyConversationRepository
+
+        mock_session = AsyncMock()
+        repo = await get_conversation_repository(mock_session)
+
+        assert isinstance(repo, SQLAlchemyConversationRepository)
+
+    @pytest.mark.asyncio
+    async def test_get_tutor_service(self):
+        """Test get_tutor_service dependency."""
+        from code_tutor.tutor.interface.routes import get_tutor_service
+        from code_tutor.tutor.application.services import TutorService
+
+        mock_repo = AsyncMock()
+        service = await get_tutor_service(mock_repo)
+
+        assert isinstance(service, TutorService)
+
+    @pytest.mark.asyncio
+    async def test_chat_route_success(self, mock_tutor_service, mock_user):
+        """Test chat route success."""
+        from code_tutor.tutor.interface.routes import chat
+        from code_tutor.tutor.application.dto import ChatRequest, ChatResponse, MessageResponse
+        from datetime import datetime
+
+        request = ChatRequest(message="Hello")
+        mock_response = ChatResponse(
+            conversation_id=uuid4(),
+            message=MessageResponse(
+                id=uuid4(),
+                role="assistant",
+                content="Hi there!",
+                tokens_used=10,
+                created_at=datetime.now(),
+            ),
+            is_new_conversation=True,
+        )
+        mock_tutor_service.chat = AsyncMock(return_value=mock_response)
+
+        result = await chat(request, mock_tutor_service, mock_user)
+
+        assert result.is_new_conversation is True
+        mock_tutor_service.chat.assert_called_once_with(mock_user.id, request)
+
+    @pytest.mark.asyncio
+    async def test_chat_route_app_exception(self, mock_tutor_service, mock_user):
+        """Test chat route handles AppException."""
+        from code_tutor.tutor.interface.routes import chat
+        from code_tutor.tutor.application.dto import ChatRequest
+        from code_tutor.shared.exceptions import AppException
+        from fastapi import HTTPException
+
+        request = ChatRequest(message="Hello")
+        mock_tutor_service.chat = AsyncMock(side_effect=AppException("Test error"))
+
+        with pytest.raises(HTTPException) as exc_info:
+            await chat(request, mock_tutor_service, mock_user)
+
+        assert exc_info.value.status_code == 400
+
+    @pytest.mark.asyncio
+    async def test_list_conversations_route(self, mock_tutor_service, mock_user):
+        """Test list_conversations route."""
+        from code_tutor.tutor.interface.routes import list_conversations
+
+        mock_tutor_service.list_conversations = AsyncMock(return_value=[])
+
+        result = await list_conversations(mock_tutor_service, mock_user, limit=20, offset=0)
+
+        assert result == []
+        mock_tutor_service.list_conversations.assert_called_once_with(mock_user.id, 20, 0)
+
+    @pytest.mark.asyncio
+    async def test_get_conversation_route_success(self, mock_tutor_service, mock_user):
+        """Test get_conversation route success."""
+        from code_tutor.tutor.interface.routes import get_conversation
+        from code_tutor.tutor.application.dto import ConversationResponse
+        from datetime import datetime
+
+        conv_id = uuid4()
+        mock_response = ConversationResponse(
+            id=conv_id,
+            user_id=mock_user.id,
+            problem_id=None,
+            conversation_type="general",
+            title="Test",
+            messages=[],
+            total_tokens=0,
+            is_active=True,
+            created_at=datetime.now(),
+            updated_at=datetime.now(),
+        )
+        mock_tutor_service.get_conversation = AsyncMock(return_value=mock_response)
+
+        result = await get_conversation(conv_id, mock_tutor_service, mock_user)
+
+        assert result.id == conv_id
+        mock_tutor_service.get_conversation.assert_called_once_with(mock_user.id, conv_id)
+
+    @pytest.mark.asyncio
+    async def test_get_conversation_route_not_found(self, mock_tutor_service, mock_user):
+        """Test get_conversation route when not found."""
+        from code_tutor.tutor.interface.routes import get_conversation
+        from code_tutor.shared.exceptions import AppException
+        from fastapi import HTTPException
+
+        conv_id = uuid4()
+        mock_tutor_service.get_conversation = AsyncMock(side_effect=AppException("Not found"))
+
+        with pytest.raises(HTTPException) as exc_info:
+            await get_conversation(conv_id, mock_tutor_service, mock_user)
+
+        assert exc_info.value.status_code == 404
+
+    @pytest.mark.asyncio
+    async def test_close_conversation_route_success(self, mock_tutor_service, mock_user):
+        """Test close_conversation route success."""
+        from code_tutor.tutor.interface.routes import close_conversation
+        from code_tutor.tutor.application.dto import ConversationResponse
+        from datetime import datetime
+
+        conv_id = uuid4()
+        mock_response = ConversationResponse(
+            id=conv_id,
+            user_id=mock_user.id,
+            problem_id=None,
+            conversation_type="general",
+            title="Test",
+            messages=[],
+            total_tokens=0,
+            is_active=False,
+            created_at=datetime.now(),
+            updated_at=datetime.now(),
+        )
+        mock_tutor_service.close_conversation = AsyncMock(return_value=mock_response)
+
+        result = await close_conversation(conv_id, mock_tutor_service, mock_user)
+
+        assert result.is_active is False
+        mock_tutor_service.close_conversation.assert_called_once_with(mock_user.id, conv_id)
+
+    @pytest.mark.asyncio
+    async def test_close_conversation_route_not_found(self, mock_tutor_service, mock_user):
+        """Test close_conversation route when not found."""
+        from code_tutor.tutor.interface.routes import close_conversation
+        from code_tutor.shared.exceptions import AppException
+        from fastapi import HTTPException
+
+        conv_id = uuid4()
+        mock_tutor_service.close_conversation = AsyncMock(side_effect=AppException("Not found"))
+
+        with pytest.raises(HTTPException) as exc_info:
+            await close_conversation(conv_id, mock_tutor_service, mock_user)
+
+        assert exc_info.value.status_code == 404
+
+    @pytest.mark.asyncio
+    async def test_review_code_route(self, mock_tutor_service, mock_user):
+        """Test review_code route."""
+        from code_tutor.tutor.interface.routes import review_code
+        from code_tutor.tutor.application.dto import CodeReviewRequest, CodeReviewResponse
+
+        request = CodeReviewRequest(code="x = 1", language="python")
+        mock_response = CodeReviewResponse(
+            overall_score=80,
+            summary="Good code",
+            issues=[],
+            strengths=["Clean"],
+            improvements=["Add docstring"],
+        )
+        mock_tutor_service.review_code = AsyncMock(return_value=mock_response)
+
+        result = await review_code(request, mock_tutor_service, mock_user)
+
+        assert result.overall_score == 80
+        mock_tutor_service.review_code.assert_called_once_with(mock_user.id, request)
