@@ -462,3 +462,30 @@ class TestUtcNow:
         now = utc_now()
         after = datetime.now(timezone.utc)
         assert before <= now <= after
+
+
+class TestGenerateUuid:
+    """Tests for generate_uuid helper function in models."""
+
+    def test_generate_uuid_returns_string(self):
+        """Test generate_uuid returns a valid UUID string."""
+        from code_tutor.typing_practice.infrastructure.models import generate_uuid
+
+        result = generate_uuid()
+        assert isinstance(result, str)
+        assert len(result) == 36  # UUID string format
+        # Validate it's a proper UUID format (8-4-4-4-12)
+        parts = result.split("-")
+        assert len(parts) == 5
+        assert len(parts[0]) == 8
+        assert len(parts[1]) == 4
+        assert len(parts[2]) == 4
+        assert len(parts[3]) == 4
+        assert len(parts[4]) == 12
+
+    def test_generate_uuid_is_unique(self):
+        """Test generate_uuid returns unique values."""
+        from code_tutor.typing_practice.infrastructure.models import generate_uuid
+
+        uuids = [generate_uuid() for _ in range(100)]
+        assert len(uuids) == len(set(uuids))  # All unique
