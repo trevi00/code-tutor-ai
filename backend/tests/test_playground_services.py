@@ -606,3 +606,721 @@ class TestTemplateService:
 
         assert result.total == 1
         mock_template_repo.get_popular.assert_called_once_with(10)
+
+
+# ============== Route Tests ==============
+
+
+class TestPlaygroundRoutesUnit:
+    """Unit tests for playground routes."""
+
+    def test_router_has_expected_routes(self):
+        """Test that router has all expected routes configured."""
+        from code_tutor.playground.interface.routes import router
+
+        route_paths = [r.path for r in router.routes]
+
+        expected_paths = [
+            "/playground",
+            "/playground/mine",
+            "/playground/public",
+            "/playground/popular",
+            "/playground/search",
+            "/playground/languages",
+            "/playground/default-code",
+            "/playground/share/{share_code}",
+            "/playground/{playground_id}",
+            "/playground/{playground_id}/execute",
+            "/playground/{playground_id}/fork",
+            "/playground/{playground_id}/regenerate-share-code",
+            "/playground/templates/list",
+            "/playground/templates/popular",
+            "/playground/templates/{template_id}",
+        ]
+
+        for path in expected_paths:
+            assert path in route_paths, f"Missing route: {path}"
+
+    def test_router_prefix(self):
+        """Test router has correct prefix."""
+        from code_tutor.playground.interface.routes import router
+        assert router.prefix == "/playground"
+
+    def test_router_tags(self):
+        """Test router has correct tags."""
+        from code_tutor.playground.interface.routes import router
+        assert "Playground" in router.tags
+
+
+class TestGetPlaygroundService:
+    """Tests for get_playground_service dependency."""
+
+    @pytest.mark.asyncio
+    async def test_get_playground_service_returns_service(self):
+        """Test that get_playground_service returns a PlaygroundService instance."""
+        from code_tutor.playground.interface.routes import get_playground_service
+        from code_tutor.playground.application.services import PlaygroundService
+
+        mock_db = MagicMock()
+        service = await get_playground_service(mock_db)
+
+        assert isinstance(service, PlaygroundService)
+
+
+class TestGetTemplateService:
+    """Tests for get_template_service dependency."""
+
+    @pytest.mark.asyncio
+    async def test_get_template_service_returns_service(self):
+        """Test that get_template_service returns a TemplateService instance."""
+        from code_tutor.playground.interface.routes import get_template_service
+        from code_tutor.playground.application.services import TemplateService
+
+        mock_db = MagicMock()
+        service = await get_template_service(mock_db)
+
+        assert isinstance(service, TemplateService)
+
+
+class TestCreatePlaygroundRoute:
+    """Tests for create_playground route."""
+
+    @pytest.mark.asyncio
+    async def test_create_playground_success(
+        self, playground_service, mock_playground_repo
+    ):
+        """Test create_playground route success."""
+        from code_tutor.playground.interface.routes import create_playground
+        from code_tutor.playground.application.dto import PlaygroundDetailResponse
+        from code_tutor.identity.application.dto import UserResponse
+
+        user_id = uuid4()
+        request = CreatePlaygroundRequest(
+            title="Test",
+            code="print('hello')",
+            language="python",
+        )
+
+        async def save_playground(playground):
+            return playground
+
+        mock_playground_repo.save = AsyncMock(side_effect=save_playground)
+
+        mock_user = MagicMock(spec=UserResponse)
+        mock_user.id = user_id
+
+        result = await create_playground(
+            request=request,
+            current_user=mock_user,
+            service=playground_service,
+        )
+
+        assert isinstance(result, PlaygroundDetailResponse)
+        assert result.title == "Test"
+
+
+class TestListMyPlaygroundsRoute:
+    """Tests for list_my_playgrounds route."""
+
+    @pytest.mark.asyncio
+    async def test_list_my_playgrounds_success(
+        self, playground_service, mock_playground_repo, sample_playground
+    ):
+        """Test list_my_playgrounds route success."""
+        from code_tutor.playground.interface.routes import list_my_playgrounds
+        from code_tutor.playground.application.dto import PlaygroundListResponse
+        from code_tutor.identity.application.dto import UserResponse
+
+        mock_playground_repo.get_user_playgrounds = AsyncMock(
+            return_value=[sample_playground]
+        )
+
+        mock_user = MagicMock(spec=UserResponse)
+        mock_user.id = sample_playground.owner_id
+
+        result = await list_my_playgrounds(
+            limit=20,
+            offset=0,
+            current_user=mock_user,
+            service=playground_service,
+        )
+
+        assert isinstance(result, PlaygroundListResponse)
+        assert result.total == 1
+
+
+class TestListPublicPlaygroundsRoute:
+    """Tests for list_public_playgrounds route."""
+
+    @pytest.mark.asyncio
+    async def test_list_public_playgrounds_success(
+        self, playground_service, mock_playground_repo, sample_playground
+    ):
+        """Test list_public_playgrounds route success."""
+        from code_tutor.playground.interface.routes import list_public_playgrounds
+        from code_tutor.playground.application.dto import PlaygroundListResponse
+
+        mock_playground_repo.get_public_playgrounds = AsyncMock(
+            return_value=[sample_playground]
+        )
+
+        result = await list_public_playgrounds(
+            language=None,
+            limit=20,
+            offset=0,
+            service=playground_service,
+        )
+
+        assert isinstance(result, PlaygroundListResponse)
+        assert result.total == 1
+
+
+class TestListPopularPlaygroundsRoute:
+    """Tests for list_popular_playgrounds route."""
+
+    @pytest.mark.asyncio
+    async def test_list_popular_playgrounds_success(
+        self, playground_service, mock_playground_repo, sample_playground
+    ):
+        """Test list_popular_playgrounds route success."""
+        from code_tutor.playground.interface.routes import list_popular_playgrounds
+        from code_tutor.playground.application.dto import PlaygroundListResponse
+
+        mock_playground_repo.get_popular_playgrounds = AsyncMock(
+            return_value=[sample_playground]
+        )
+
+        result = await list_popular_playgrounds(
+            limit=10,
+            service=playground_service,
+        )
+
+        assert isinstance(result, PlaygroundListResponse)
+        assert result.total == 1
+
+
+class TestSearchPlaygroundsRoute:
+    """Tests for search_playgrounds route."""
+
+    @pytest.mark.asyncio
+    async def test_search_playgrounds_success(
+        self, playground_service, mock_playground_repo, sample_playground
+    ):
+        """Test search_playgrounds route success."""
+        from code_tutor.playground.interface.routes import search_playgrounds
+        from code_tutor.playground.application.dto import PlaygroundListResponse
+
+        mock_playground_repo.search_playgrounds = AsyncMock(
+            return_value=[sample_playground]
+        )
+
+        result = await search_playgrounds(
+            q="test",
+            language=None,
+            limit=20,
+            service=playground_service,
+        )
+
+        assert isinstance(result, PlaygroundListResponse)
+        assert result.total == 1
+
+
+class TestListLanguagesRoute:
+    """Tests for list_languages route."""
+
+    @pytest.mark.asyncio
+    async def test_list_languages_success(self, playground_service):
+        """Test list_languages route success."""
+        from code_tutor.playground.interface.routes import list_languages
+        from code_tutor.playground.application.dto import LanguagesResponse
+
+        result = await list_languages(service=playground_service)
+
+        assert isinstance(result, LanguagesResponse)
+        assert len(result.languages) > 0
+
+
+class TestGetDefaultCodeRoute:
+    """Tests for get_default_code route."""
+
+    @pytest.mark.asyncio
+    async def test_get_default_code_success(self, playground_service):
+        """Test get_default_code route success."""
+        from code_tutor.playground.interface.routes import get_default_code
+
+        result = await get_default_code(
+            language="python",
+            service=playground_service,
+        )
+
+        assert "language" in result
+        assert "code" in result
+        assert result["language"] == "python"
+
+
+class TestGetPlaygroundByShareCodeRoute:
+    """Tests for get_playground_by_share_code route."""
+
+    @pytest.mark.asyncio
+    async def test_get_playground_by_share_code_found(
+        self, playground_service, mock_playground_repo, sample_playground
+    ):
+        """Test get_playground_by_share_code route when found."""
+        from code_tutor.playground.interface.routes import get_playground_by_share_code
+        from code_tutor.playground.application.dto import PlaygroundDetailResponse
+
+        mock_playground_repo.get_by_share_code = AsyncMock(return_value=sample_playground)
+
+        result = await get_playground_by_share_code(
+            share_code="abc123",
+            service=playground_service,
+        )
+
+        assert isinstance(result, PlaygroundDetailResponse)
+        assert result.id == sample_playground.id
+
+    @pytest.mark.asyncio
+    async def test_get_playground_by_share_code_not_found(
+        self, playground_service, mock_playground_repo
+    ):
+        """Test get_playground_by_share_code route when not found."""
+        from code_tutor.playground.interface.routes import get_playground_by_share_code
+        from fastapi import HTTPException
+
+        mock_playground_repo.get_by_share_code = AsyncMock(return_value=None)
+
+        with pytest.raises(HTTPException) as exc_info:
+            await get_playground_by_share_code(
+                share_code="invalid",
+                service=playground_service,
+            )
+
+        assert exc_info.value.status_code == 404
+
+
+class TestGetPlaygroundRoute:
+    """Tests for get_playground route."""
+
+    @pytest.mark.asyncio
+    async def test_get_playground_found(
+        self, playground_service, mock_playground_repo, sample_playground
+    ):
+        """Test get_playground route when found."""
+        from code_tutor.playground.interface.routes import get_playground
+        from code_tutor.playground.application.dto import PlaygroundDetailResponse
+        from code_tutor.identity.application.dto import UserResponse
+
+        mock_playground_repo.get_by_id = AsyncMock(return_value=sample_playground)
+
+        mock_user = MagicMock(spec=UserResponse)
+        mock_user.id = sample_playground.owner_id
+
+        result = await get_playground(
+            playground_id=sample_playground.id,
+            current_user=mock_user,
+            service=playground_service,
+        )
+
+        assert isinstance(result, PlaygroundDetailResponse)
+        assert result.id == sample_playground.id
+
+    @pytest.mark.asyncio
+    async def test_get_playground_not_found(
+        self, playground_service, mock_playground_repo
+    ):
+        """Test get_playground route when not found."""
+        from code_tutor.playground.interface.routes import get_playground
+        from code_tutor.identity.application.dto import UserResponse
+        from fastapi import HTTPException
+
+        mock_playground_repo.get_by_id = AsyncMock(return_value=None)
+
+        mock_user = MagicMock(spec=UserResponse)
+        mock_user.id = uuid4()
+
+        with pytest.raises(HTTPException) as exc_info:
+            await get_playground(
+                playground_id=uuid4(),
+                current_user=mock_user,
+                service=playground_service,
+            )
+
+        assert exc_info.value.status_code == 404
+
+    @pytest.mark.asyncio
+    async def test_get_playground_forbidden(
+        self, playground_service, mock_playground_repo
+    ):
+        """Test get_playground route when forbidden."""
+        from code_tutor.playground.interface.routes import get_playground
+        from code_tutor.identity.application.dto import UserResponse
+        from fastapi import HTTPException
+
+        owner_id = uuid4()
+        private_playground = Playground.create(
+            owner_id=owner_id,
+            title="Private",
+            code="code",
+            language=PlaygroundLanguage.PYTHON,
+            visibility=PlaygroundVisibility.PRIVATE,
+        )
+        mock_playground_repo.get_by_id = AsyncMock(return_value=private_playground)
+
+        mock_user = MagicMock(spec=UserResponse)
+        mock_user.id = uuid4()  # Different user
+
+        with pytest.raises(HTTPException) as exc_info:
+            await get_playground(
+                playground_id=private_playground.id,
+                current_user=mock_user,
+                service=playground_service,
+            )
+
+        assert exc_info.value.status_code == 403
+
+
+class TestUpdatePlaygroundRoute:
+    """Tests for update_playground route."""
+
+    @pytest.mark.asyncio
+    async def test_update_playground_success(
+        self, playground_service, mock_playground_repo, sample_playground
+    ):
+        """Test update_playground route success."""
+        from code_tutor.playground.interface.routes import update_playground
+        from code_tutor.playground.application.dto import PlaygroundDetailResponse
+        from code_tutor.identity.application.dto import UserResponse
+
+        mock_playground_repo.get_by_id = AsyncMock(return_value=sample_playground)
+
+        async def save_playground(playground):
+            return playground
+
+        mock_playground_repo.save = AsyncMock(side_effect=save_playground)
+
+        request = UpdatePlaygroundRequest(title="Updated")
+
+        mock_user = MagicMock(spec=UserResponse)
+        mock_user.id = sample_playground.owner_id
+
+        result = await update_playground(
+            playground_id=sample_playground.id,
+            request=request,
+            current_user=mock_user,
+            service=playground_service,
+        )
+
+        assert isinstance(result, PlaygroundDetailResponse)
+        assert result.title == "Updated"
+
+    @pytest.mark.asyncio
+    async def test_update_playground_not_found(
+        self, playground_service, mock_playground_repo
+    ):
+        """Test update_playground route when not found."""
+        from code_tutor.playground.interface.routes import update_playground
+        from code_tutor.identity.application.dto import UserResponse
+        from fastapi import HTTPException
+
+        mock_playground_repo.get_by_id = AsyncMock(return_value=None)
+
+        mock_user = MagicMock(spec=UserResponse)
+        mock_user.id = uuid4()
+
+        with pytest.raises(HTTPException) as exc_info:
+            await update_playground(
+                playground_id=uuid4(),
+                request=UpdatePlaygroundRequest(title="New"),
+                current_user=mock_user,
+                service=playground_service,
+            )
+
+        assert exc_info.value.status_code == 404
+
+    @pytest.mark.asyncio
+    async def test_update_playground_forbidden(
+        self, playground_service, mock_playground_repo, sample_playground
+    ):
+        """Test update_playground route when forbidden."""
+        from code_tutor.playground.interface.routes import update_playground
+        from code_tutor.identity.application.dto import UserResponse
+        from fastapi import HTTPException
+
+        mock_playground_repo.get_by_id = AsyncMock(return_value=sample_playground)
+
+        mock_user = MagicMock(spec=UserResponse)
+        mock_user.id = uuid4()  # Different user
+
+        with pytest.raises(HTTPException) as exc_info:
+            await update_playground(
+                playground_id=sample_playground.id,
+                request=UpdatePlaygroundRequest(title="New"),
+                current_user=mock_user,
+                service=playground_service,
+            )
+
+        assert exc_info.value.status_code == 403
+
+
+class TestDeletePlaygroundRoute:
+    """Tests for delete_playground route."""
+
+    @pytest.mark.asyncio
+    async def test_delete_playground_success(
+        self, playground_service, mock_playground_repo, sample_playground
+    ):
+        """Test delete_playground route success."""
+        from code_tutor.playground.interface.routes import delete_playground
+        from code_tutor.identity.application.dto import UserResponse
+
+        mock_playground_repo.get_by_id = AsyncMock(return_value=sample_playground)
+        mock_playground_repo.delete = AsyncMock()
+
+        mock_user = MagicMock(spec=UserResponse)
+        mock_user.id = sample_playground.owner_id
+
+        result = await delete_playground(
+            playground_id=sample_playground.id,
+            current_user=mock_user,
+            service=playground_service,
+        )
+
+        assert result == {"status": "deleted"}
+
+    @pytest.mark.asyncio
+    async def test_delete_playground_not_found(
+        self, playground_service, mock_playground_repo
+    ):
+        """Test delete_playground route when not found."""
+        from code_tutor.playground.interface.routes import delete_playground
+        from code_tutor.identity.application.dto import UserResponse
+        from fastapi import HTTPException
+
+        mock_playground_repo.get_by_id = AsyncMock(return_value=None)
+
+        mock_user = MagicMock(spec=UserResponse)
+        mock_user.id = uuid4()
+
+        with pytest.raises(HTTPException) as exc_info:
+            await delete_playground(
+                playground_id=uuid4(),
+                current_user=mock_user,
+                service=playground_service,
+            )
+
+        assert exc_info.value.status_code == 404
+
+    @pytest.mark.asyncio
+    async def test_delete_playground_forbidden(
+        self, playground_service, mock_playground_repo, sample_playground
+    ):
+        """Test delete_playground route when forbidden."""
+        from code_tutor.playground.interface.routes import delete_playground
+        from code_tutor.identity.application.dto import UserResponse
+        from fastapi import HTTPException
+
+        mock_playground_repo.get_by_id = AsyncMock(return_value=sample_playground)
+
+        mock_user = MagicMock(spec=UserResponse)
+        mock_user.id = uuid4()  # Different user
+
+        with pytest.raises(HTTPException) as exc_info:
+            await delete_playground(
+                playground_id=sample_playground.id,
+                current_user=mock_user,
+                service=playground_service,
+            )
+
+        assert exc_info.value.status_code == 403
+
+
+class TestForkPlaygroundRoute:
+    """Tests for fork_playground route."""
+
+    @pytest.mark.asyncio
+    async def test_fork_playground_success(
+        self, playground_service, mock_playground_repo, sample_playground
+    ):
+        """Test fork_playground route success."""
+        from code_tutor.playground.interface.routes import fork_playground
+        from code_tutor.playground.application.dto import PlaygroundDetailResponse
+        from code_tutor.identity.application.dto import UserResponse
+
+        mock_playground_repo.get_by_id = AsyncMock(return_value=sample_playground)
+
+        async def save_playground(playground):
+            return playground
+
+        mock_playground_repo.save = AsyncMock(side_effect=save_playground)
+
+        mock_user = MagicMock(spec=UserResponse)
+        mock_user.id = uuid4()
+
+        result = await fork_playground(
+            playground_id=sample_playground.id,
+            request=None,
+            current_user=mock_user,
+            service=playground_service,
+        )
+
+        assert isinstance(result, PlaygroundDetailResponse)
+        assert result.is_forked is True
+
+    @pytest.mark.asyncio
+    async def test_fork_playground_not_found(
+        self, playground_service, mock_playground_repo
+    ):
+        """Test fork_playground route when not found."""
+        from code_tutor.playground.interface.routes import fork_playground
+        from code_tutor.identity.application.dto import UserResponse
+        from fastapi import HTTPException
+
+        mock_playground_repo.get_by_id = AsyncMock(return_value=None)
+
+        mock_user = MagicMock(spec=UserResponse)
+        mock_user.id = uuid4()
+
+        with pytest.raises(HTTPException) as exc_info:
+            await fork_playground(
+                playground_id=uuid4(),
+                request=None,
+                current_user=mock_user,
+                service=playground_service,
+            )
+
+        assert exc_info.value.status_code == 404
+
+
+class TestRegenerateShareCodeRoute:
+    """Tests for regenerate_share_code route."""
+
+    @pytest.mark.asyncio
+    async def test_regenerate_share_code_success(
+        self, playground_service, mock_playground_repo, sample_playground
+    ):
+        """Test regenerate_share_code route success."""
+        from code_tutor.playground.interface.routes import regenerate_share_code
+        from code_tutor.identity.application.dto import UserResponse
+
+        mock_playground_repo.get_by_id = AsyncMock(return_value=sample_playground)
+
+        async def save_playground(playground):
+            return playground
+
+        mock_playground_repo.save = AsyncMock(side_effect=save_playground)
+
+        mock_user = MagicMock(spec=UserResponse)
+        mock_user.id = sample_playground.owner_id
+
+        result = await regenerate_share_code(
+            playground_id=sample_playground.id,
+            current_user=mock_user,
+            service=playground_service,
+        )
+
+        assert "share_code" in result
+
+    @pytest.mark.asyncio
+    async def test_regenerate_share_code_not_found(
+        self, playground_service, mock_playground_repo
+    ):
+        """Test regenerate_share_code route when not found."""
+        from code_tutor.playground.interface.routes import regenerate_share_code
+        from code_tutor.identity.application.dto import UserResponse
+        from fastapi import HTTPException
+
+        mock_playground_repo.get_by_id = AsyncMock(return_value=None)
+
+        mock_user = MagicMock(spec=UserResponse)
+        mock_user.id = uuid4()
+
+        with pytest.raises(HTTPException) as exc_info:
+            await regenerate_share_code(
+                playground_id=uuid4(),
+                current_user=mock_user,
+                service=playground_service,
+            )
+
+        assert exc_info.value.status_code == 404
+
+
+class TestTemplateRoutesUnit:
+    """Tests for template routes."""
+
+    @pytest.mark.asyncio
+    async def test_list_templates_success(
+        self, template_service, mock_template_repo, sample_template
+    ):
+        """Test list_templates route success."""
+        from code_tutor.playground.interface.routes import list_templates
+        from code_tutor.playground.application.dto import TemplateListResponse
+
+        mock_template_repo.get_all = AsyncMock(return_value=[sample_template])
+
+        result = await list_templates(
+            category=None,
+            language=None,
+            service=template_service,
+        )
+
+        assert isinstance(result, TemplateListResponse)
+        assert result.total == 1
+
+    @pytest.mark.asyncio
+    async def test_list_popular_templates_success(
+        self, template_service, mock_template_repo, sample_template
+    ):
+        """Test list_popular_templates route success."""
+        from code_tutor.playground.interface.routes import list_popular_templates
+        from code_tutor.playground.application.dto import TemplateListResponse
+
+        mock_template_repo.get_popular = AsyncMock(return_value=[sample_template])
+
+        result = await list_popular_templates(
+            limit=10,
+            service=template_service,
+        )
+
+        assert isinstance(result, TemplateListResponse)
+        assert result.total == 1
+
+    @pytest.mark.asyncio
+    async def test_get_template_found(
+        self, template_service, mock_template_repo, sample_template
+    ):
+        """Test get_template route when found."""
+        from code_tutor.playground.interface.routes import get_template
+        from code_tutor.playground.application.dto import TemplateResponse
+
+        mock_template_repo.get_by_id = AsyncMock(return_value=sample_template)
+
+        async def save_template(template):
+            return template
+
+        mock_template_repo.save = AsyncMock(side_effect=save_template)
+
+        result = await get_template(
+            template_id=sample_template.id,
+            service=template_service,
+        )
+
+        assert isinstance(result, TemplateResponse)
+        assert result.id == sample_template.id
+
+    @pytest.mark.asyncio
+    async def test_get_template_not_found(
+        self, template_service, mock_template_repo
+    ):
+        """Test get_template route when not found."""
+        from code_tutor.playground.interface.routes import get_template
+        from fastapi import HTTPException
+
+        mock_template_repo.get_by_id = AsyncMock(return_value=None)
+
+        with pytest.raises(HTTPException) as exc_info:
+            await get_template(
+                template_id=uuid4(),
+                service=template_service,
+            )
+
+        assert exc_info.value.status_code == 404
