@@ -977,3 +977,327 @@ class TestGetLeaderboardRoute:
             assert len(result.entries) == 1
             assert result.entries[0].rank == 1
             assert result.entries[0].best_wpm == 100.0
+
+
+# ============== Complete Attempt XP Tests ==============
+
+
+class TestCompleteAttemptXPRoutes:
+    """Tests for complete_attempt XP awarding logic."""
+
+    @pytest.fixture
+    def mock_typing_service(self):
+        """Create mock typing service."""
+        return AsyncMock()
+
+    @pytest.fixture
+    def mock_xp_service(self):
+        """Create mock XP service."""
+        mock = AsyncMock()
+        mock.add_xp = AsyncMock()
+        return mock
+
+    @pytest.fixture
+    def mock_user(self):
+        """Create mock user."""
+        from code_tutor.identity.application.dto import UserResponse
+        mock = MagicMock(spec=UserResponse)
+        mock.id = uuid4()
+        return mock
+
+    @pytest.fixture
+    def mock_db(self):
+        """Create mock database session."""
+        mock = AsyncMock()
+        mock.commit = AsyncMock()
+        return mock
+
+    @pytest.mark.asyncio
+    async def test_complete_attempt_high_accuracy_xp(
+        self, mock_typing_service, mock_xp_service, mock_user, mock_db
+    ):
+        """Test that high accuracy awards bonus XP."""
+        from datetime import datetime
+        from code_tutor.typing_practice.interface.routes import complete_attempt
+        from code_tutor.typing_practice.application.dto import (
+            CompleteAttemptRequest,
+            TypingAttemptResponse,
+            UserProgressResponse,
+        )
+        from code_tutor.typing_practice.domain.value_objects import AttemptStatus
+        from code_tutor.shared.constants import TypingPractice as TypingConstants
+
+        attempt_id = uuid4()
+        exercise_id = uuid4()
+
+        # Mock attempt response
+        mock_response = TypingAttemptResponse(
+            id=attempt_id,
+            exercise_id=exercise_id,
+            user_id=mock_user.id,
+            attempt_number=1,
+            accuracy=98.0,  # High accuracy
+            wpm=50.0,
+            time_seconds=60.0,
+            status=AttemptStatus.COMPLETED,
+            started_at=datetime.now(),
+            completed_at=datetime.now(),
+        )
+        mock_typing_service.complete_attempt = AsyncMock(return_value=mock_response)
+
+        # Mock progress (not mastered yet)
+        mock_progress = UserProgressResponse(
+            user_id=mock_user.id,
+            exercise_id=exercise_id,
+            completed_attempts=3,
+            required_completions=5,
+            best_accuracy=98.0,
+            best_wpm=55.0,
+            total_time_seconds=300.0,
+            is_mastered=False,
+            attempts=[],
+        )
+        mock_typing_service.get_user_progress = AsyncMock(return_value=mock_progress)
+
+        # Request with high accuracy (>= 95%)
+        request = CompleteAttemptRequest(
+            user_code="print('hello')",
+            accuracy=98.0,  # High accuracy
+            wpm=50.0,
+            time_seconds=60.0,
+        )
+
+        result = await complete_attempt(
+            attempt_id=attempt_id,
+            request=request,
+            current_user=mock_user,
+            service=mock_typing_service,
+            xp_service=mock_xp_service,
+            db=mock_db,
+        )
+
+        # Verify high accuracy XP was awarded
+        xp_calls = mock_xp_service.add_xp.call_args_list
+        xp_types = [call[0][1] for call in xp_calls]
+        assert "typing_attempt_completed" in xp_types
+        assert "typing_high_accuracy" in xp_types
+
+    @pytest.mark.asyncio
+    async def test_complete_attempt_mastery_xp(
+        self, mock_typing_service, mock_xp_service, mock_user, mock_db
+    ):
+        """Test that reaching mastery awards bonus XP."""
+        from datetime import datetime
+        from code_tutor.typing_practice.interface.routes import complete_attempt
+        from code_tutor.typing_practice.application.dto import (
+            CompleteAttemptRequest,
+            TypingAttemptResponse,
+            UserProgressResponse,
+        )
+        from code_tutor.typing_practice.domain.value_objects import AttemptStatus
+        from code_tutor.shared.constants import TypingPractice as TypingConstants
+
+        attempt_id = uuid4()
+        exercise_id = uuid4()
+
+        # Mock attempt response
+        mock_response = TypingAttemptResponse(
+            id=attempt_id,
+            exercise_id=exercise_id,
+            user_id=mock_user.id,
+            attempt_number=5,
+            accuracy=90.0,
+            wpm=50.0,
+            time_seconds=60.0,
+            status=AttemptStatus.COMPLETED,
+            started_at=datetime.now(),
+            completed_at=datetime.now(),
+        )
+        mock_typing_service.complete_attempt = AsyncMock(return_value=mock_response)
+
+        # Mock progress - just reached mastery (5 completions)
+        mock_progress = UserProgressResponse(
+            user_id=mock_user.id,
+            exercise_id=exercise_id,
+            completed_attempts=TypingConstants.MASTERY_THRESHOLD,  # 5
+            required_completions=5,
+            best_accuracy=92.0,
+            best_wpm=55.0,
+            total_time_seconds=300.0,
+            is_mastered=True,
+            attempts=[],
+        )
+        mock_typing_service.get_user_progress = AsyncMock(return_value=mock_progress)
+
+        request = CompleteAttemptRequest(
+            user_code="print('hello')",
+            accuracy=90.0,
+            wpm=50.0,
+            time_seconds=60.0,
+        )
+
+        result = await complete_attempt(
+            attempt_id=attempt_id,
+            request=request,
+            current_user=mock_user,
+            service=mock_typing_service,
+            xp_service=mock_xp_service,
+            db=mock_db,
+        )
+
+        # Verify mastery XP was awarded
+        xp_calls = mock_xp_service.add_xp.call_args_list
+        xp_types = [call[0][1] for call in xp_calls]
+        assert "typing_attempt_completed" in xp_types
+        assert "typing_exercise_mastered" in xp_types
+
+    @pytest.mark.asyncio
+    async def test_complete_attempt_xp_exception_handled(
+        self, mock_typing_service, mock_xp_service, mock_user, mock_db
+    ):
+        """Test that XP exception doesn't fail the request."""
+        from datetime import datetime
+        from code_tutor.typing_practice.interface.routes import complete_attempt
+        from code_tutor.typing_practice.application.dto import (
+            CompleteAttemptRequest,
+            TypingAttemptResponse,
+        )
+        from code_tutor.typing_practice.domain.value_objects import AttemptStatus
+
+        attempt_id = uuid4()
+        exercise_id = uuid4()
+
+        # Mock attempt response
+        mock_response = TypingAttemptResponse(
+            id=attempt_id,
+            exercise_id=exercise_id,
+            user_id=mock_user.id,
+            attempt_number=1,
+            accuracy=90.0,
+            wpm=50.0,
+            time_seconds=60.0,
+            status=AttemptStatus.COMPLETED,
+            started_at=datetime.now(),
+            completed_at=datetime.now(),
+        )
+        mock_typing_service.complete_attempt = AsyncMock(return_value=mock_response)
+
+        # XP service throws exception
+        mock_xp_service.add_xp = AsyncMock(side_effect=Exception("XP service error"))
+
+        request = CompleteAttemptRequest(
+            user_code="print('hello')",
+            accuracy=90.0,
+            wpm=50.0,
+            time_seconds=60.0,
+        )
+
+        # Should not raise - exception is caught and logged
+        result = await complete_attempt(
+            attempt_id=attempt_id,
+            request=request,
+            current_user=mock_user,
+            service=mock_typing_service,
+            xp_service=mock_xp_service,
+            db=mock_db,
+        )
+
+        # Result should still be returned
+        assert result.id == attempt_id
+
+
+# ============== Entity Update Tests ==============
+
+
+class TestTypingExerciseEntityUpdate:
+    """Tests for TypingExercise entity update method."""
+
+    def test_update_with_title_only(self):
+        """Test updating exercise with title only."""
+        from code_tutor.typing_practice.domain.entities import TypingExercise
+        from code_tutor.typing_practice.domain.value_objects import Difficulty
+
+        exercise = TypingExercise(
+            id=uuid4(),
+            title="Original",
+            source_code="code",
+            language="python",
+            difficulty=Difficulty.EASY,
+        )
+        original_code = exercise.source_code
+
+        exercise.update(title="New Title")
+
+        assert exercise.title == "New Title"
+        assert exercise.source_code == original_code  # Unchanged
+
+    def test_update_with_source_code_only(self):
+        """Test updating exercise with source code only."""
+        from code_tutor.typing_practice.domain.entities import TypingExercise
+        from code_tutor.typing_practice.domain.value_objects import Difficulty
+
+        exercise = TypingExercise(
+            id=uuid4(),
+            title="Original",
+            source_code="old code",
+            language="python",
+            difficulty=Difficulty.EASY,
+        )
+        original_title = exercise.title
+
+        exercise.update(source_code="new code")
+
+        assert exercise.title == original_title  # Unchanged
+        assert exercise.source_code == "new code"
+
+    def test_update_with_all_fields(self):
+        """Test updating exercise with all fields."""
+        from code_tutor.typing_practice.domain.entities import TypingExercise
+        from code_tutor.typing_practice.domain.value_objects import Difficulty
+
+        exercise = TypingExercise(
+            id=uuid4(),
+            title="Original",
+            source_code="old code",
+            language="python",
+            difficulty=Difficulty.EASY,
+            description="Old desc",
+        )
+
+        exercise.update(
+            title="New Title",
+            source_code="new code",
+            description="New desc",
+            difficulty=Difficulty.HARD,
+        )
+
+        assert exercise.title == "New Title"
+        assert exercise.source_code == "new code"
+        assert exercise.description == "New desc"
+        assert exercise.difficulty == Difficulty.HARD
+
+    def test_update_with_none_values(self):
+        """Test updating exercise with None values doesn't change fields."""
+        from code_tutor.typing_practice.domain.entities import TypingExercise
+        from code_tutor.typing_practice.domain.value_objects import Difficulty
+
+        exercise = TypingExercise(
+            id=uuid4(),
+            title="Original",
+            source_code="original code",
+            language="python",
+            difficulty=Difficulty.MEDIUM,
+            description="Original desc",
+        )
+
+        exercise.update(
+            title=None,
+            source_code=None,
+            description=None,
+            difficulty=None,
+        )
+
+        assert exercise.title == "Original"
+        assert exercise.source_code == "original code"
+        assert exercise.description == "Original desc"
+        assert exercise.difficulty == Difficulty.MEDIUM
