@@ -1772,3 +1772,110 @@ def foo():
         # Should not suggest type hints since they're already used
         type_hint_suggestions = [i for i in improvements if "type hint" in i.lower()]
         assert len(type_hint_suggestions) == 0
+
+
+class TestLazyLoadingHelpers:
+    """Tests for lazy-loading helper functions."""
+
+    def test_get_rag_engine_returns_none_on_import_error(self):
+        """Test _get_rag_engine returns None when RAG engine fails to initialize."""
+        from code_tutor.tutor.infrastructure import llm_service
+
+        # Reset the singleton
+        llm_service._rag_engine = None
+
+        with patch.object(llm_service, "_rag_engine", None):
+            with patch(
+                "code_tutor.tutor.infrastructure.llm_service.logger"
+            ) as mock_logger:
+                # Mock the import to raise an exception
+                with patch.dict("sys.modules", {"code_tutor.ml": None}):
+                    result = llm_service._get_rag_engine()
+                    # Should return None when import fails
+                    assert result is None or mock_logger.warning.called
+
+    def test_get_code_analyzer_returns_none_on_import_error(self):
+        """Test _get_code_analyzer returns None when analyzer fails to initialize."""
+        from code_tutor.tutor.infrastructure import llm_service
+
+        with patch(
+            "code_tutor.tutor.infrastructure.llm_service.logger"
+        ) as mock_logger:
+            # Mock the import to raise an exception
+            with patch.dict("sys.modules", {"code_tutor.ml": None}):
+                result = llm_service._get_code_analyzer()
+                # Should return None when import fails
+                assert result is None or mock_logger.warning.called
+
+
+class TestLLMServiceAbstractMethods:
+    """Tests for LLMService abstract base class."""
+
+    def test_llm_service_is_abstract(self):
+        """Test that LLMService cannot be instantiated directly."""
+        from code_tutor.tutor.infrastructure.llm_service import LLMService
+
+        with pytest.raises(TypeError):
+            LLMService()
+
+
+class TestPatternBasedLLMServiceEdgeCases:
+    """Additional edge case tests for PatternBasedLLMService."""
+
+    @pytest.fixture
+    def service(self):
+        """Create PatternBasedLLMService instance."""
+        return PatternBasedLLMService()
+
+    @pytest.mark.asyncio
+    async def test_generate_response_with_conversation_history(self, service):
+        """Test generate_response with conversation history."""
+        history = [
+            {"role": "user", "content": "What is BFS?"},
+            {"role": "assistant", "content": "BFS stands for Breadth-First Search..."},
+        ]
+        response = await service.generate_response(
+            user_message="Tell me more",
+            conversation_history=history,
+        )
+        assert isinstance(response, str)
+        assert len(response) > 0
+
+    @pytest.mark.asyncio
+    async def test_analyze_code_with_javascript(self, service):
+        """Test analyze_code with JavaScript language."""
+        code = "function test() { console.log('hello'); }"
+        result = await service.analyze_code(code, language="javascript")
+        assert isinstance(result, dict)
+        # PatternBasedLLMService returns issues, suggestions, score, complexity
+        assert "issues" in result
+        assert "suggestions" in result
+        assert "score" in result
+
+
+class TestRAGBasedLLMServiceEdgeCases:
+    """Additional edge case tests for RAGBasedLLMService."""
+
+    @pytest.fixture
+    def service(self):
+        """Create RAGBasedLLMService instance."""
+        return RAGBasedLLMService()
+
+    @pytest.mark.asyncio
+    async def test_generate_response_with_context(self, service):
+        """Test generate_response with additional context."""
+        response = await service.generate_response(
+            user_message="How do I solve this?",
+            context="Problem: Find two numbers that add up to target",
+        )
+        assert isinstance(response, str)
+        assert len(response) > 0
+
+    @pytest.mark.asyncio
+    async def test_analyze_code_basic_python(self, service):
+        """Test analyze_code with basic Python code."""
+        code = "def add(a, b):\n    return a + b"
+        result = await service.analyze_code(code, language="python")
+        assert isinstance(result, dict)
+        # RAGBasedLLMService returns code_smells, complexity, language, etc.
+        assert "code_smells" in result or "complexity" in result
