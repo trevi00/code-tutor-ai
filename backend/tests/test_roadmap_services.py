@@ -786,3 +786,570 @@ class TestRoadmapServiceWithoutXPService:
 
         assert result.status == ProgressStatus.COMPLETED
         assert result.score == 100
+
+
+# ============== Route Tests ==============
+
+
+class TestRoadmapRoutesUnit:
+    """Unit tests for roadmap routes."""
+
+    def test_router_has_expected_routes(self):
+        """Test that router has all expected routes configured."""
+        from code_tutor.roadmap.interface.routes import router
+
+        route_paths = [r.path for r in router.routes]
+
+        expected_paths = [
+            "/roadmap/paths",
+            "/roadmap/paths/{path_id}",
+            "/roadmap/paths/level/{level}",
+            "/roadmap/paths/{path_id}/modules",
+            "/roadmap/modules/{module_id}",
+            "/roadmap/modules/{module_id}/lessons",
+            "/roadmap/lessons/{lesson_id}",
+            "/roadmap/progress",
+            "/roadmap/progress/paths/{path_id}",
+            "/roadmap/paths/{path_id}/start",
+            "/roadmap/lessons/{lesson_id}/complete",
+            "/roadmap/next-lesson",
+        ]
+
+        for path in expected_paths:
+            assert path in route_paths, f"Missing route: {path}"
+
+    def test_router_prefix(self):
+        """Test router has correct prefix."""
+        from code_tutor.roadmap.interface.routes import router
+        assert router.prefix == "/roadmap"
+
+    def test_router_tags(self):
+        """Test router has correct tags."""
+        from code_tutor.roadmap.interface.routes import router
+        assert "Roadmap" in router.tags
+
+
+class TestGetRoadmapService:
+    """Tests for get_roadmap_service dependency."""
+
+    def test_get_roadmap_service_returns_service(self):
+        """Test that get_roadmap_service returns a RoadmapService instance."""
+        from code_tutor.roadmap.interface.routes import get_roadmap_service
+        from code_tutor.roadmap.application.services import RoadmapService
+        from code_tutor.gamification.application.services import XPService
+
+        mock_db = MagicMock()
+        mock_xp_service = MagicMock(spec=XPService)
+        service = get_roadmap_service(mock_db, mock_xp_service)
+
+        assert isinstance(service, RoadmapService)
+
+
+class TestGetXpServiceRoute:
+    """Tests for get_xp_service dependency."""
+
+    def test_get_xp_service_returns_service(self):
+        """Test that get_xp_service returns an XPService instance."""
+        from code_tutor.roadmap.interface.routes import get_xp_service
+        from code_tutor.gamification.application.services import XPService
+
+        mock_db = MagicMock()
+        service = get_xp_service(mock_db)
+
+        assert isinstance(service, XPService)
+
+
+class TestListPathsRoute:
+    """Tests for list_paths route."""
+
+    @pytest.mark.asyncio
+    async def test_list_paths_success(
+        self, roadmap_service, mock_path_repo, mock_progress_repo, sample_path
+    ):
+        """Test list_paths route success."""
+        from code_tutor.roadmap.interface.routes import list_paths
+        from code_tutor.roadmap.application.dto import LearningPathListResponse
+
+        mock_path_repo.list_all.return_value = [sample_path]
+        mock_progress_repo.get_path_progress.return_value = None
+
+        result = await list_paths(
+            current_user=None,
+            service=roadmap_service,
+        )
+
+        assert isinstance(result, LearningPathListResponse)
+        assert result.total == 1
+
+
+class TestGetPathRoute:
+    """Tests for get_path route."""
+
+    @pytest.mark.asyncio
+    async def test_get_path_found(
+        self, roadmap_service, mock_path_repo, mock_progress_repo, sample_path
+    ):
+        """Test get_path route when found."""
+        from code_tutor.roadmap.interface.routes import get_path
+        from code_tutor.roadmap.application.dto import LearningPathResponse
+
+        mock_path_repo.get_by_id.return_value = sample_path
+        mock_progress_repo.get_path_progress.return_value = None
+        mock_progress_repo.get_lesson_progress.return_value = None
+
+        result = await get_path(
+            path_id=sample_path.id,
+            current_user=None,
+            service=roadmap_service,
+        )
+
+        assert isinstance(result, LearningPathResponse)
+        assert result.title == "Python Basics"
+
+    @pytest.mark.asyncio
+    async def test_get_path_not_found(self, roadmap_service, mock_path_repo):
+        """Test get_path route when not found."""
+        from code_tutor.roadmap.interface.routes import get_path
+        from fastapi import HTTPException
+
+        mock_path_repo.get_by_id.return_value = None
+
+        with pytest.raises(HTTPException) as exc_info:
+            await get_path(
+                path_id=uuid4(),
+                current_user=None,
+                service=roadmap_service,
+            )
+
+        assert exc_info.value.status_code == 404
+        assert exc_info.value.detail == "Learning path not found"
+
+
+class TestGetPathByLevelRoute:
+    """Tests for get_path_by_level route."""
+
+    @pytest.mark.asyncio
+    async def test_get_path_by_level_found(
+        self, roadmap_service, mock_path_repo, mock_progress_repo, sample_path
+    ):
+        """Test get_path_by_level route when found."""
+        from code_tutor.roadmap.interface.routes import get_path_by_level
+        from code_tutor.roadmap.application.dto import LearningPathResponse
+
+        mock_path_repo.get_by_level.return_value = sample_path
+        mock_progress_repo.get_path_progress.return_value = None
+        mock_progress_repo.get_lesson_progress.return_value = None
+
+        result = await get_path_by_level(
+            level=PathLevel.BEGINNER,
+            current_user=None,
+            service=roadmap_service,
+        )
+
+        assert isinstance(result, LearningPathResponse)
+        assert result.level == PathLevel.BEGINNER
+
+    @pytest.mark.asyncio
+    async def test_get_path_by_level_not_found(self, roadmap_service, mock_path_repo):
+        """Test get_path_by_level route when not found."""
+        from code_tutor.roadmap.interface.routes import get_path_by_level
+        from fastapi import HTTPException
+
+        mock_path_repo.get_by_level.return_value = None
+
+        with pytest.raises(HTTPException) as exc_info:
+            await get_path_by_level(
+                level=PathLevel.ADVANCED,
+                current_user=None,
+                service=roadmap_service,
+            )
+
+        assert exc_info.value.status_code == 404
+        assert "advanced" in exc_info.value.detail
+
+
+class TestGetPathModulesRoute:
+    """Tests for get_path_modules route."""
+
+    @pytest.mark.asyncio
+    async def test_get_path_modules_success(
+        self, roadmap_service, mock_module_repo, mock_progress_repo, sample_module
+    ):
+        """Test get_path_modules route success."""
+        from code_tutor.roadmap.interface.routes import get_path_modules
+
+        mock_module_repo.get_by_path_id.return_value = [sample_module]
+        mock_progress_repo.get_lesson_progress.return_value = None
+
+        result = await get_path_modules(
+            path_id=uuid4(),
+            current_user=None,
+            service=roadmap_service,
+        )
+
+        assert len(result) == 1
+        assert result[0].title == "Getting Started"
+
+
+class TestGetModuleRoute:
+    """Tests for get_module route."""
+
+    @pytest.mark.asyncio
+    async def test_get_module_found(
+        self, roadmap_service, mock_module_repo, mock_progress_repo, sample_module
+    ):
+        """Test get_module route when found."""
+        from code_tutor.roadmap.interface.routes import get_module
+        from code_tutor.roadmap.application.dto import ModuleResponse
+
+        mock_module_repo.get_by_id.return_value = sample_module
+        mock_progress_repo.get_lesson_progress.return_value = None
+
+        result = await get_module(
+            module_id=sample_module.id,
+            current_user=None,
+            service=roadmap_service,
+        )
+
+        assert isinstance(result, ModuleResponse)
+        assert result.title == "Getting Started"
+
+    @pytest.mark.asyncio
+    async def test_get_module_not_found(self, roadmap_service, mock_module_repo):
+        """Test get_module route when not found."""
+        from code_tutor.roadmap.interface.routes import get_module
+        from fastapi import HTTPException
+
+        mock_module_repo.get_by_id.return_value = None
+
+        with pytest.raises(HTTPException) as exc_info:
+            await get_module(
+                module_id=uuid4(),
+                current_user=None,
+                service=roadmap_service,
+            )
+
+        assert exc_info.value.status_code == 404
+        assert exc_info.value.detail == "Module not found"
+
+
+class TestGetModuleLessonsRoute:
+    """Tests for get_module_lessons route."""
+
+    @pytest.mark.asyncio
+    async def test_get_module_lessons_success(
+        self, roadmap_service, mock_lesson_repo, mock_progress_repo, sample_lesson
+    ):
+        """Test get_module_lessons route success."""
+        from code_tutor.roadmap.interface.routes import get_module_lessons
+
+        mock_lesson_repo.get_by_module_id.return_value = [sample_lesson]
+        mock_progress_repo.get_lesson_progress.return_value = None
+
+        result = await get_module_lessons(
+            module_id=uuid4(),
+            current_user=None,
+            service=roadmap_service,
+        )
+
+        assert len(result) == 1
+        assert result[0].title == "Hello World"
+
+
+class TestGetLessonRoute:
+    """Tests for get_lesson route."""
+
+    @pytest.mark.asyncio
+    async def test_get_lesson_found(
+        self, roadmap_service, mock_lesson_repo, mock_progress_repo, sample_lesson
+    ):
+        """Test get_lesson route when found."""
+        from code_tutor.roadmap.interface.routes import get_lesson
+        from code_tutor.roadmap.application.dto import LessonResponse
+
+        mock_lesson_repo.get_by_id.return_value = sample_lesson
+        mock_progress_repo.get_lesson_progress.return_value = None
+
+        result = await get_lesson(
+            lesson_id=sample_lesson.id,
+            current_user=None,
+            service=roadmap_service,
+        )
+
+        assert isinstance(result, LessonResponse)
+        assert result.title == "Hello World"
+
+    @pytest.mark.asyncio
+    async def test_get_lesson_not_found(self, roadmap_service, mock_lesson_repo):
+        """Test get_lesson route when not found."""
+        from code_tutor.roadmap.interface.routes import get_lesson
+        from fastapi import HTTPException
+
+        mock_lesson_repo.get_by_id.return_value = None
+
+        with pytest.raises(HTTPException) as exc_info:
+            await get_lesson(
+                lesson_id=uuid4(),
+                current_user=None,
+                service=roadmap_service,
+            )
+
+        assert exc_info.value.status_code == 404
+        assert exc_info.value.detail == "Lesson not found"
+
+
+class TestGetUserProgressRoute:
+    """Tests for get_user_progress route."""
+
+    @pytest.mark.asyncio
+    async def test_get_user_progress_success(
+        self, roadmap_service, mock_path_repo, mock_progress_repo
+    ):
+        """Test get_user_progress route success."""
+        from code_tutor.roadmap.interface.routes import get_user_progress
+        from code_tutor.roadmap.application.dto import UserProgressResponse
+        from code_tutor.identity.application.dto import UserResponse
+
+        mock_path_repo.list_all.return_value = []
+        mock_progress_repo.get_next_lesson.return_value = None
+
+        mock_user = MagicMock(spec=UserResponse)
+        mock_user.id = uuid4()
+
+        result = await get_user_progress(
+            current_user=mock_user,
+            service=roadmap_service,
+        )
+
+        assert isinstance(result, UserProgressResponse)
+        assert result.total_paths == 0
+
+
+class TestGetPathProgressRoute:
+    """Tests for get_path_progress route."""
+
+    @pytest.mark.asyncio
+    async def test_get_path_progress_found(
+        self, roadmap_service, mock_progress_repo, mock_path_repo, sample_path
+    ):
+        """Test get_path_progress route when found."""
+        from code_tutor.roadmap.interface.routes import get_path_progress
+        from code_tutor.roadmap.application.dto import PathProgressResponse
+        from code_tutor.identity.application.dto import UserResponse
+
+        mock_progress_repo.get_path_progress.return_value = None
+        mock_path_repo.get_by_id.return_value = sample_path
+
+        mock_user = MagicMock(spec=UserResponse)
+        mock_user.id = uuid4()
+
+        result = await get_path_progress(
+            path_id=sample_path.id,
+            current_user=mock_user,
+            service=roadmap_service,
+        )
+
+        assert isinstance(result, PathProgressResponse)
+
+    @pytest.mark.asyncio
+    async def test_get_path_progress_not_found(
+        self, roadmap_service, mock_progress_repo, mock_path_repo
+    ):
+        """Test get_path_progress route when path not found."""
+        from code_tutor.roadmap.interface.routes import get_path_progress
+        from code_tutor.identity.application.dto import UserResponse
+        from fastapi import HTTPException
+
+        mock_progress_repo.get_path_progress.return_value = None
+        mock_path_repo.get_by_id.return_value = None
+
+        mock_user = MagicMock(spec=UserResponse)
+        mock_user.id = uuid4()
+
+        with pytest.raises(HTTPException) as exc_info:
+            await get_path_progress(
+                path_id=uuid4(),
+                current_user=mock_user,
+                service=roadmap_service,
+            )
+
+        assert exc_info.value.status_code == 404
+        assert exc_info.value.detail == "Path not found"
+
+
+class TestStartPathRoute:
+    """Tests for start_path route."""
+
+    @pytest.mark.asyncio
+    async def test_start_path_success(
+        self, roadmap_service, mock_path_repo, mock_progress_repo, mock_xp_service, sample_path
+    ):
+        """Test start_path route success."""
+        from code_tutor.roadmap.interface.routes import start_path
+        from code_tutor.roadmap.application.dto import PathProgressResponse
+        from code_tutor.identity.application.dto import UserResponse
+
+        mock_path_repo.get_by_id.return_value = sample_path
+        mock_progress_repo.get_path_progress.return_value = None
+
+        mock_user = MagicMock(spec=UserResponse)
+        mock_user.id = uuid4()
+
+        mock_db = AsyncMock()
+
+        result = await start_path(
+            path_id=sample_path.id,
+            current_user=mock_user,
+            service=roadmap_service,
+            db=mock_db,
+        )
+
+        assert isinstance(result, PathProgressResponse)
+        assert result.status == ProgressStatus.IN_PROGRESS
+        mock_db.commit.assert_called_once()
+
+    @pytest.mark.asyncio
+    async def test_start_path_not_found(
+        self, roadmap_service, mock_path_repo
+    ):
+        """Test start_path route when path not found."""
+        from code_tutor.roadmap.interface.routes import start_path
+        from code_tutor.identity.application.dto import UserResponse
+        from fastapi import HTTPException
+
+        mock_path_repo.get_by_id.return_value = None
+
+        mock_user = MagicMock(spec=UserResponse)
+        mock_user.id = uuid4()
+
+        mock_db = AsyncMock()
+
+        with pytest.raises(HTTPException) as exc_info:
+            await start_path(
+                path_id=uuid4(),
+                current_user=mock_user,
+                service=roadmap_service,
+                db=mock_db,
+            )
+
+        assert exc_info.value.status_code == 404
+
+
+class TestCompleteLessonRoute:
+    """Tests for complete_lesson route."""
+
+    @pytest.mark.asyncio
+    async def test_complete_lesson_route_success(
+        self,
+        roadmap_service,
+        mock_lesson_repo,
+        mock_progress_repo,
+        mock_module_repo,
+        mock_xp_service,
+        sample_lesson,
+        sample_module,
+    ):
+        """Test complete_lesson route success."""
+        from code_tutor.roadmap.interface.routes import complete_lesson
+        from code_tutor.roadmap.application.dto import LessonProgressResponse
+        from code_tutor.identity.application.dto import UserResponse
+
+        mock_lesson_repo.get_by_id.return_value = sample_lesson
+        mock_progress_repo.get_lesson_progress.return_value = None
+        mock_module_repo.get_by_id.return_value = sample_module
+        mock_progress_repo.get_path_progress.return_value = None
+
+        mock_user = MagicMock(spec=UserResponse)
+        mock_user.id = uuid4()
+
+        mock_db = AsyncMock()
+        request = CompleteLessonRequest(score=100)
+
+        result = await complete_lesson(
+            lesson_id=sample_lesson.id,
+            request=request,
+            current_user=mock_user,
+            service=roadmap_service,
+            db=mock_db,
+        )
+
+        assert isinstance(result, LessonProgressResponse)
+        assert result.status == ProgressStatus.COMPLETED
+        mock_db.commit.assert_called_once()
+
+    @pytest.mark.asyncio
+    async def test_complete_lesson_route_not_found(
+        self, roadmap_service, mock_lesson_repo
+    ):
+        """Test complete_lesson route when lesson not found."""
+        from code_tutor.roadmap.interface.routes import complete_lesson
+        from code_tutor.identity.application.dto import UserResponse
+        from fastapi import HTTPException
+
+        mock_lesson_repo.get_by_id.return_value = None
+
+        mock_user = MagicMock(spec=UserResponse)
+        mock_user.id = uuid4()
+
+        mock_db = AsyncMock()
+        request = CompleteLessonRequest()
+
+        with pytest.raises(HTTPException) as exc_info:
+            await complete_lesson(
+                lesson_id=uuid4(),
+                request=request,
+                current_user=mock_user,
+                service=roadmap_service,
+                db=mock_db,
+            )
+
+        assert exc_info.value.status_code == 404
+
+
+class TestGetNextLessonRoute:
+    """Tests for get_next_lesson route."""
+
+    @pytest.mark.asyncio
+    async def test_get_next_lesson_route_found(
+        self, roadmap_service, mock_progress_repo, sample_lesson
+    ):
+        """Test get_next_lesson route when found."""
+        from code_tutor.roadmap.interface.routes import get_next_lesson
+        from code_tutor.roadmap.application.dto import LessonResponse
+        from code_tutor.identity.application.dto import UserResponse
+
+        mock_progress_repo.get_next_lesson.return_value = sample_lesson
+        mock_progress_repo.get_lesson_progress.return_value = None
+
+        mock_user = MagicMock(spec=UserResponse)
+        mock_user.id = uuid4()
+
+        result = await get_next_lesson(
+            path_id=None,
+            current_user=mock_user,
+            service=roadmap_service,
+        )
+
+        assert isinstance(result, LessonResponse)
+        assert result.title == "Hello World"
+
+    @pytest.mark.asyncio
+    async def test_get_next_lesson_route_none(
+        self, roadmap_service, mock_progress_repo
+    ):
+        """Test get_next_lesson route when none available."""
+        from code_tutor.roadmap.interface.routes import get_next_lesson
+        from code_tutor.identity.application.dto import UserResponse
+
+        mock_progress_repo.get_next_lesson.return_value = None
+
+        mock_user = MagicMock(spec=UserResponse)
+        mock_user.id = uuid4()
+
+        result = await get_next_lesson(
+            path_id=None,
+            current_user=mock_user,
+            service=roadmap_service,
+        )
+
+        assert result is None
