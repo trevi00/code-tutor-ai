@@ -404,6 +404,29 @@ class TestRoadmapServiceProgressMethods:
         assert result.current_path is not None
 
     @pytest.mark.asyncio
+    async def test_get_user_progress_with_next_lesson(
+        self, roadmap_service, mock_path_repo, mock_progress_repo, sample_path, sample_lesson
+    ):
+        """Test getting user progress includes next lesson when available."""
+        user_id = uuid4()
+        progress = UserPathProgress(
+            user_id=user_id,
+            path_id=sample_path.id,
+            total_lessons=2,
+            completed_lessons=1,
+            status=ProgressStatus.IN_PROGRESS,
+        )
+        mock_path_repo.list_all.return_value = [sample_path]
+        mock_progress_repo.get_path_progress.return_value = progress
+        mock_progress_repo.get_next_lesson.return_value = sample_lesson
+        mock_progress_repo.get_lesson_progress.return_value = None
+
+        result = await roadmap_service.get_user_progress(user_id)
+
+        assert result.next_lesson is not None
+        assert result.next_lesson.title == "Hello World"
+
+    @pytest.mark.asyncio
     async def test_get_path_progress_not_started(
         self, roadmap_service, mock_progress_repo, mock_path_repo, sample_path
     ):
