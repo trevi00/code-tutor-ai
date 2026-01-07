@@ -1518,3 +1518,257 @@ class TestTutorRoutesUnit:
 
         assert result.overall_score == 80
         mock_tutor_service.review_code.assert_called_once_with(mock_user.id, request)
+
+
+# ============== Value Objects Tests ==============
+
+
+class TestConversationIdValueObject:
+    """Tests for ConversationId value object."""
+
+    def test_generate(self):
+        """Test ConversationId.generate creates new ID."""
+        from code_tutor.tutor.domain.value_objects import ConversationId
+
+        conv_id = ConversationId.generate()
+
+        assert conv_id.value is not None
+        assert str(conv_id) == str(conv_id.value)
+
+    def test_from_string_valid(self):
+        """Test ConversationId.from_string with valid UUID."""
+        from code_tutor.tutor.domain.value_objects import ConversationId
+
+        test_uuid = "12345678-1234-5678-1234-567812345678"
+        conv_id = ConversationId.from_string(test_uuid)
+
+        assert str(conv_id.value) == test_uuid
+
+    def test_from_string_invalid(self):
+        """Test ConversationId.from_string with invalid UUID raises ValidationError."""
+        from code_tutor.tutor.domain.value_objects import ConversationId
+        from code_tutor.shared.exceptions import ValidationError
+
+        with pytest.raises(ValidationError) as exc_info:
+            ConversationId.from_string("invalid-uuid")
+
+        assert "Invalid conversation ID format" in str(exc_info.value)
+
+    def test_str_representation(self):
+        """Test ConversationId string representation."""
+        from code_tutor.tutor.domain.value_objects import ConversationId
+
+        conv_id = ConversationId.generate()
+
+        assert str(conv_id) == str(conv_id.value)
+
+
+class TestMessageIdValueObject:
+    """Tests for MessageId value object."""
+
+    def test_generate(self):
+        """Test MessageId.generate creates new ID."""
+        from code_tutor.tutor.domain.value_objects import MessageId
+
+        msg_id = MessageId.generate()
+
+        assert msg_id.value is not None
+
+    def test_str_representation(self):
+        """Test MessageId string representation."""
+        from code_tutor.tutor.domain.value_objects import MessageId
+
+        msg_id = MessageId.generate()
+
+        assert str(msg_id) == str(msg_id.value)
+
+
+class TestCodeContextValueObject:
+    """Tests for CodeContext value object."""
+
+    def test_create_with_defaults(self):
+        """Test CodeContext with default values."""
+        from code_tutor.tutor.domain.value_objects import CodeContext
+
+        ctx = CodeContext(code="x = 1")
+
+        assert ctx.code == "x = 1"
+        assert ctx.language == "python"
+        assert ctx.problem_id is None
+        assert ctx.submission_id is None
+
+    def test_create_with_all_fields(self):
+        """Test CodeContext with all fields."""
+        from code_tutor.tutor.domain.value_objects import CodeContext
+
+        problem_id = uuid4()
+        submission_id = uuid4()
+        ctx = CodeContext(
+            code="x = 1",
+            language="javascript",
+            problem_id=problem_id,
+            submission_id=submission_id,
+        )
+
+        assert ctx.code == "x = 1"
+        assert ctx.language == "javascript"
+        assert ctx.problem_id == problem_id
+        assert ctx.submission_id == submission_id
+
+
+# ============== Entity Additional Tests ==============
+
+
+class TestMessageEntity:
+    """Tests for Message entity."""
+
+    def test_conversation_id_property(self):
+        """Test Message.conversation_id property."""
+        from code_tutor.tutor.domain.entities import Message
+        from code_tutor.tutor.domain.value_objects import MessageRole
+
+        conv_id = uuid4()
+        message = Message(
+            conversation_id=conv_id,
+            role=MessageRole.USER,
+            content="Test",
+        )
+
+        assert message.conversation_id == conv_id
+
+    def test_message_with_code_context(self):
+        """Test Message with code context."""
+        from code_tutor.tutor.domain.entities import Message
+        from code_tutor.tutor.domain.value_objects import MessageRole, CodeContext
+
+        conv_id = uuid4()
+        code_ctx = CodeContext(code="x = 1", language="python")
+        message = Message(
+            conversation_id=conv_id,
+            role=MessageRole.USER,
+            content="Review this",
+            code_context=code_ctx,
+            tokens_used=50,
+        )
+
+        assert message.conversation_id == conv_id
+        assert message.code_context is not None
+        assert message.code_context.code == "x = 1"
+        assert message.tokens_used == 50
+
+
+class TestConversationEntity:
+    """Tests for Conversation entity."""
+
+    def test_create_with_custom_title(self):
+        """Test Conversation.create with custom title."""
+        from code_tutor.tutor.domain.entities import Conversation
+        from code_tutor.tutor.domain.value_objects import ConversationType
+
+        user_id = uuid4()
+        conv = Conversation.create(
+            user_id=user_id,
+            conversation_type=ConversationType.CODE_REVIEW,
+            title="Custom Title",
+        )
+
+        assert conv.title == "Custom Title"
+        assert conv.conversation_type == ConversationType.CODE_REVIEW
+
+    def test_create_generates_default_title(self):
+        """Test Conversation.create generates default title."""
+        from code_tutor.tutor.domain.entities import Conversation
+        from code_tutor.tutor.domain.value_objects import ConversationType
+
+        user_id = uuid4()
+        conv = Conversation.create(
+            user_id=user_id,
+            conversation_type=ConversationType.PROBLEM_HELP,
+        )
+
+        assert "Problem Help" in conv.title
+
+    def test_update_title(self):
+        """Test Conversation.update_title updates title."""
+        from code_tutor.tutor.domain.entities import Conversation
+        from code_tutor.tutor.domain.value_objects import ConversationType
+
+        user_id = uuid4()
+        conv = Conversation.create(user_id=user_id)
+
+        conv.update_title("New Title")
+
+        assert conv.title == "New Title"
+
+    def test_get_context_messages_limit(self):
+        """Test Conversation.get_context_messages respects limit."""
+        from code_tutor.tutor.domain.entities import Conversation
+
+        user_id = uuid4()
+        conv = Conversation.create(user_id=user_id)
+
+        # Add 15 messages
+        for i in range(15):
+            conv.add_user_message(f"Message {i}")
+
+        # Get only last 5
+        context = conv.get_context_messages(max_messages=5)
+
+        assert len(context) == 5
+        assert "Message 14" in context[-1].content
+
+
+# ============== Additional Service Edge Cases ==============
+
+
+class TestTutorServiceAnalyzeCodeEdgeCases:
+    """Additional edge case tests for code analysis."""
+
+    @pytest.fixture
+    def tutor_service(self):
+        """Create TutorService with mocks."""
+        from code_tutor.tutor.application.services import TutorService
+        mock_repo = AsyncMock()
+        mock_llm = AsyncMock()
+        return TutorService(mock_repo, mock_llm)
+
+    def test_analyze_code_inline_comment_good_style(self, tutor_service):
+        """Test _analyze_code handles inline comments correctly."""
+        # Line with double space before comment (good style) - should not report issue
+        code = "x = 1  # This is a properly formatted comment"
+        issues = tutor_service._analyze_code(code, "python")
+
+        # Should NOT have issue for inline comment with double space
+        inline_comment_issues = [i for i in issues if "comment" in i.message.lower()]
+        assert len(inline_comment_issues) == 0
+
+    def test_analyze_code_pass_not_after_def(self, tutor_service):
+        """Test _analyze_code doesn't flag pass when not after def/class."""
+        code = "if True:\n    pass"
+        issues = tutor_service._analyze_code(code, "python")
+
+        # Should not have empty function/class issue
+        empty_issues = [i for i in issues if "empty" in i.message.lower() or "Empty" in i.message]
+        assert len(empty_issues) == 0
+
+    def test_analyze_code_multiple_issues(self, tutor_service):
+        """Test _analyze_code detects multiple issues."""
+        code = """from os import *
+eval('1+1')
+x = 'a' * 200
+def foo():
+    pass
+"""
+        issues = tutor_service._analyze_code(code, "python")
+
+        # Should have at least 3 issues: wildcard import, eval, and empty function
+        assert len(issues) >= 3
+
+    def test_suggest_improvements_with_typing_import(self, tutor_service):
+        """Test _suggest_improvements with typing import."""
+        code = "from typing import List\ndef foo(x: List[int]) -> int:\n    return sum(x)"
+        improvements = tutor_service._suggest_improvements(code, "python")
+
+        # Should not suggest type hints since they're already used
+        type_hint_suggestions = [i for i in improvements if "type hint" in i.lower()]
+        assert len(type_hint_suggestions) == 0
