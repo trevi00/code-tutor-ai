@@ -833,3 +833,499 @@ class TestExceptionHandlers:
 
         response = client.post("/test-pydantic-validation", json={"email": 123})
         assert response.status_code == 422 or response.status_code == 400
+
+
+# ============== Domain Events Tests ==============
+
+
+class TestDomainEvent:
+    """Tests for DomainEvent base class."""
+
+    def test_domain_event_event_type(self):
+        """Test event_type property returns class name."""
+        from dataclasses import dataclass
+        from code_tutor.shared.domain.events import DomainEvent
+
+        @dataclass(frozen=True)
+        class UserCreatedEvent(DomainEvent):
+            user_id: str = ""
+
+        event = UserCreatedEvent(user_id="user123")
+        assert event.event_type == "UserCreatedEvent"
+
+    def test_domain_event_has_id_and_timestamp(self):
+        """Test DomainEvent has event_id and occurred_at."""
+        from dataclasses import dataclass
+        from code_tutor.shared.domain.events import DomainEvent
+
+        @dataclass(frozen=True)
+        class TestEvent(DomainEvent):
+            pass
+
+        event = TestEvent()
+        assert event.event_id is not None
+        assert event.occurred_at is not None
+
+
+class TestIntegrationEvent:
+    """Tests for IntegrationEvent base class."""
+
+    def test_integration_event_event_type(self):
+        """Test event_type property returns class name."""
+        from dataclasses import dataclass
+        from code_tutor.shared.domain.events import IntegrationEvent
+
+        @dataclass(frozen=True)
+        class UserSyncEvent(IntegrationEvent):
+            user_id: str = ""
+
+        event = UserSyncEvent(user_id="user123", source_context="auth")
+        assert event.event_type == "UserSyncEvent"
+
+    def test_integration_event_has_source_context(self):
+        """Test IntegrationEvent has source_context."""
+        from dataclasses import dataclass
+        from code_tutor.shared.domain.events import IntegrationEvent
+
+        @dataclass(frozen=True)
+        class TestEvent(IntegrationEvent):
+            pass
+
+        event = TestEvent(source_context="payment")
+        assert event.source_context == "payment"
+        assert event.event_id is not None
+
+
+# ============== Config Production Validation Tests ==============
+
+
+class TestSettingsProductionValidation:
+    """Tests for Settings production validation."""
+
+    def test_production_requires_secure_jwt_secret(self):
+        """Test production env rejects default JWT secret."""
+        from code_tutor.shared.config import Settings, ConfigurationError
+        import os
+
+        with pytest.raises(ConfigurationError) as exc_info:
+            Settings(
+                ENVIRONMENT="production",
+                JWT_SECRET_KEY="change-this-secret-key-in-production",
+                DATABASE_URL="postgresql+asyncpg://prod:pass@prod-db:5432/app",
+            )
+
+        assert "JWT_SECRET_KEY" in str(exc_info.value)
+
+    def test_production_requires_long_jwt_secret(self):
+        """Test production env rejects short JWT secret."""
+        from code_tutor.shared.config import Settings, ConfigurationError
+
+        with pytest.raises(ConfigurationError) as exc_info:
+            Settings(
+                ENVIRONMENT="production",
+                JWT_SECRET_KEY="short",  # Less than 32 chars
+                DATABASE_URL="postgresql+asyncpg://prod:pass@prod-db:5432/app",
+            )
+
+        assert "32 characters" in str(exc_info.value)
+
+    def test_production_rejects_wildcard_cors(self):
+        """Test production env rejects wildcard CORS."""
+        from code_tutor.shared.config import Settings, ConfigurationError
+
+        with pytest.raises(ConfigurationError) as exc_info:
+            Settings(
+                ENVIRONMENT="production",
+                JWT_SECRET_KEY="a" * 64,  # Long enough
+                CORS_ORIGINS=["*"],
+                DATABASE_URL="postgresql+asyncpg://prod:pass@prod-db:5432/app",
+            )
+
+        assert "Wildcard" in str(exc_info.value)
+
+    def test_production_rejects_localhost_database(self):
+        """Test production env rejects localhost database."""
+        from code_tutor.shared.config import Settings, ConfigurationError
+
+        with pytest.raises(ConfigurationError) as exc_info:
+            Settings(
+                ENVIRONMENT="production",
+                JWT_SECRET_KEY="a" * 64,
+                CORS_ORIGINS=["https://myapp.com"],
+                DATABASE_URL="postgresql+asyncpg://user:pass@localhost:5432/db",
+            )
+
+        assert "localhost" in str(exc_info.value)
+
+    def test_development_allows_defaults(self):
+        """Test development env allows default values."""
+        from code_tutor.shared.config import Settings
+
+        # Should not raise any errors
+        settings = Settings(ENVIRONMENT="development")
+        assert settings.ENVIRONMENT == "development"
+
+
+# ============== Container Tests ==============
+
+
+class TestContainer:
+    """Tests for dependency injection container."""
+
+    def test_container_exists(self):
+        """Test Container class can be imported."""
+        from code_tutor.shared.container import Container
+
+        assert Container is not None
+        assert hasattr(Container, "config")
+        assert hasattr(Container, "db_session_factory")
+        assert hasattr(Container, "redis_client")
+
+    def test_container_config_provider(self):
+        """Test config provider returns Settings."""
+        from code_tutor.shared.container import Container
+        from code_tutor.shared.config import Settings
+
+        container = Container()
+        config = container.config()
+
+        assert isinstance(config, Settings)
+
+
+# ============== Redis Client Tests ==============
+
+
+class TestRedisClientWithoutConnection:
+    """Tests for RedisClient when Redis is not available."""
+
+    def test_redis_client_not_available(self):
+        """Test RedisClient handles missing connection."""
+        from code_tutor.shared.infrastructure.redis import RedisClient
+
+        client = RedisClient(None)
+        assert client.is_available is False
+
+    @pytest.mark.asyncio
+    async def test_redis_get_returns_none_when_unavailable(self):
+        """Test get returns None when Redis unavailable."""
+        from code_tutor.shared.infrastructure.redis import RedisClient
+
+        client = RedisClient(None)
+        result = await client.get("any_key")
+        assert result is None
+
+    @pytest.mark.asyncio
+    async def test_redis_set_returns_true_when_unavailable(self):
+        """Test set returns True when Redis unavailable."""
+        from code_tutor.shared.infrastructure.redis import RedisClient
+
+        client = RedisClient(None)
+        result = await client.set("key", "value")
+        assert result is True
+
+    @pytest.mark.asyncio
+    async def test_redis_delete_returns_zero_when_unavailable(self):
+        """Test delete returns 0 when Redis unavailable."""
+        from code_tutor.shared.infrastructure.redis import RedisClient
+
+        client = RedisClient(None)
+        result = await client.delete("key")
+        assert result == 0
+
+    @pytest.mark.asyncio
+    async def test_redis_exists_returns_false_when_unavailable(self):
+        """Test exists returns False when Redis unavailable."""
+        from code_tutor.shared.infrastructure.redis import RedisClient
+
+        client = RedisClient(None)
+        result = await client.exists("key")
+        assert result is False
+
+    @pytest.mark.asyncio
+    async def test_redis_incr_returns_zero_when_unavailable(self):
+        """Test incr returns 0 when Redis unavailable."""
+        from code_tutor.shared.infrastructure.redis import RedisClient
+
+        client = RedisClient(None)
+        result = await client.incr("counter")
+        assert result == 0
+
+    @pytest.mark.asyncio
+    async def test_redis_expire_returns_true_when_unavailable(self):
+        """Test expire returns True when Redis unavailable."""
+        from code_tutor.shared.infrastructure.redis import RedisClient
+
+        client = RedisClient(None)
+        result = await client.expire("key", 60)
+        assert result is True
+
+    @pytest.mark.asyncio
+    async def test_redis_ttl_returns_negative_when_unavailable(self):
+        """Test ttl returns -1 when Redis unavailable."""
+        from code_tutor.shared.infrastructure.redis import RedisClient
+
+        client = RedisClient(None)
+        result = await client.ttl("key")
+        assert result == -1
+
+    @pytest.mark.asyncio
+    async def test_redis_get_json_returns_none_when_unavailable(self):
+        """Test get_json returns None when Redis unavailable."""
+        from code_tutor.shared.infrastructure.redis import RedisClient
+
+        client = RedisClient(None)
+        result = await client.get_json("key")
+        assert result is None
+
+    @pytest.mark.asyncio
+    async def test_redis_set_json_returns_true_when_unavailable(self):
+        """Test set_json returns True when Redis unavailable."""
+        from code_tutor.shared.infrastructure.redis import RedisClient
+
+        client = RedisClient(None)
+        result = await client.set_json("key", {"data": "value"})
+        assert result is True
+
+
+class TestRedisClientWithMock:
+    """Tests for RedisClient with mocked Redis connection."""
+
+    @pytest.fixture
+    def mock_redis(self):
+        """Create mock Redis client."""
+        from unittest.mock import AsyncMock, MagicMock
+
+        mock = MagicMock()
+        mock.get = AsyncMock(return_value="test_value")
+        mock.set = AsyncMock(return_value=True)
+        mock.delete = AsyncMock(return_value=1)
+        mock.exists = AsyncMock(return_value=1)
+        mock.incr = AsyncMock(return_value=5)
+        mock.expire = AsyncMock(return_value=True)
+        mock.ttl = AsyncMock(return_value=3600)
+        return mock
+
+    def test_redis_client_is_available(self, mock_redis):
+        """Test is_available returns True with connection."""
+        from code_tutor.shared.infrastructure.redis import RedisClient
+
+        client = RedisClient(mock_redis)
+        assert client.is_available is True
+
+    @pytest.mark.asyncio
+    async def test_redis_get_with_connection(self, mock_redis):
+        """Test get with active connection."""
+        from code_tutor.shared.infrastructure.redis import RedisClient
+
+        client = RedisClient(mock_redis)
+        result = await client.get("my_key")
+
+        assert result == "test_value"
+        mock_redis.get.assert_called_once_with("my_key")
+
+    @pytest.mark.asyncio
+    async def test_redis_set_with_connection(self, mock_redis):
+        """Test set with active connection."""
+        from code_tutor.shared.infrastructure.redis import RedisClient
+
+        client = RedisClient(mock_redis)
+        result = await client.set("key", "value", expire_seconds=300)
+
+        assert result is True
+        mock_redis.set.assert_called_once_with("key", "value", ex=300)
+
+    @pytest.mark.asyncio
+    async def test_redis_delete_with_connection(self, mock_redis):
+        """Test delete with active connection."""
+        from code_tutor.shared.infrastructure.redis import RedisClient
+
+        client = RedisClient(mock_redis)
+        result = await client.delete("key")
+
+        assert result == 1
+        mock_redis.delete.assert_called_once_with("key")
+
+    @pytest.mark.asyncio
+    async def test_redis_exists_with_connection(self, mock_redis):
+        """Test exists with active connection."""
+        from code_tutor.shared.infrastructure.redis import RedisClient
+
+        client = RedisClient(mock_redis)
+        result = await client.exists("key")
+
+        assert result is True
+
+    @pytest.mark.asyncio
+    async def test_redis_incr_with_connection(self, mock_redis):
+        """Test incr with active connection."""
+        from code_tutor.shared.infrastructure.redis import RedisClient
+
+        client = RedisClient(mock_redis)
+        result = await client.incr("counter")
+
+        assert result == 5
+        mock_redis.incr.assert_called_once_with("counter")
+
+    @pytest.mark.asyncio
+    async def test_redis_expire_with_connection(self, mock_redis):
+        """Test expire with active connection."""
+        from code_tutor.shared.infrastructure.redis import RedisClient
+
+        client = RedisClient(mock_redis)
+        result = await client.expire("key", 60)
+
+        assert result is True
+        mock_redis.expire.assert_called_once_with("key", 60)
+
+    @pytest.mark.asyncio
+    async def test_redis_ttl_with_connection(self, mock_redis):
+        """Test ttl with active connection."""
+        from code_tutor.shared.infrastructure.redis import RedisClient
+
+        client = RedisClient(mock_redis)
+        result = await client.ttl("key")
+
+        assert result == 3600
+        mock_redis.ttl.assert_called_once_with("key")
+
+    @pytest.mark.asyncio
+    async def test_redis_get_json_with_connection(self, mock_redis):
+        """Test get_json parses JSON correctly."""
+        from unittest.mock import AsyncMock
+        from code_tutor.shared.infrastructure.redis import RedisClient
+
+        mock_redis.get = AsyncMock(return_value='{"name": "test", "count": 42}')
+        client = RedisClient(mock_redis)
+        result = await client.get_json("json_key")
+
+        assert result == {"name": "test", "count": 42}
+
+    @pytest.mark.asyncio
+    async def test_redis_set_json_with_connection(self, mock_redis):
+        """Test set_json serializes JSON correctly."""
+        from code_tutor.shared.infrastructure.redis import RedisClient
+
+        client = RedisClient(mock_redis)
+        result = await client.set_json("key", {"data": "value"}, expire_seconds=60)
+
+        assert result is True
+        mock_redis.set.assert_called_once()
+        call_args = mock_redis.set.call_args
+        assert '"data": "value"' in call_args[0][1] or '"data":"value"' in call_args[0][1]
+
+
+class TestRedisTokenHelpers:
+    """Tests for Redis token management helpers."""
+
+    @pytest.fixture
+    def mock_redis(self):
+        """Create mock Redis client."""
+        from unittest.mock import AsyncMock, MagicMock
+
+        mock = MagicMock()
+        mock.get = AsyncMock(return_value="refresh_token_value")
+        mock.set = AsyncMock(return_value=True)
+        mock.delete = AsyncMock(return_value=1)
+        mock.exists = AsyncMock(return_value=1)
+        return mock
+
+    @pytest.mark.asyncio
+    async def test_store_refresh_token(self, mock_redis):
+        """Test storing refresh token."""
+        from code_tutor.shared.infrastructure.redis import RedisClient
+
+        client = RedisClient(mock_redis)
+        result = await client.store_refresh_token("user123", "token_abc", expire_days=7)
+
+        assert result is True
+        mock_redis.set.assert_called_once()
+        call_args = mock_redis.set.call_args
+        assert "refresh_token:user123" in call_args[0]
+        assert call_args[1]["ex"] == 7 * 86400
+
+    @pytest.mark.asyncio
+    async def test_get_refresh_token(self, mock_redis):
+        """Test getting refresh token."""
+        from code_tutor.shared.infrastructure.redis import RedisClient
+
+        client = RedisClient(mock_redis)
+        result = await client.get_refresh_token("user123")
+
+        assert result == "refresh_token_value"
+
+    @pytest.mark.asyncio
+    async def test_invalidate_refresh_token(self, mock_redis):
+        """Test invalidating refresh token."""
+        from code_tutor.shared.infrastructure.redis import RedisClient
+
+        client = RedisClient(mock_redis)
+        result = await client.invalidate_refresh_token("user123")
+
+        assert result == 1
+
+    @pytest.mark.asyncio
+    async def test_blacklist_token(self, mock_redis):
+        """Test blacklisting token."""
+        from code_tutor.shared.infrastructure.redis import RedisClient
+
+        client = RedisClient(mock_redis)
+        result = await client.blacklist_token("jti123", expire_seconds=3600)
+
+        assert result is True
+        mock_redis.set.assert_called_once()
+
+    @pytest.mark.asyncio
+    async def test_is_token_blacklisted(self, mock_redis):
+        """Test checking if token is blacklisted."""
+        from code_tutor.shared.infrastructure.redis import RedisClient
+
+        client = RedisClient(mock_redis)
+        result = await client.is_token_blacklisted("jti123")
+
+        assert result is True
+
+
+# ============== UnitOfWork Tests ==============
+
+
+class TestUnitOfWorkAbstract:
+    """Tests for UnitOfWork abstract class."""
+
+    def test_unit_of_work_is_abstract(self):
+        """Test UnitOfWork cannot be instantiated."""
+        from code_tutor.shared.infrastructure.uow import UnitOfWork
+
+        with pytest.raises(TypeError):
+            UnitOfWork()
+
+
+class TestSQLAlchemyUnitOfWork:
+    """Tests for SQLAlchemyUnitOfWork."""
+
+    def test_session_property_raises_when_not_started(self):
+        """Test session property raises when UoW not started."""
+        from code_tutor.shared.infrastructure.uow import SQLAlchemyUnitOfWork
+
+        uow = SQLAlchemyUnitOfWork()
+        with pytest.raises(RuntimeError) as exc_info:
+            _ = uow.session
+
+        assert "not started" in str(exc_info.value)
+
+    @pytest.mark.asyncio
+    async def test_commit_does_nothing_when_no_session(self):
+        """Test commit is safe when session is None."""
+        from code_tutor.shared.infrastructure.uow import SQLAlchemyUnitOfWork
+
+        uow = SQLAlchemyUnitOfWork()
+        # Should not raise
+        await uow.commit()
+
+    @pytest.mark.asyncio
+    async def test_rollback_does_nothing_when_no_session(self):
+        """Test rollback is safe when session is None."""
+        from code_tutor.shared.infrastructure.uow import SQLAlchemyUnitOfWork
+
+        uow = SQLAlchemyUnitOfWork()
+        # Should not raise
+        await uow.rollback()
