@@ -393,6 +393,24 @@ class TestUserLessonProgress:
         progress.start()
         assert progress.attempts == 2
 
+    def test_user_lesson_progress_start_when_already_in_progress(self):
+        """Test start() when already in progress (increments attempts only)."""
+        progress = UserLessonProgress()
+        progress.start()  # First start
+
+        first_started_at = progress.started_at
+        assert progress.status == ProgressStatus.IN_PROGRESS
+        assert progress.attempts == 1
+
+        # Call start() again when already IN_PROGRESS
+        progress.start()
+
+        # Status and started_at should not change
+        assert progress.status == ProgressStatus.IN_PROGRESS
+        assert progress.started_at == first_started_at
+        # But attempts should still increment
+        assert progress.attempts == 2
+
     def test_user_lesson_progress_complete(self):
         """Test completing a lesson."""
         progress = UserLessonProgress()
@@ -420,3 +438,30 @@ class TestUserLessonProgress:
         progress = UserLessonProgress(user_id=user_id, lesson_id=lesson_id)
         repr_str = repr(progress)
         assert "not_started" in repr_str.lower()
+
+
+class TestGenerateUuid:
+    """Tests for generate_uuid helper function."""
+
+    def test_generate_uuid_returns_string(self):
+        """Test generate_uuid returns a valid UUID string."""
+        from code_tutor.roadmap.infrastructure.models import generate_uuid
+
+        result = generate_uuid()
+        assert isinstance(result, str)
+        assert len(result) == 36  # UUID string format
+        # Validate it's a proper UUID format (8-4-4-4-12)
+        parts = result.split("-")
+        assert len(parts) == 5
+        assert len(parts[0]) == 8
+        assert len(parts[1]) == 4
+        assert len(parts[2]) == 4
+        assert len(parts[3]) == 4
+        assert len(parts[4]) == 12
+
+    def test_generate_uuid_is_unique(self):
+        """Test generate_uuid returns unique values."""
+        from code_tutor.roadmap.infrastructure.models import generate_uuid
+
+        uuids = [generate_uuid() for _ in range(100)]
+        assert len(uuids) == len(set(uuids))  # All unique
