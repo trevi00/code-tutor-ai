@@ -905,3 +905,549 @@ class TestLearningRoutesUnit:
         assert "인기" in _get_recommendation_reason_kr("popular")
         assert "추천" in _get_recommendation_reason_kr("recommended")
         assert "추천" in _get_recommendation_reason_kr("unknown_reason")
+
+
+# ============== Submission Service _to_summary Tests ==============
+
+
+class TestSubmissionServiceToSummary:
+    """Tests for SubmissionService _to_summary method."""
+
+    @pytest.fixture
+    def submission_service(self):
+        from code_tutor.learning.application.services import SubmissionService
+        return SubmissionService(AsyncMock(), AsyncMock())
+
+    def test_to_summary_converts_submission(self, submission_service):
+        """Test _to_summary converts submission to summary response."""
+        from code_tutor.learning.domain.entities import Submission
+        from code_tutor.learning.domain.value_objects import SubmissionStatus
+        from datetime import datetime, timezone
+
+        submission = Submission.create(
+            user_id=uuid4(),
+            problem_id=uuid4(),
+            code="def solve(): pass",
+            language="python",
+        )
+        # Manually set some values for testing
+        submission._status = SubmissionStatus.ACCEPTED
+        submission._passed_tests = 5
+        submission._total_tests = 5
+
+        result = submission_service._to_summary(submission)
+
+        assert result.id == submission.id
+        assert result.problem_id == submission.problem_id
+        assert result.status == "accepted"
+        assert result.passed_tests == 5
+        assert result.total_tests == 5
+        assert result.submitted_at is not None
+
+
+# ============== Dashboard Service Tests ==============
+
+
+class TestDashboardService:
+    """Tests for DashboardService."""
+
+    @pytest.fixture
+    def mock_session(self):
+        """Create mock async session."""
+        session = AsyncMock()
+        return session
+
+    @pytest.fixture
+    def dashboard_service(self, mock_session):
+        """Create dashboard service with mock session."""
+        from code_tutor.learning.application.dashboard_service import DashboardService
+        return DashboardService(mock_session)
+
+    def test_calculate_activity_level_zero(self, dashboard_service):
+        """Test activity level 0 for zero count."""
+        assert dashboard_service._calculate_activity_level(0) == 0
+
+    def test_calculate_activity_level_one(self, dashboard_service):
+        """Test activity level 1 for 1-2 submissions."""
+        assert dashboard_service._calculate_activity_level(1) == 1
+        assert dashboard_service._calculate_activity_level(2) == 1
+
+    def test_calculate_activity_level_two(self, dashboard_service):
+        """Test activity level 2 for 3-5 submissions."""
+        assert dashboard_service._calculate_activity_level(3) == 2
+        assert dashboard_service._calculate_activity_level(5) == 2
+
+    def test_calculate_activity_level_three(self, dashboard_service):
+        """Test activity level 3 for 6-10 submissions."""
+        assert dashboard_service._calculate_activity_level(6) == 3
+        assert dashboard_service._calculate_activity_level(10) == 3
+
+    def test_calculate_activity_level_four(self, dashboard_service):
+        """Test activity level 4 for more than 10 submissions."""
+        assert dashboard_service._calculate_activity_level(11) == 4
+        assert dashboard_service._calculate_activity_level(100) == 4
+
+    def test_calculate_recent_trend_insufficient_data(self, dashboard_service):
+        """Test trend calculation with insufficient data."""
+        from code_tutor.learning.application.dashboard_dto import RecentSubmission
+        from datetime import datetime, timezone
+
+        # Less than 3 submissions
+        submissions = [
+            RecentSubmission(
+                id=uuid4(),
+                problem_id=uuid4(),
+                problem_title="Test",
+                status="accepted",
+                submitted_at=datetime.now(timezone.utc),
+            )
+        ]
+        assert dashboard_service._calculate_recent_trend(submissions) == 0.0
+
+        # Empty list
+        assert dashboard_service._calculate_recent_trend([]) == 0.0
+
+    def test_calculate_recent_trend_positive(self, dashboard_service):
+        """Test positive trend calculation."""
+        from code_tutor.learning.application.dashboard_dto import RecentSubmission
+        from datetime import datetime, timezone
+
+        # Recent submissions are more successful
+        submissions = [
+            RecentSubmission(id=uuid4(), problem_id=uuid4(), problem_title="T1", status="accepted", submitted_at=datetime.now(timezone.utc)),
+            RecentSubmission(id=uuid4(), problem_id=uuid4(), problem_title="T2", status="accepted", submitted_at=datetime.now(timezone.utc)),
+            RecentSubmission(id=uuid4(), problem_id=uuid4(), problem_title="T3", status="wrong_answer", submitted_at=datetime.now(timezone.utc)),
+            RecentSubmission(id=uuid4(), problem_id=uuid4(), problem_title="T4", status="wrong_answer", submitted_at=datetime.now(timezone.utc)),
+        ]
+        trend = dashboard_service._calculate_recent_trend(submissions)
+        assert trend > 0  # Recent half has better success rate
+
+    def test_calculate_recent_trend_negative(self, dashboard_service):
+        """Test negative trend calculation."""
+        from code_tutor.learning.application.dashboard_dto import RecentSubmission
+        from datetime import datetime, timezone
+
+        # Older submissions were more successful
+        submissions = [
+            RecentSubmission(id=uuid4(), problem_id=uuid4(), problem_title="T1", status="wrong_answer", submitted_at=datetime.now(timezone.utc)),
+            RecentSubmission(id=uuid4(), problem_id=uuid4(), problem_title="T2", status="wrong_answer", submitted_at=datetime.now(timezone.utc)),
+            RecentSubmission(id=uuid4(), problem_id=uuid4(), problem_title="T3", status="accepted", submitted_at=datetime.now(timezone.utc)),
+            RecentSubmission(id=uuid4(), problem_id=uuid4(), problem_title="T4", status="accepted", submitted_at=datetime.now(timezone.utc)),
+        ]
+        trend = dashboard_service._calculate_recent_trend(submissions)
+        assert trend < 0  # Recent half has worse success rate
+
+    def test_generate_skill_predictions_empty(self, dashboard_service):
+        """Test skill predictions with empty progress."""
+        predictions = dashboard_service._generate_skill_predictions([])
+        assert predictions == []
+
+    def test_generate_skill_predictions_with_data(self, dashboard_service):
+        """Test skill predictions with category progress."""
+        from code_tutor.learning.application.dashboard_dto import CategoryProgress
+
+        progress = [
+            CategoryProgress(category="array", total_problems=10, solved_problems=5, success_rate=80.0),
+            CategoryProgress(category="string", total_problems=5, solved_problems=1, success_rate=30.0),
+        ]
+
+        predictions = dashboard_service._generate_skill_predictions(progress)
+
+        assert len(predictions) == 2
+        # Check that predictions have expected fields
+        for pred in predictions:
+            assert hasattr(pred, 'category')
+            assert hasattr(pred, 'current_level')
+            assert hasattr(pred, 'predicted_level')
+            assert hasattr(pred, 'confidence')
+            assert hasattr(pred, 'recommended_focus')
+
+    def test_generate_skill_predictions_zero_problems(self, dashboard_service):
+        """Test skill predictions skips categories with zero problems."""
+        from code_tutor.learning.application.dashboard_dto import CategoryProgress
+
+        progress = [
+            CategoryProgress(category="array", total_problems=0, solved_problems=0, success_rate=0.0),
+        ]
+
+        predictions = dashboard_service._generate_skill_predictions(progress)
+        assert predictions == []
+
+    def test_generate_skill_predictions_recommended_focus(self, dashboard_service):
+        """Test skill predictions marks recommended focus for low completion."""
+        from code_tutor.learning.application.dashboard_dto import CategoryProgress
+
+        # Low completion rate (1/10 = 10%) with enough problems
+        progress = [
+            CategoryProgress(category="array", total_problems=10, solved_problems=1, success_rate=50.0),
+        ]
+
+        predictions = dashboard_service._generate_skill_predictions(progress)
+
+        assert len(predictions) == 1
+        assert predictions[0].recommended_focus is True
+
+    def test_generate_insights_positive_trend(self, dashboard_service):
+        """Test insights generation with positive trend."""
+        from code_tutor.learning.application.dashboard_dto import UserStats, StreakInfo
+
+        stats = UserStats(
+            total_problems_attempted=10,
+            total_problems_solved=8,
+            total_submissions=20,
+            overall_success_rate=80.0,
+            easy_solved=3,
+            medium_solved=3,
+            hard_solved=2,
+            streak=StreakInfo(current_streak=2, longest_streak=5),
+        )
+        category_progress = []
+        trend = 0.2  # Positive trend
+
+        insights = dashboard_service._generate_insights(stats, category_progress, trend)
+
+        # Should have trend insight
+        trend_insights = [i for i in insights if i.type == "trend"]
+        assert len(trend_insights) >= 1
+        assert "상승" in trend_insights[0].message
+
+    def test_generate_insights_negative_trend(self, dashboard_service):
+        """Test insights generation with negative trend."""
+        from code_tutor.learning.application.dashboard_dto import UserStats, StreakInfo
+
+        stats = UserStats(
+            total_problems_attempted=10,
+            total_problems_solved=5,
+            total_submissions=20,
+            overall_success_rate=50.0,
+            easy_solved=3,
+            medium_solved=2,
+            hard_solved=0,
+            streak=StreakInfo(current_streak=1, longest_streak=3),
+        )
+        category_progress = []
+        trend = -0.2  # Negative trend
+
+        insights = dashboard_service._generate_insights(stats, category_progress, trend)
+
+        # Should have trend insight about decline
+        trend_insights = [i for i in insights if i.type == "trend"]
+        assert len(trend_insights) >= 1
+        assert "하락" in trend_insights[0].message
+
+    def test_generate_insights_long_streak(self, dashboard_service):
+        """Test insights generation with long streak."""
+        from code_tutor.learning.application.dashboard_dto import UserStats, StreakInfo
+
+        stats = UserStats(
+            total_problems_attempted=20,
+            total_problems_solved=15,
+            total_submissions=50,
+            overall_success_rate=75.0,
+            easy_solved=5,
+            medium_solved=7,
+            hard_solved=3,
+            streak=StreakInfo(current_streak=10, longest_streak=10),
+        )
+
+        insights = dashboard_service._generate_insights(stats, [], 0.0)
+
+        # Should have achievement insight for 7+ day streak
+        achievement_insights = [i for i in insights if i.type == "achievement"]
+        assert len(achievement_insights) >= 1
+        assert "연속" in achievement_insights[0].message
+
+    def test_generate_insights_medium_streak(self, dashboard_service):
+        """Test insights generation with medium streak (3-6 days)."""
+        from code_tutor.learning.application.dashboard_dto import UserStats, StreakInfo
+
+        stats = UserStats(
+            total_problems_attempted=10,
+            total_problems_solved=8,
+            total_submissions=20,
+            overall_success_rate=70.0,
+            easy_solved=4,
+            medium_solved=3,
+            hard_solved=1,
+            streak=StreakInfo(current_streak=5, longest_streak=5),
+        )
+
+        insights = dashboard_service._generate_insights(stats, [], 0.0)
+
+        # Should have achievement insight for 3-6 day streak
+        achievement_insights = [i for i in insights if i.type == "achievement"]
+        assert len(achievement_insights) >= 1
+        assert "7일" in achievement_insights[0].message  # Encouraging to reach 7
+
+    def test_generate_insights_weak_category(self, dashboard_service):
+        """Test insights generation with weak category."""
+        from code_tutor.learning.application.dashboard_dto import UserStats, StreakInfo, CategoryProgress
+
+        stats = UserStats(
+            total_problems_attempted=10,
+            total_problems_solved=5,
+            total_submissions=20,
+            overall_success_rate=50.0,
+            easy_solved=3,
+            medium_solved=2,
+            hard_solved=0,
+            streak=StreakInfo(current_streak=1, longest_streak=3),
+        )
+        category_progress = [
+            CategoryProgress(category="dynamic_programming", total_problems=5, solved_problems=1, success_rate=30.0),
+        ]
+
+        insights = dashboard_service._generate_insights(stats, category_progress, 0.0)
+
+        # Should have recommendation insight for weak category
+        rec_insights = [i for i in insights if i.type == "recommendation"]
+        assert len(rec_insights) >= 1
+
+
+class TestDashboardServiceAsync:
+    """Async tests for DashboardService."""
+
+    @pytest.fixture
+    def mock_session(self):
+        """Create mock async session."""
+        session = AsyncMock()
+        return session
+
+    @pytest.fixture
+    def dashboard_service(self, mock_session):
+        """Create dashboard service with mock session."""
+        from code_tutor.learning.application.dashboard_service import DashboardService
+        return DashboardService(mock_session)
+
+    @pytest.mark.asyncio
+    async def test_get_streak_info_no_submissions(self, dashboard_service, mock_session):
+        """Test streak info with no submissions."""
+        # Mock empty result
+        mock_result = MagicMock()
+        mock_result.all.return_value = []
+        mock_session.execute.return_value = mock_result
+
+        streak = await dashboard_service._get_streak_info(uuid4())
+
+        assert streak.current_streak == 0
+        assert streak.longest_streak == 0
+
+    @pytest.mark.asyncio
+    async def test_get_streak_info_with_string_dates(self, dashboard_service, mock_session):
+        """Test streak info handles string dates from SQLite."""
+        from datetime import datetime, timedelta, timezone
+
+        today = datetime.now(timezone.utc).date()
+        yesterday = today - timedelta(days=1)
+
+        # Mock result with string dates (SQLite format)
+        mock_result = MagicMock()
+        mock_result.all.return_value = [
+            (today.isoformat(),),
+            (yesterday.isoformat(),),
+        ]
+        mock_session.execute.return_value = mock_result
+
+        streak = await dashboard_service._get_streak_info(uuid4())
+
+        assert streak.current_streak >= 1
+        assert streak.longest_streak >= 1
+
+    @pytest.mark.asyncio
+    async def test_get_user_stats_empty(self, dashboard_service, mock_session):
+        """Test user stats with no data."""
+        # Create mock results for all queries
+        mock_result1 = MagicMock()
+        mock_result1.first.return_value = MagicMock(total_submissions=0, accepted_submissions=0)
+
+        mock_result2 = MagicMock()
+        mock_result2.first.return_value = MagicMock(attempted=0, solved=0)
+
+        mock_result3 = MagicMock()
+        mock_result3.all.return_value = []
+
+        # Streak info query
+        mock_result4 = MagicMock()
+        mock_result4.all.return_value = []
+
+        mock_session.execute.side_effect = [mock_result1, mock_result2, mock_result3, mock_result4]
+
+        stats = await dashboard_service._get_user_stats(uuid4())
+
+        assert stats.total_submissions == 0
+        assert stats.total_problems_solved == 0
+        assert stats.overall_success_rate == 0
+
+    @pytest.mark.asyncio
+    async def test_get_category_progress_empty(self, dashboard_service, mock_session):
+        """Test category progress with no data."""
+        mock_result1 = MagicMock()
+        mock_result1.all.return_value = []
+
+        mock_result2 = MagicMock()
+        mock_result2.all.return_value = []
+
+        mock_session.execute.side_effect = [mock_result1, mock_result2]
+
+        progress = await dashboard_service._get_category_progress(uuid4())
+
+        assert progress == []
+
+    @pytest.mark.asyncio
+    async def test_get_recent_submissions_empty(self, dashboard_service, mock_session):
+        """Test recent submissions with no data."""
+        mock_result = MagicMock()
+        mock_result.all.return_value = []
+        mock_session.execute.return_value = mock_result
+
+        submissions = await dashboard_service._get_recent_submissions(uuid4())
+
+        assert submissions == []
+
+    @pytest.mark.asyncio
+    async def test_get_heatmap_data_empty(self, dashboard_service, mock_session):
+        """Test heatmap data generation with no submissions."""
+        mock_result = MagicMock()
+        mock_result.all.return_value = []
+        mock_session.execute.return_value = mock_result
+
+        heatmap = await dashboard_service._get_heatmap_data(uuid4(), days=7)
+
+        # Should still return 8 days of data (7 + today)
+        assert len(heatmap) == 8
+        # All should have level 0
+        assert all(h.level == 0 for h in heatmap)
+
+    @pytest.mark.asyncio
+    async def test_generate_recommendations_with_failed(self, dashboard_service, mock_session):
+        """Test recommendations include retry for failed submissions."""
+        from code_tutor.learning.application.dashboard_dto import (
+            UserStats, StreakInfo, CategoryProgress, RecentSubmission
+        )
+        from datetime import datetime, timezone
+
+        stats = UserStats(
+            total_problems_attempted=5,
+            total_problems_solved=3,
+            total_submissions=10,
+            overall_success_rate=60.0,
+            easy_solved=2,
+            medium_solved=1,
+            hard_solved=0,
+            streak=StreakInfo(current_streak=1, longest_streak=2),
+        )
+        category_progress = []
+        recent_submissions = [
+            RecentSubmission(
+                id=uuid4(),
+                problem_id=uuid4(),
+                problem_title="Failed Problem",
+                status="wrong_answer",
+                submitted_at=datetime.now(timezone.utc),
+            ),
+        ]
+
+        recommendations = await dashboard_service._generate_recommendations(
+            uuid4(), stats, category_progress, recent_submissions
+        )
+
+        # Should have review recommendation
+        review_recs = [r for r in recommendations if r.type == "review"]
+        assert len(review_recs) >= 1
+
+    @pytest.mark.asyncio
+    async def test_generate_recommendations_weak_category(self, dashboard_service, mock_session):
+        """Test recommendations for weak category."""
+        from code_tutor.learning.application.dashboard_dto import (
+            UserStats, StreakInfo, CategoryProgress
+        )
+
+        stats = UserStats(
+            total_problems_attempted=10,
+            total_problems_solved=5,
+            total_submissions=20,
+            overall_success_rate=50.0,
+            easy_solved=3,
+            medium_solved=2,
+            hard_solved=0,
+            streak=StreakInfo(current_streak=1, longest_streak=3),
+        )
+        category_progress = [
+            CategoryProgress(category="graph", total_problems=5, solved_problems=1, success_rate=30.0),
+        ]
+
+        recommendations = await dashboard_service._generate_recommendations(
+            uuid4(), stats, category_progress, []
+        )
+
+        # Should have practice recommendation
+        practice_recs = [r for r in recommendations if r.type == "practice"]
+        assert len(practice_recs) >= 1
+
+    @pytest.mark.asyncio
+    async def test_generate_recommendations_challenge(self, dashboard_service, mock_session):
+        """Test challenge recommendation for good performers."""
+        from code_tutor.learning.application.dashboard_dto import UserStats, StreakInfo
+
+        stats = UserStats(
+            total_problems_attempted=20,
+            total_problems_solved=15,
+            total_submissions=50,
+            overall_success_rate=80.0,
+            easy_solved=5,
+            medium_solved=7,
+            hard_solved=3,
+            streak=StreakInfo(current_streak=5, longest_streak=10),
+        )
+
+        recommendations = await dashboard_service._generate_recommendations(
+            uuid4(), stats, [], []
+        )
+
+        # Should have challenge recommendation
+        challenge_recs = [r for r in recommendations if r.type == "challenge"]
+        assert len(challenge_recs) >= 1
+
+    @pytest.mark.asyncio
+    async def test_get_prediction(self, dashboard_service, mock_session):
+        """Test get_prediction method."""
+        # Mock all required queries
+        # Stats query 1
+        mock_result1 = MagicMock()
+        mock_result1.first.return_value = MagicMock(total_submissions=10, accepted_submissions=7)
+
+        # Stats query 2
+        mock_result2 = MagicMock()
+        mock_result2.first.return_value = MagicMock(attempted=5, solved=4)
+
+        # Stats query 3 (difficulty)
+        mock_result3 = MagicMock()
+        mock_result3.all.return_value = []
+
+        # Streak query
+        mock_result4 = MagicMock()
+        mock_result4.all.return_value = []
+
+        # Category progress query 1
+        mock_result5 = MagicMock()
+        mock_result5.all.return_value = []
+
+        # Category progress query 2
+        mock_result6 = MagicMock()
+        mock_result6.all.return_value = []
+
+        # Recent submissions query
+        mock_result7 = MagicMock()
+        mock_result7.all.return_value = []
+
+        mock_session.execute.side_effect = [
+            mock_result1, mock_result2, mock_result3, mock_result4,
+            mock_result5, mock_result6, mock_result7
+        ]
+
+        prediction = await dashboard_service.get_prediction(uuid4())
+
+        assert prediction.current_success_rate >= 0
+        assert prediction.predicted_success_rate >= 0
+        assert prediction.prediction_period == "next_week"
+        assert 0 <= prediction.confidence <= 1
