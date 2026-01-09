@@ -1,5 +1,5 @@
 /**
- * Debugger Step Controls Component
+ * Debugger Step Controls Component - Enhanced with modern design
  */
 
 import {
@@ -10,6 +10,7 @@ import {
   FastForward,
   Rewind,
   Square,
+  Gauge,
 } from 'lucide-react';
 
 interface StepControlsProps {
@@ -46,18 +47,18 @@ export default function StepControls({
   const progress = totalSteps > 0 ? (currentStep / totalSteps) * 100 : 0;
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 p-4">
+    <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-5 shadow-sm">
       {/* Progress Bar */}
-      <div className="mb-4">
-        <div className="flex justify-between text-sm text-gray-600 mb-1">
-          <span>
-            스텝 {currentStep} / {totalSteps}
+      <div className="mb-5">
+        <div className="flex justify-between text-sm text-slate-600 dark:text-slate-400 mb-2">
+          <span className="font-medium">
+            스텝 <span className="text-purple-600 dark:text-purple-400 font-bold">{currentStep}</span> / {totalSteps}
           </span>
-          <span>{progress.toFixed(0)}%</span>
+          <span className="font-mono text-purple-600 dark:text-purple-400">{progress.toFixed(0)}%</span>
         </div>
-        <div className="w-full bg-gray-200 rounded-full h-2">
+        <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2.5 overflow-hidden">
           <div
-            className="bg-blue-600 h-2 rounded-full transition-all duration-100"
+            className="bg-gradient-to-r from-purple-600 to-violet-600 h-2.5 rounded-full transition-all duration-200"
             style={{ width: `${progress}%` }}
           />
         </div>
@@ -115,26 +116,31 @@ export default function StepControls({
           <FastForward className="w-4 h-4" />
         </ControlButton>
 
+        {/* Divider */}
+        <div className="w-px h-8 bg-slate-200 dark:bg-slate-600 mx-2" />
+
         {/* Reset */}
-        <div className="w-px h-6 bg-gray-300 mx-2" />
-        <ControlButton onClick={onReset} disabled={disabled} title="리셋">
+        <ControlButton onClick={onReset} disabled={disabled} title="리셋" danger>
           <Square className="w-4 h-4" />
         </ControlButton>
       </div>
 
       {/* Speed Control */}
-      <div className="mt-4 flex items-center justify-center gap-2">
-        <span className="text-sm text-gray-600">속도:</span>
-        <div className="flex gap-1">
+      <div className="mt-5 flex items-center justify-center gap-3">
+        <div className="flex items-center gap-1.5 text-sm text-slate-600 dark:text-slate-400">
+          <Gauge className="w-4 h-4" />
+          <span>속도:</span>
+        </div>
+        <div className="flex gap-1.5">
           {[0.5, 1, 2, 4].map((speed) => (
             <button
               key={speed}
               onClick={() => onSpeedChange(speed)}
               disabled={disabled}
-              className={`px-2 py-1 text-xs rounded ${
+              className={`px-3 py-1.5 text-xs rounded-xl font-medium transition-all ${
                 playSpeed === speed
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  ? 'bg-gradient-to-r from-purple-600 to-violet-600 text-white shadow-md'
+                  : 'bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600'
               } disabled:opacity-50`}
             >
               {speed}x
@@ -150,6 +156,7 @@ interface ControlButtonProps {
   onClick: () => void;
   disabled?: boolean;
   primary?: boolean;
+  danger?: boolean;
   title?: string;
   children: React.ReactNode;
 }
@@ -158,6 +165,7 @@ function ControlButton({
   onClick,
   disabled,
   primary,
+  danger,
   title,
   children,
 }: ControlButtonProps) {
@@ -166,10 +174,12 @@ function ControlButton({
       onClick={onClick}
       disabled={disabled}
       title={title}
-      className={`p-2 rounded-full transition-colors ${
+      className={`p-2.5 rounded-xl transition-all ${
         primary
-          ? 'bg-blue-600 text-white hover:bg-blue-700 disabled:bg-gray-300'
-          : 'bg-gray-100 text-gray-700 hover:bg-gray-200 disabled:bg-gray-100 disabled:text-gray-400'
+          ? 'bg-gradient-to-r from-purple-600 to-violet-600 text-white hover:from-purple-700 hover:to-violet-700 disabled:from-slate-300 disabled:to-slate-400 dark:disabled:from-slate-600 dark:disabled:to-slate-700 shadow-lg scale-110'
+          : danger
+          ? 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-900/50 disabled:bg-slate-100 dark:disabled:bg-slate-700 disabled:text-slate-400 dark:disabled:text-slate-500'
+          : 'bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600 disabled:bg-slate-100 dark:disabled:bg-slate-800 disabled:text-slate-400 dark:disabled:text-slate-600'
       } disabled:cursor-not-allowed`}
     >
       {children}
@@ -198,19 +208,19 @@ export function CompactControls({
       <button
         onClick={onStepBack}
         disabled={disabled || currentStep === 0}
-        className="p-1 rounded hover:bg-gray-100 disabled:opacity-50"
+        className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 disabled:opacity-50 transition-colors"
       >
-        <SkipBack className="w-4 h-4" />
+        <SkipBack className="w-4 h-4 text-slate-600 dark:text-slate-400" />
       </button>
-      <span className="text-sm text-gray-600">
+      <span className="text-sm text-slate-600 dark:text-slate-400 font-mono px-2 py-0.5 bg-slate-100 dark:bg-slate-700 rounded-lg">
         {currentStep}/{totalSteps}
       </span>
       <button
         onClick={onStepForward}
         disabled={disabled || currentStep >= totalSteps}
-        className="p-1 rounded hover:bg-gray-100 disabled:opacity-50"
+        className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 disabled:opacity-50 transition-colors"
       >
-        <SkipForward className="w-4 h-4" />
+        <SkipForward className="w-4 h-4 text-slate-600 dark:text-slate-400" />
       </button>
     </div>
   );

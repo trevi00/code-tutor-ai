@@ -1,9 +1,9 @@
 /**
- * Main Debugger Panel Component
+ * Main Debugger Panel Component - Enhanced with modern design
  */
 
 import { useState, useCallback, useEffect, useRef } from 'react';
-import { Bug, Play, AlertCircle, Terminal, Code2 } from 'lucide-react';
+import { Bug, AlertCircle, Terminal, Code2, Zap, Clock, Sparkles } from 'lucide-react';
 import { debugCode, quickDebug } from '../../api/debugger';
 import type { DebugResponse, QuickDebugResponse, ExecutionStep, QuickDebugStep } from '../../api/debugger';
 import { STEP_TYPE_INFO } from '../../api/debugger';
@@ -202,26 +202,28 @@ export default function DebuggerPanel({ code, input, onLineHighlight }: Debugger
   const hasResult = debugResult !== null || quickResult !== null;
 
   return (
-    <div className="h-full flex flex-col bg-white rounded-lg border border-gray-200 overflow-hidden">
+    <div className="h-full flex flex-col bg-white dark:bg-slate-800 rounded-2xl shadow-lg overflow-hidden">
       {/* Header */}
-      <div className="px-4 py-3 bg-gray-50 border-b flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Bug className="w-5 h-5 text-purple-600" />
-          <span className="font-medium text-gray-800">단계별 디버거</span>
+      <div className="px-5 py-4 bg-gradient-to-r from-purple-100 to-violet-100 dark:from-purple-900/30 dark:to-violet-900/30 border-b border-purple-200 dark:border-purple-800 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-purple-500/20 dark:bg-purple-500/30 flex items-center justify-center">
+            <Bug className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+          </div>
+          <span className="font-bold text-slate-800 dark:text-slate-200">단계별 디버거</span>
         </div>
         <div className="flex items-center gap-2">
           <button
             onClick={handleQuickDebug}
             disabled={isDebugging || !code.trim()}
-            className="px-3 py-1.5 text-sm bg-gray-100 text-gray-700 rounded hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
+            className="px-4 py-2 text-sm bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 border border-slate-200 dark:border-slate-600 transition-all shadow-sm"
           >
-            <Play className="w-4 h-4" />
+            <Zap className="w-4 h-4" />
             빠른 실행
           </button>
           <button
             onClick={handleStartDebug}
             disabled={isDebugging || !code.trim()}
-            className="px-3 py-1.5 text-sm bg-purple-600 text-white rounded hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
+            className="px-4 py-2 text-sm bg-gradient-to-r from-purple-600 to-violet-600 text-white rounded-xl hover:from-purple-700 hover:to-violet-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 transition-all shadow-md"
           >
             <Bug className="w-4 h-4" />
             {isDebugging ? '디버깅 중...' : '디버그 시작'}
@@ -231,22 +233,26 @@ export default function DebuggerPanel({ code, input, onLineHighlight }: Debugger
 
       {/* Error display */}
       {error && (
-        <div className="px-4 py-3 bg-red-50 border-b border-red-100 flex items-start gap-2">
-          <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
-          <div className="text-sm text-red-700 whitespace-pre-wrap">{error}</div>
+        <div className="px-5 py-4 bg-gradient-to-r from-red-50 to-rose-50 dark:from-red-900/20 dark:to-rose-900/20 border-b border-red-200 dark:border-red-800 flex items-start gap-3">
+          <div className="w-8 h-8 rounded-lg bg-red-100 dark:bg-red-900/50 flex items-center justify-center flex-shrink-0">
+            <AlertCircle className="w-4 h-4 text-red-600 dark:text-red-400" />
+          </div>
+          <div className="text-sm text-red-700 dark:text-red-300 whitespace-pre-wrap">{error}</div>
         </div>
       )}
 
       {/* Main content */}
-      <div className="flex-1 overflow-auto p-4">
+      <div className="flex-1 overflow-auto p-5">
         {!hasResult ? (
-          <div className="h-full flex flex-col items-center justify-center text-gray-500">
-            <Bug className="w-12 h-12 mb-3 text-gray-300" />
-            <p className="text-lg font-medium mb-1">디버거 준비 완료</p>
-            <p className="text-sm">코드를 작성하고 "디버그 시작" 버튼을 클릭하세요</p>
+          <div className="h-full flex flex-col items-center justify-center text-slate-500 dark:text-slate-400">
+            <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-purple-100 to-violet-100 dark:from-purple-900/30 dark:to-violet-900/30 flex items-center justify-center mb-4">
+              <Bug className="w-10 h-10 text-purple-400 dark:text-purple-500" />
+            </div>
+            <p className="text-lg font-bold text-slate-700 dark:text-slate-300 mb-2">디버거 준비 완료</p>
+            <p className="text-sm text-slate-500 dark:text-slate-400">코드를 작성하고 "디버그 시작" 버튼을 클릭하세요</p>
           </div>
         ) : (
-          <div className="space-y-4">
+          <div className="space-y-5">
             {/* Step Controls */}
             <StepControls
               currentStep={currentStep}
@@ -265,24 +271,26 @@ export default function DebuggerPanel({ code, input, onLineHighlight }: Debugger
 
             {/* Current Step Info */}
             {currentStepData && (
-              <div className="bg-white rounded-lg border border-gray-200 p-4">
-                <div className="flex items-center gap-3 mb-3">
-                  <Code2 className="w-5 h-5 text-gray-500" />
-                  <span className="font-medium text-gray-800">현재 실행 위치</span>
-                  <span className={`px-2 py-0.5 rounded text-xs ${STEP_TYPE_INFO[currentStepData.step_type].color}`}>
+              <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden shadow-sm">
+                <div className="px-5 py-3 bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-700/50 dark:to-slate-800 border-b border-slate-200 dark:border-slate-700 flex items-center gap-3">
+                  <Code2 className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                  <span className="font-medium text-slate-800 dark:text-slate-200">현재 실행 위치</span>
+                  <span className={`px-3 py-1 rounded-lg text-xs font-medium ${STEP_TYPE_INFO[currentStepData.step_type].color}`}>
                     {STEP_TYPE_INFO[currentStepData.step_type].label}
                   </span>
                 </div>
-                <div className="bg-gray-50 rounded p-3">
-                  <div className="text-sm text-gray-500 mb-1">
-                    줄 {currentStepData.line_number}
+                <div className="p-4">
+                  <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400 mb-3">
+                    <span className="px-2 py-0.5 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400 rounded-lg text-xs font-mono">
+                      줄 {currentStepData.line_number}
+                    </span>
                     {currentStepData.function_name !== '<module>' && (
-                      <span className="ml-2">
-                        in <span className="font-mono">{currentStepData.function_name}()</span>
+                      <span className="text-slate-400 dark:text-slate-500">
+                        in <span className="font-mono text-purple-600 dark:text-purple-400">{currentStepData.function_name}()</span>
                       </span>
                     )}
                   </div>
-                  <pre className="font-mono text-sm bg-gray-900 text-green-400 p-2 rounded overflow-x-auto">
+                  <pre className="font-mono text-sm bg-slate-900 text-emerald-400 p-4 rounded-xl overflow-x-auto">
                     {currentStepData.line_content}
                   </pre>
                 </div>
@@ -307,27 +315,29 @@ export default function DebuggerPanel({ code, input, onLineHighlight }: Debugger
 
             {/* Output */}
             {(debugResult?.output || quickResult?.output) && (
-              <div className="bg-white rounded-lg border border-gray-200">
-                <div className="px-3 py-2 bg-gray-50 rounded-t-lg border-b flex items-center gap-2">
-                  <Terminal className="w-4 h-4 text-gray-500" />
-                  <span className="font-medium text-gray-700 text-sm">출력</span>
+              <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden shadow-sm">
+                <div className="px-5 py-3 bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-900/20 dark:to-teal-900/20 border-b border-emerald-200 dark:border-emerald-800 flex items-center gap-2">
+                  <Terminal className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                  <span className="font-medium text-slate-700 dark:text-slate-300 text-sm">출력</span>
                 </div>
-                <pre className="p-3 font-mono text-sm bg-gray-900 text-gray-100 rounded-b-lg whitespace-pre-wrap max-h-40 overflow-auto">
+                <pre className="p-4 font-mono text-sm bg-slate-900 text-slate-100 whitespace-pre-wrap max-h-40 overflow-auto">
                   {debugResult?.output || quickResult?.output || '(출력 없음)'}
                 </pre>
               </div>
             )}
 
             {/* Execution Info */}
-            <div className="text-xs text-gray-500 flex items-center gap-4">
-              <span>
-                총 {totalSteps} 스텝
-              </span>
-              <span>
-                실행 시간: {(debugResult?.execution_time_ms ?? quickResult?.execution_time_ms ?? 0).toFixed(1)}ms
-              </span>
+            <div className="flex items-center gap-4 text-xs text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-700/50 rounded-xl p-3">
+              <div className="flex items-center gap-1.5">
+                <Sparkles className="w-3.5 h-3.5 text-purple-500" />
+                <span>총 {totalSteps} 스텝</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <Clock className="w-3.5 h-3.5 text-blue-500" />
+                <span>실행 시간: {(debugResult?.execution_time_ms ?? quickResult?.execution_time_ms ?? 0).toFixed(1)}ms</span>
+              </div>
               {debugResult?.session_id && (
-                <span className="font-mono">
+                <span className="font-mono text-slate-400 dark:text-slate-500">
                   세션: {debugResult.session_id.slice(0, 8)}...
                 </span>
               )}

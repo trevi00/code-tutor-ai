@@ -1,8 +1,8 @@
 /**
- * Call Stack Component
+ * Call Stack Component - Enhanced with modern design
  */
 
-import { ChevronDown, ChevronRight, Layers } from 'lucide-react';
+import { ChevronDown, ChevronRight, Layers, GitBranch } from 'lucide-react';
 import { useState } from 'react';
 import type { StackFrame } from '../../api/debugger';
 import VariableInspector from './VariableInspector';
@@ -19,19 +19,22 @@ export default function CallStack({ frames, currentLine: _currentLine }: CallSta
 
   if (frames.length === 0) {
     return (
-      <div className="text-sm text-gray-500 italic p-2">호출 스택 비어있음</div>
+      <div className="text-sm text-slate-500 dark:text-slate-400 italic p-4 bg-slate-50 dark:bg-slate-800 rounded-xl flex items-center gap-2">
+        <GitBranch className="w-4 h-4" />
+        호출 스택 비어있음
+      </div>
     );
   }
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200">
-      <div className="px-3 py-2 bg-gray-50 rounded-t-lg border-b flex items-center gap-2">
-        <Layers className="w-4 h-4 text-gray-500" />
-        <span className="font-medium text-gray-700 text-sm">호출 스택</span>
-        <span className="text-xs text-gray-500">({frames.length}개)</span>
+    <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden shadow-sm">
+      <div className="px-5 py-3 bg-gradient-to-r from-orange-50 to-amber-50 dark:from-orange-900/20 dark:to-amber-900/20 border-b border-orange-200 dark:border-orange-800 flex items-center gap-2">
+        <Layers className="w-4 h-4 text-orange-600 dark:text-orange-400" />
+        <span className="font-medium text-slate-700 dark:text-slate-300 text-sm">호출 스택</span>
+        <span className="px-2 py-0.5 bg-orange-100 dark:bg-orange-900/50 text-orange-700 dark:text-orange-400 text-xs rounded-lg font-medium">{frames.length}개</span>
       </div>
 
-      <div className="divide-y divide-gray-100">
+      <div className="divide-y divide-slate-100 dark:divide-slate-700">
         {frames
           .slice()
           .reverse()
@@ -43,39 +46,39 @@ export default function CallStack({ frames, currentLine: _currentLine }: CallSta
             return (
               <div
                 key={`${frame.function_name}-${originalIdx}`}
-                className={`${isCurrent ? 'bg-blue-50' : ''}`}
+                className={`${isCurrent ? 'bg-gradient-to-r from-purple-50 to-violet-50 dark:from-purple-900/10 dark:to-violet-900/10' : ''}`}
               >
                 <button
                   onClick={() => setExpandedFrame(isExpanded ? null : originalIdx)}
-                  className={`w-full px-3 py-2 flex items-center justify-between hover:bg-gray-50 ${
-                    isCurrent ? 'hover:bg-blue-100' : ''
+                  className={`w-full px-5 py-3 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors ${
+                    isCurrent ? 'hover:bg-purple-100/50 dark:hover:bg-purple-900/20' : ''
                   }`}
                 >
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-3">
                     {isExpanded ? (
-                      <ChevronDown className="w-4 h-4 text-gray-400" />
+                      <ChevronDown className="w-4 h-4 text-slate-400 dark:text-slate-500" />
                     ) : (
-                      <ChevronRight className="w-4 h-4 text-gray-400" />
+                      <ChevronRight className="w-4 h-4 text-slate-400 dark:text-slate-500" />
                     )}
                     <span className="font-mono text-sm">
-                      <span className={`font-medium ${isCurrent ? 'text-blue-700' : 'text-gray-900'}`}>
+                      <span className={`font-semibold ${isCurrent ? 'text-purple-700 dark:text-purple-400' : 'text-slate-900 dark:text-slate-100'}`}>
                         {frame.function_name}
                       </span>
-                      <span className="text-gray-400">()</span>
+                      <span className="text-slate-400 dark:text-slate-500">()</span>
                     </span>
                     {isCurrent && (
-                      <span className="px-1.5 py-0.5 bg-blue-100 text-blue-700 text-xs rounded">
+                      <span className="px-2 py-0.5 bg-gradient-to-r from-purple-500 to-violet-500 text-white text-xs rounded-lg font-medium shadow-sm">
                         현재
                       </span>
                     )}
                   </div>
-                  <span className="text-xs text-gray-500">
+                  <span className="text-xs text-slate-500 dark:text-slate-400 font-mono px-2 py-0.5 bg-slate-100 dark:bg-slate-700 rounded">
                     줄 {frame.line_number}
                   </span>
                 </button>
 
                 {isExpanded && frame.local_variables.length > 0 && (
-                  <div className="px-3 pb-3 pl-8">
+                  <div className="px-5 pb-4 pl-12">
                     <VariableInspector
                       variables={frame.local_variables}
                       title="지역 변수"
@@ -99,11 +102,12 @@ export function CompactCallStack({ frames }: CompactCallStackProps) {
   if (frames.length === 0) return null;
 
   return (
-    <div className="flex items-center gap-1 text-sm text-gray-600">
+    <div className="flex items-center gap-1.5 text-sm text-slate-600 dark:text-slate-400">
+      <Layers className="w-4 h-4 text-orange-500" />
       {frames.map((frame, idx) => (
         <span key={idx} className="flex items-center">
-          {idx > 0 && <span className="mx-1 text-gray-400">→</span>}
-          <span className="font-mono">{frame.function_name}</span>
+          {idx > 0 && <span className="mx-1.5 text-slate-400 dark:text-slate-500">→</span>}
+          <span className="font-mono px-2 py-0.5 bg-slate-100 dark:bg-slate-700 rounded">{frame.function_name}</span>
         </span>
       ))}
     </div>

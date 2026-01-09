@@ -1,5 +1,5 @@
 /**
- * Code Viewer Component for Debugger
+ * Code Viewer Component for Debugger - Enhanced with modern design
  * Displays code with line numbers and highlights current execution line
  */
 
@@ -39,7 +39,7 @@ export default function CodeViewer({
   return (
     <div
       ref={containerRef}
-      className={`bg-gray-900 rounded-lg overflow-auto font-mono text-sm ${className}`}
+      className={`bg-slate-900 rounded-xl overflow-auto font-mono text-sm ${className}`}
     >
       <table className="w-full border-collapse">
         <tbody>
@@ -52,50 +52,52 @@ export default function CodeViewer({
               <tr
                 key={lineNumber}
                 data-line={lineNumber}
-                className={`${
+                className={`transition-colors ${
                   isCurrentLine
-                    ? 'bg-yellow-500/20'
+                    ? 'bg-amber-500/20'
                     : hasBreakpoint
                     ? 'bg-red-500/10'
-                    : 'hover:bg-gray-800/50'
+                    : 'hover:bg-slate-800/70'
                 }`}
               >
                 {/* Breakpoint column */}
-                <td className="w-6 px-1 select-none">
+                <td className="w-8 px-1 select-none">
                   <button
                     onClick={() => onToggleBreakpoint?.(lineNumber)}
-                    className="w-4 h-4 flex items-center justify-center"
+                    className="w-6 h-6 flex items-center justify-center rounded-lg hover:bg-slate-700/50 transition-colors"
                     title={hasBreakpoint ? '브레이크포인트 제거' : '브레이크포인트 추가'}
                   >
                     {hasBreakpoint ? (
-                      <Circle className="w-3 h-3 fill-red-500 text-red-500" />
+                      <Circle className="w-3 h-3 fill-red-500 text-red-500 drop-shadow-[0_0_4px_rgba(239,68,68,0.5)]" />
                     ) : (
-                      <span className="w-3 h-3 rounded-full hover:bg-red-500/50" />
+                      <span className="w-3 h-3 rounded-full hover:bg-red-500/40 transition-colors" />
                     )}
                   </button>
                 </td>
 
                 {/* Line number column */}
                 <td
-                  className={`w-10 px-2 text-right select-none ${
-                    isCurrentLine ? 'text-yellow-400' : 'text-gray-500'
+                  className={`w-12 px-2 text-right select-none font-medium ${
+                    isCurrentLine
+                      ? 'text-amber-400'
+                      : 'text-slate-500 dark:text-slate-600'
                   }`}
                 >
                   {lineNumber}
                 </td>
 
                 {/* Current line indicator */}
-                <td className="w-4 select-none">
+                <td className="w-6 select-none">
                   {isCurrentLine && (
-                    <span className="text-yellow-400">▶</span>
+                    <span className="text-amber-400 animate-pulse">▶</span>
                   )}
                 </td>
 
                 {/* Code content */}
-                <td className="px-2 py-0.5">
+                <td className="px-3 py-1">
                   <pre
                     className={`whitespace-pre ${
-                      isCurrentLine ? 'text-yellow-100' : 'text-gray-300'
+                      isCurrentLine ? 'text-amber-100' : 'text-slate-300'
                     }`}
                   >
                     {highlightSyntax(line)}
@@ -139,7 +141,7 @@ function highlightSyntax(code: string): React.ReactNode {
     const stringMatch = remaining.match(/^("(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*')/);
     if (stringMatch) {
       parts.push(
-        <span key={key++} className="text-green-400">
+        <span key={key++} className="text-emerald-400">
           {stringMatch[1]}
         </span>
       );
@@ -152,7 +154,7 @@ function highlightSyntax(code: string): React.ReactNode {
     const commentMatch = remaining.match(/^(#.*)/);
     if (commentMatch) {
       parts.push(
-        <span key={key++} className="text-gray-500 italic">
+        <span key={key++} className="text-slate-500 italic">
           {commentMatch[1]}
         </span>
       );
@@ -217,9 +219,9 @@ interface CompactCodeViewerProps {
 
 export function CompactCodeViewer({ code, lineNumber, className = '' }: CompactCodeViewerProps) {
   return (
-    <div className={`flex items-center gap-2 font-mono text-sm ${className}`}>
-      <span className="text-gray-500 select-none">{lineNumber}</span>
-      <pre className="text-gray-300 whitespace-pre">{highlightSyntax(code)}</pre>
+    <div className={`flex items-center gap-3 font-mono text-sm ${className}`}>
+      <span className="text-slate-500 dark:text-slate-400 select-none px-2 py-0.5 bg-slate-100 dark:bg-slate-700 rounded">{lineNumber}</span>
+      <pre className="text-slate-300 whitespace-pre">{highlightSyntax(code)}</pre>
     </div>
   );
 }
