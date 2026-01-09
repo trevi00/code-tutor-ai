@@ -1,8 +1,8 @@
 /**
- * Optimization Score Display Component
+ * Optimization Score Display Component - Enhanced with modern design
  */
 
-import { Award, TrendingUp, TrendingDown, Minus } from 'lucide-react';
+import { Award, TrendingUp, TrendingDown, Minus, Sparkles } from 'lucide-react';
 
 interface OptimizationScoreProps {
   score: number;
@@ -11,17 +11,10 @@ interface OptimizationScoreProps {
 
 export default function OptimizationScore({ score, previousScore }: OptimizationScoreProps) {
   const getScoreColor = (s: number) => {
-    if (s >= 80) return 'text-green-600';
-    if (s >= 60) return 'text-yellow-600';
-    if (s >= 40) return 'text-orange-600';
-    return 'text-red-600';
-  };
-
-  const getScoreBgColor = (s: number) => {
-    if (s >= 80) return 'bg-green-100';
-    if (s >= 60) return 'bg-yellow-100';
-    if (s >= 40) return 'bg-orange-100';
-    return 'bg-red-100';
+    if (s >= 80) return 'text-emerald-600 dark:text-emerald-400';
+    if (s >= 60) return 'text-amber-600 dark:text-amber-400';
+    if (s >= 40) return 'text-orange-600 dark:text-orange-400';
+    return 'text-red-600 dark:text-red-400';
   };
 
   const getScoreLabel = (s: number) => {
@@ -33,47 +26,67 @@ export default function OptimizationScore({ score, previousScore }: Optimization
   };
 
   const getScoreGradient = (s: number) => {
-    if (s >= 80) return 'from-green-500 to-emerald-500';
-    if (s >= 60) return 'from-yellow-500 to-amber-500';
-    if (s >= 40) return 'from-orange-500 to-amber-600';
-    return 'from-red-500 to-rose-600';
+    if (s >= 80) return 'from-emerald-500 to-teal-500';
+    if (s >= 60) return 'from-amber-500 to-yellow-500';
+    if (s >= 40) return 'from-orange-500 to-amber-500';
+    return 'from-red-500 to-rose-500';
+  };
+
+  const getBgGradient = (s: number) => {
+    if (s >= 80) return 'from-emerald-50 to-teal-50 dark:from-emerald-900/20 dark:to-teal-900/20 border-emerald-200 dark:border-emerald-800';
+    if (s >= 60) return 'from-amber-50 to-yellow-50 dark:from-amber-900/20 dark:to-yellow-900/20 border-amber-200 dark:border-amber-800';
+    if (s >= 40) return 'from-orange-50 to-amber-50 dark:from-orange-900/20 dark:to-amber-900/20 border-orange-200 dark:border-orange-800';
+    return 'from-red-50 to-rose-50 dark:from-red-900/20 dark:to-rose-900/20 border-red-200 dark:border-red-800';
+  };
+
+  const getIconBg = (s: number) => {
+    if (s >= 80) return 'bg-emerald-100 dark:bg-emerald-900/50';
+    if (s >= 60) return 'bg-amber-100 dark:bg-amber-900/50';
+    if (s >= 40) return 'bg-orange-100 dark:bg-orange-900/50';
+    return 'bg-red-100 dark:bg-red-900/50';
   };
 
   const diff = previousScore !== undefined ? score - previousScore : null;
 
   return (
-    <div className={`rounded-lg p-4 ${getScoreBgColor(score)}`}>
+    <div className={`rounded-2xl p-5 bg-gradient-to-r ${getBgGradient(score)} border`}>
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className={`p-2 rounded-full bg-white ${getScoreColor(score)}`}>
-            <Award className="w-6 h-6" />
+        <div className="flex items-center gap-4">
+          <div className={`w-14 h-14 rounded-xl ${getIconBg(score)} flex items-center justify-center`}>
+            <Award className={`w-8 h-8 ${getScoreColor(score)}`} />
           </div>
           <div>
-            <p className="text-sm text-gray-600">최적화 점수</p>
-            <p className={`text-3xl font-bold ${getScoreColor(score)}`}>{score}</p>
+            <p className="text-sm text-slate-600 dark:text-slate-400 mb-1">최적화 점수</p>
+            <div className="flex items-baseline gap-2">
+              <p className={`text-4xl font-bold ${getScoreColor(score)}`}>{score}</p>
+              <span className="text-lg text-slate-400 dark:text-slate-500">/100</span>
+            </div>
           </div>
         </div>
 
         <div className="text-right">
-          <p className={`text-lg font-medium ${getScoreColor(score)}`}>
-            {getScoreLabel(score)}
-          </p>
+          <div className="flex items-center gap-2 justify-end">
+            <Sparkles className={`w-5 h-5 ${getScoreColor(score)}`} />
+            <p className={`text-lg font-bold ${getScoreColor(score)}`}>
+              {getScoreLabel(score)}
+            </p>
+          </div>
           {diff !== null && (
-            <div className="flex items-center justify-end gap-1 text-sm">
+            <div className="flex items-center justify-end gap-1.5 text-sm mt-2">
               {diff > 0 ? (
                 <>
-                  <TrendingUp className="w-4 h-4 text-green-600" />
-                  <span className="text-green-600">+{diff}</span>
+                  <TrendingUp className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                  <span className="text-emerald-600 dark:text-emerald-400 font-medium">+{diff}</span>
                 </>
               ) : diff < 0 ? (
                 <>
-                  <TrendingDown className="w-4 h-4 text-red-600" />
-                  <span className="text-red-600">{diff}</span>
+                  <TrendingDown className="w-4 h-4 text-red-600 dark:text-red-400" />
+                  <span className="text-red-600 dark:text-red-400 font-medium">{diff}</span>
                 </>
               ) : (
                 <>
-                  <Minus className="w-4 h-4 text-gray-500" />
-                  <span className="text-gray-500">변동 없음</span>
+                  <Minus className="w-4 h-4 text-slate-500 dark:text-slate-400" />
+                  <span className="text-slate-500 dark:text-slate-400">변동 없음</span>
                 </>
               )}
             </div>
@@ -82,16 +95,18 @@ export default function OptimizationScore({ score, previousScore }: Optimization
       </div>
 
       {/* Progress bar */}
-      <div className="mt-4">
-        <div className="h-3 bg-white rounded-full overflow-hidden">
+      <div className="mt-5">
+        <div className="h-3 bg-white/60 dark:bg-slate-800/60 rounded-full overflow-hidden shadow-inner">
           <div
-            className={`h-full rounded-full bg-gradient-to-r ${getScoreGradient(score)} transition-all duration-500`}
+            className={`h-full rounded-full bg-gradient-to-r ${getScoreGradient(score)} transition-all duration-700 ease-out`}
             style={{ width: `${score}%` }}
           />
         </div>
-        <div className="flex justify-between text-xs text-gray-500 mt-1">
+        <div className="flex justify-between text-xs text-slate-400 dark:text-slate-500 mt-2 px-1">
           <span>0</span>
+          <span>25</span>
           <span>50</span>
+          <span>75</span>
           <span>100</span>
         </div>
       </div>
@@ -106,14 +121,14 @@ interface ScoreBadgeProps {
 
 export function ScoreBadge({ score }: ScoreBadgeProps) {
   const getColor = (s: number) => {
-    if (s >= 80) return 'bg-green-100 text-green-700';
-    if (s >= 60) return 'bg-yellow-100 text-yellow-700';
-    if (s >= 40) return 'bg-orange-100 text-orange-700';
-    return 'bg-red-100 text-red-700';
+    if (s >= 80) return 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800';
+    if (s >= 60) return 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-800';
+    if (s >= 40) return 'bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400 border-orange-200 dark:border-orange-800';
+    return 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 border-red-200 dark:border-red-800';
   };
 
   return (
-    <span className={`px-2 py-1 rounded-full text-sm font-medium ${getColor(score)}`}>
+    <span className={`px-3 py-1 rounded-lg text-sm font-bold border ${getColor(score)}`}>
       {score}점
     </span>
   );
