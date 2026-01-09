@@ -52,7 +52,7 @@ const categoryIcons: Record<string, string> = {
 };
 
 export function SkillPredictions({ predictions }: SkillPredictionsProps) {
-  const [animatedData, setAnimatedData] = useState<SkillPrediction[]>([]);
+  const [, setAnimatedData] = useState<SkillPrediction[]>([]);
 
   useEffect(() => {
     const timer = setTimeout(() => {

@@ -115,8 +115,8 @@ function Podium({ entries, currentUserId }: { entries: LeaderboardEntry[]; curre
 }
 
 // Stats summary cards
-function StatsSummary({ data, currentUserId }: { data: LeaderboardResponse; currentUserId?: string }) {
-  const totalUsers = data.total ?? data.entries.length;
+function StatsSummary({ data }: { data: LeaderboardResponse }) {
+  const totalUsers = data.total_users ?? data.entries.length;
   const userRank = data.user_rank;
   const percentile = userRank && totalUsers ? Math.round((1 - userRank / totalUsers) * 100) : null;
 
@@ -234,7 +234,7 @@ export default function Leaderboard({ data, currentUserId, onPeriodChange }: Lea
       </div>
 
       {/* Stats Summary */}
-      <StatsSummary data={data} currentUserId={currentUserId} />
+      <StatsSummary data={data} />
 
       {/* Podium for Top 3 */}
       {!searchQuery && data.entries.length >= 3 && (

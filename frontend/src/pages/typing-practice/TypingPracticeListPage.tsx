@@ -354,7 +354,7 @@ export default function TypingPracticeListPage() {
                 </div>
                 <div>
                   <div className="text-xs text-gray-500 dark:text-gray-400">총 연습 시간</div>
-                  <div className="text-lg font-bold text-gray-900 dark:text-white">{Math.floor(stats.total_practice_time / 60)}분</div>
+                  <div className="text-lg font-bold text-gray-900 dark:text-white">{Math.floor(stats.total_time_seconds / 60)}분</div>
                 </div>
               </div>
               <div className="flex items-center gap-3">

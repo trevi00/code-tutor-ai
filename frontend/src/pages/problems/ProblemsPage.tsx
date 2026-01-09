@@ -16,8 +16,6 @@ import {
   Sparkles,
   Target,
   Flame,
-  CheckCircle2,
-  Clock,
   ArrowRight,
   Filter,
   LayoutGrid,
@@ -155,14 +153,6 @@ export function ProblemsPage() {
     }, 300);
     return () => clearTimeout(timer);
   }, [search]);
-
-  const getDifficultyIcon = (difficulty: Difficulty) => {
-    switch (difficulty) {
-      case 'easy': return <Target className="w-4 h-4" />;
-      case 'medium': return <Flame className="w-4 h-4" />;
-      case 'hard': return <Zap className="w-4 h-4" />;
-    }
-  };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white dark:from-slate-900 dark:to-slate-800">

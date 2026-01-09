@@ -4,7 +4,7 @@
 
 import { AlertTriangle, AlertCircle, Info, XCircle, Lightbulb, CheckCircle2 } from 'lucide-react';
 import type { PerformanceIssue, IssueSeverity } from '../../api/performance';
-import { SEVERITY_COLORS, ISSUE_TYPE_LABELS } from '../../api/performance';
+import { ISSUE_TYPE_LABELS } from '../../api/performance';
 
 interface IssuesDisplayProps {
   issues: PerformanceIssue[];

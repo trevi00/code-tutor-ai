@@ -7,7 +7,6 @@ import Editor from '@monaco-editor/react';
 import {
   ArrowLeft,
   RotateCcw,
-  CheckCircle,
   Clock,
   Target,
   Zap,

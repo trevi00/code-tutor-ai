@@ -8,7 +8,6 @@ import {
   ArrowLeft,
   Clock,
   Box,
-  CheckCircle,
   Copy,
   Check,
   BookOpen,

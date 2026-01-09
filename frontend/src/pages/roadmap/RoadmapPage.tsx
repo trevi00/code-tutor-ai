@@ -8,7 +8,6 @@ import {
   BookOpen,
   CheckCircle,
   Clock,
-  Trophy,
   ChevronRight,
   Zap,
   Star,

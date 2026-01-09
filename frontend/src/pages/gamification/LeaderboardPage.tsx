@@ -83,7 +83,7 @@ export default function LeaderboardPage() {
             <div className="flex gap-4">
               <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 text-center min-w-[100px]">
                 <Flame className="w-6 h-6 text-orange-300 mx-auto mb-1" />
-                <div className="text-2xl font-bold text-white">{leaderboard?.total || 0}</div>
+                <div className="text-2xl font-bold text-white">{leaderboard?.total_users || 0}</div>
                 <div className="text-xs text-indigo-200">참가자</div>
               </div>
               {leaderboard?.user_rank && (
