@@ -1,4 +1,25 @@
+/**
+ * Profile Page - Enhanced with modern design
+ */
+
 import { useState, useEffect } from 'react';
+import {
+  User,
+  Mail,
+  Calendar,
+  Clock,
+  Shield,
+  ShieldCheck,
+  Edit3,
+  Lock,
+  Save,
+  X,
+  AlertCircle,
+  CheckCircle,
+  Loader2,
+  Crown,
+  FileText,
+} from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
 import { authApi } from '@/api';
 import type { UpdateProfileRequest, ChangePasswordRequest } from '@/types';
@@ -108,240 +129,320 @@ export default function ProfilePage() {
 
   if (!user) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      <div className="min-h-screen bg-gradient-to-b from-slate-900 to-slate-800 flex items-center justify-center">
+        <div className="text-center">
+          <div className="relative inline-block">
+            <div className="w-16 h-16 rounded-full bg-gradient-to-r from-emerald-500 to-teal-500 animate-pulse" />
+            <Loader2 className="w-8 h-8 text-white absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 animate-spin" />
+          </div>
+          <p className="mt-4 text-slate-400">프로필 로딩 중...</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-4xl">
-      <h1 className="text-3xl font-bold text-gray-800 dark:text-white mb-8">내 프로필</h1>
-
-      {/* Alert Messages */}
-      {error && (
-        <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-lg text-red-700 dark:text-red-300">
-          {error}
+    <div className="min-h-screen bg-gradient-to-b from-slate-900 to-slate-800">
+      {/* Hero Header */}
+      <div className="bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 relative overflow-hidden">
+        {/* Decorative elements */}
+        <div className="absolute inset-0 overflow-hidden">
+          <User className="absolute top-8 right-[10%] w-16 h-16 text-white/10" />
+          <Shield className="absolute bottom-6 right-[25%] w-12 h-12 text-white/10" />
         </div>
-      )}
-      {success && (
-        <div className="mb-6 p-4 bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-800 rounded-lg text-green-700 dark:text-green-300">
-          {success}
-        </div>
-      )}
 
-      {/* Profile Card */}
-      <div className="bg-white dark:bg-slate-800 rounded-lg shadow-lg overflow-hidden">
-        {/* Header */}
-        <div className="bg-gradient-to-r from-blue-500 to-blue-600 px-6 py-8">
-          <div className="flex items-center">
-            <div className="w-20 h-20 rounded-full bg-white flex items-center justify-center text-3xl font-bold text-blue-600">
+        <div className="relative max-w-4xl mx-auto px-4 py-12">
+          <div className="flex items-center gap-6">
+            <div className="w-24 h-24 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center text-4xl font-bold text-white shadow-2xl border border-white/20">
               {user.username.charAt(0).toUpperCase()}
             </div>
-            <div className="ml-6 text-white">
-              <h2 className="text-2xl font-bold">{user.username}</h2>
-              <p className="text-blue-100">{user.email}</p>
-              <span className={`inline-block mt-2 px-3 py-1 text-xs font-medium rounded-full ${
-                user.role === 'admin' ? 'bg-yellow-400 text-yellow-900' : 'bg-blue-200 text-blue-800'
-              }`}>
-                {user.role === 'admin' ? '관리자' : '학생'}
-              </span>
+            <div>
+              <div className="flex items-center gap-3">
+                <h1 className="text-3xl font-bold text-white">{user.username}</h1>
+                {user.role === 'admin' && (
+                  <span className="flex items-center gap-1 px-3 py-1 text-sm bg-amber-500/20 text-amber-300 rounded-full border border-amber-400/30">
+                    <Crown className="w-4 h-4" />
+                    관리자
+                  </span>
+                )}
+              </div>
+              <p className="text-emerald-100 mt-1">{user.email}</p>
+              <div className="flex items-center gap-4 mt-3">
+                <span className={`flex items-center gap-1.5 px-3 py-1 text-sm rounded-full ${
+                  user.is_active
+                    ? 'bg-emerald-500/30 text-emerald-200 border border-emerald-400/30'
+                    : 'bg-red-500/30 text-red-200 border border-red-400/30'
+                }`}>
+                  <ShieldCheck className="w-4 h-4" />
+                  {user.is_active ? '활성 계정' : '비활성 계정'}
+                </span>
+                <span className={`flex items-center gap-1.5 px-3 py-1 text-sm rounded-full ${
+                  user.is_verified
+                    ? 'bg-blue-500/30 text-blue-200 border border-blue-400/30'
+                    : 'bg-amber-500/30 text-amber-200 border border-amber-400/30'
+                }`}>
+                  <Mail className="w-4 h-4" />
+                  {user.is_verified ? '이메일 인증됨' : '이메일 미인증'}
+                </span>
+              </div>
             </div>
           </div>
-        </div>
-
-        {/* Profile Info */}
-        <div className="p-6">
-          {!isEditing ? (
-            <div className="space-y-6">
-              <div>
-                <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">사용자명</h3>
-                <p className="text-lg text-gray-800 dark:text-white">{user.username}</p>
-              </div>
-              <div>
-                <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">이메일</h3>
-                <p className="text-lg text-gray-800 dark:text-white">{user.email}</p>
-              </div>
-              <div>
-                <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">자기소개</h3>
-                <p className="text-lg text-gray-800 dark:text-white">{user.bio || '아직 자기소개가 없습니다.'}</p>
-              </div>
-              <div>
-                <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">가입일</h3>
-                <p className="text-lg text-gray-800 dark:text-white">
-                  {new Date(user.created_at).toLocaleDateString('ko-KR', {
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric',
-                  })}
-                </p>
-              </div>
-              {user.last_login_at && (
-                <div>
-                  <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">마지막 로그인</h3>
-                  <p className="text-lg text-gray-800 dark:text-white">
-                    {new Date(user.last_login_at).toLocaleDateString('ko-KR', {
-                      year: 'numeric',
-                      month: 'long',
-                      day: 'numeric',
-                      hour: '2-digit',
-                      minute: '2-digit',
-                    })}
-                  </p>
-                </div>
-              )}
-
-              <div className="flex gap-4 pt-4">
-                <button
-                  onClick={() => setIsEditing(true)}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                >
-                  프로필 수정
-                </button>
-                <button
-                  onClick={() => setIsChangingPassword(true)}
-                  className="px-4 py-2 border border-gray-300 dark:border-slate-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors"
-                >
-                  비밀번호 변경
-                </button>
-              </div>
-            </div>
-          ) : (
-            <form onSubmit={handleUpdateProfile} className="space-y-6">
-              <div>
-                <label htmlFor="username" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  사용자명
-                </label>
-                <input
-                  type="text"
-                  id="username"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-slate-700 dark:text-white"
-                  minLength={3}
-                  maxLength={30}
-                  required
-                />
-              </div>
-              <div>
-                <label htmlFor="bio" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  자기소개
-                </label>
-                <textarea
-                  id="bio"
-                  value={bio}
-                  onChange={(e) => setBio(e.target.value)}
-                  rows={4}
-                  className="w-full px-4 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none bg-white dark:bg-slate-700 dark:text-white"
-                  maxLength={200}
-                  placeholder="간단한 자기소개를 입력해주세요 (최대 200자)"
-                />
-                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{bio.length}/200</p>
-              </div>
-              <div className="flex gap-4">
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
-                >
-                  {loading ? '저장 중...' : '저장'}
-                </button>
-                <button
-                  type="button"
-                  onClick={cancelEdit}
-                  className="px-4 py-2 border border-gray-300 dark:border-slate-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors"
-                >
-                  취소
-                </button>
-              </div>
-            </form>
-          )}
         </div>
       </div>
 
-      {/* Password Change Modal */}
-      {isChangingPassword && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-slate-800 rounded-lg shadow-xl p-6 w-full max-w-md mx-4">
-            <h2 className="text-xl font-bold text-gray-800 dark:text-white mb-6">비밀번호 변경</h2>
-            <form onSubmit={handleChangePassword} className="space-y-4">
-              <div>
-                <label htmlFor="oldPassword" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  현재 비밀번호
-                </label>
-                <input
-                  type="password"
-                  id="oldPassword"
-                  value={oldPassword}
-                  onChange={(e) => setOldPassword(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-slate-700 dark:text-white"
-                  required
-                />
+      {/* Main Content */}
+      <div className="max-w-4xl mx-auto px-4 py-8 -mt-6">
+        {/* Alert Messages */}
+        {error && (
+          <div className="mb-6 p-4 bg-red-500/20 border border-red-500/30 rounded-xl flex items-center gap-3 text-red-300">
+            <AlertCircle className="w-5 h-5 flex-shrink-0" />
+            <span>{error}</span>
+            <button onClick={() => setError(null)} className="ml-auto text-red-400 hover:text-red-300">
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+        )}
+        {success && (
+          <div className="mb-6 p-4 bg-emerald-500/20 border border-emerald-500/30 rounded-xl flex items-center gap-3 text-emerald-300">
+            <CheckCircle className="w-5 h-5 flex-shrink-0" />
+            <span>{success}</span>
+            <button onClick={() => setSuccess(null)} className="ml-auto text-emerald-400 hover:text-emerald-300">
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+        )}
+
+        {/* Profile Info Card */}
+        <div className="bg-slate-800/50 backdrop-blur-sm rounded-2xl border border-slate-700/50 overflow-hidden shadow-xl">
+          <div className="px-6 py-4 border-b border-slate-700/50 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <User className="w-5 h-5 text-emerald-400" />
+              <h2 className="text-lg font-semibold text-white">프로필 정보</h2>
+            </div>
+            {!isEditing && (
+              <button
+                onClick={() => setIsEditing(true)}
+                className="flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-sm transition-colors"
+              >
+                <Edit3 className="w-4 h-4" />
+                수정
+              </button>
+            )}
+          </div>
+
+          <div className="p-6">
+            {!isEditing ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-1">
+                  <label className="text-sm text-slate-400 flex items-center gap-2">
+                    <User className="w-4 h-4" />
+                    사용자명
+                  </label>
+                  <p className="text-white text-lg">{user.username}</p>
+                </div>
+                <div className="space-y-1">
+                  <label className="text-sm text-slate-400 flex items-center gap-2">
+                    <Mail className="w-4 h-4" />
+                    이메일
+                  </label>
+                  <p className="text-white text-lg">{user.email}</p>
+                </div>
+                <div className="md:col-span-2 space-y-1">
+                  <label className="text-sm text-slate-400 flex items-center gap-2">
+                    <FileText className="w-4 h-4" />
+                    자기소개
+                  </label>
+                  <p className="text-white">{user.bio || '아직 자기소개가 없습니다.'}</p>
+                </div>
+                <div className="space-y-1">
+                  <label className="text-sm text-slate-400 flex items-center gap-2">
+                    <Calendar className="w-4 h-4" />
+                    가입일
+                  </label>
+                  <p className="text-white">
+                    {new Date(user.created_at).toLocaleDateString('ko-KR', {
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric',
+                    })}
+                  </p>
+                </div>
+                {user.last_login_at && (
+                  <div className="space-y-1">
+                    <label className="text-sm text-slate-400 flex items-center gap-2">
+                      <Clock className="w-4 h-4" />
+                      마지막 로그인
+                    </label>
+                    <p className="text-white">
+                      {new Date(user.last_login_at).toLocaleDateString('ko-KR', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                      })}
+                    </p>
+                  </div>
+                )}
               </div>
-              <div>
-                <label htmlFor="newPassword" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  새 비밀번호
-                </label>
-                <input
-                  type="password"
-                  id="newPassword"
-                  value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-slate-700 dark:text-white"
-                  minLength={8}
-                  required
-                />
-              </div>
-              <div>
-                <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  새 비밀번호 확인
-                </label>
-                <input
-                  type="password"
-                  id="confirmPassword"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-slate-700 dark:text-white"
-                  minLength={8}
-                  required
-                />
-              </div>
-              <div className="flex gap-4 pt-4">
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
-                >
-                  {loading ? '변경 중...' : '변경'}
-                </button>
-                <button
-                  type="button"
-                  onClick={cancelPasswordChange}
-                  className="flex-1 px-4 py-2 border border-gray-300 dark:border-slate-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors"
-                >
-                  취소
-                </button>
-              </div>
-            </form>
+            ) : (
+              <form onSubmit={handleUpdateProfile} className="space-y-6">
+                <div>
+                  <label htmlFor="username" className="block text-sm font-medium text-slate-300 mb-2">
+                    사용자명
+                  </label>
+                  <input
+                    type="text"
+                    id="username"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    className="w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                    minLength={3}
+                    maxLength={30}
+                    required
+                  />
+                </div>
+                <div>
+                  <label htmlFor="bio" className="block text-sm font-medium text-slate-300 mb-2">
+                    자기소개
+                  </label>
+                  <textarea
+                    id="bio"
+                    value={bio}
+                    onChange={(e) => setBio(e.target.value)}
+                    rows={4}
+                    className="w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent resize-none"
+                    maxLength={200}
+                    placeholder="간단한 자기소개를 입력해주세요 (최대 200자)"
+                  />
+                  <p className="text-sm text-slate-500 mt-1">{bio.length}/200</p>
+                </div>
+                <div className="flex gap-3">
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white rounded-xl transition-all disabled:opacity-50"
+                  >
+                    {loading ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <Save className="w-4 h-4" />
+                    )}
+                    {loading ? '저장 중...' : '저장'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={cancelEdit}
+                    className="flex items-center gap-2 px-5 py-2.5 bg-slate-700 hover:bg-slate-600 text-slate-300 rounded-xl transition-colors"
+                  >
+                    <X className="w-4 h-4" />
+                    취소
+                  </button>
+                </div>
+              </form>
+            )}
           </div>
         </div>
-      )}
 
-      {/* Account Status */}
-      <div className="mt-8 bg-white dark:bg-slate-800 rounded-lg shadow p-6">
-        <h2 className="text-xl font-semibold text-gray-800 dark:text-white mb-4">계정 상태</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="flex items-center">
-            <span className={`w-3 h-3 rounded-full mr-2 ${user.is_active ? 'bg-green-500' : 'bg-red-500'}`}></span>
-            <span className="text-gray-700 dark:text-gray-300">
-              계정 상태: {user.is_active ? '활성' : '비활성'}
-            </span>
+        {/* Security Card */}
+        <div className="mt-6 bg-slate-800/50 backdrop-blur-sm rounded-2xl border border-slate-700/50 overflow-hidden shadow-xl">
+          <div className="px-6 py-4 border-b border-slate-700/50 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Lock className="w-5 h-5 text-amber-400" />
+              <h2 className="text-lg font-semibold text-white">보안</h2>
+            </div>
+            {!isChangingPassword && (
+              <button
+                onClick={() => setIsChangingPassword(true)}
+                className="flex items-center gap-2 px-4 py-2 bg-amber-600 hover:bg-amber-500 text-white rounded-lg text-sm transition-colors"
+              >
+                <Lock className="w-4 h-4" />
+                비밀번호 변경
+              </button>
+            )}
           </div>
-          <div className="flex items-center">
-            <span className={`w-3 h-3 rounded-full mr-2 ${user.is_verified ? 'bg-green-500' : 'bg-yellow-500'}`}></span>
-            <span className="text-gray-700 dark:text-gray-300">
-              이메일 인증: {user.is_verified ? '완료' : '미완료'}
-            </span>
+
+          <div className="p-6">
+            {!isChangingPassword ? (
+              <div className="flex items-center gap-4 p-4 bg-slate-700/30 rounded-xl">
+                <div className="w-12 h-12 rounded-xl bg-amber-500/20 flex items-center justify-center">
+                  <Shield className="w-6 h-6 text-amber-400" />
+                </div>
+                <div>
+                  <h3 className="text-white font-medium">비밀번호</h3>
+                  <p className="text-sm text-slate-400">정기적으로 비밀번호를 변경하여 계정을 안전하게 보호하세요.</p>
+                </div>
+              </div>
+            ) : (
+              <form onSubmit={handleChangePassword} className="space-y-4">
+                <div>
+                  <label htmlFor="oldPassword" className="block text-sm font-medium text-slate-300 mb-2">
+                    현재 비밀번호
+                  </label>
+                  <input
+                    type="password"
+                    id="oldPassword"
+                    value={oldPassword}
+                    onChange={(e) => setOldPassword(e.target.value)}
+                    className="w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+                    required
+                  />
+                </div>
+                <div>
+                  <label htmlFor="newPassword" className="block text-sm font-medium text-slate-300 mb-2">
+                    새 비밀번호
+                  </label>
+                  <input
+                    type="password"
+                    id="newPassword"
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    className="w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+                    minLength={8}
+                    required
+                  />
+                </div>
+                <div>
+                  <label htmlFor="confirmPassword" className="block text-sm font-medium text-slate-300 mb-2">
+                    새 비밀번호 확인
+                  </label>
+                  <input
+                    type="password"
+                    id="confirmPassword"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    className="w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+                    minLength={8}
+                    required
+                  />
+                  {confirmPassword && newPassword !== confirmPassword && (
+                    <p className="text-sm text-red-400 mt-1">비밀번호가 일치하지 않습니다</p>
+                  )}
+                </div>
+                <div className="flex gap-3 pt-2">
+                  <button
+                    type="submit"
+                    disabled={loading || newPassword !== confirmPassword}
+                    className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-white rounded-xl transition-all disabled:opacity-50"
+                  >
+                    {loading ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <Lock className="w-4 h-4" />
+                    )}
+                    {loading ? '변경 중...' : '비밀번호 변경'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={cancelPasswordChange}
+                    className="flex items-center gap-2 px-5 py-2.5 bg-slate-700 hover:bg-slate-600 text-slate-300 rounded-xl transition-colors"
+                  >
+                    <X className="w-4 h-4" />
+                    취소
+                  </button>
+                </div>
+              </form>
+            )}
           </div>
         </div>
       </div>
