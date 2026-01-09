@@ -1,8 +1,19 @@
 /**
- * GraphVisualizer component for BFS/DFS visualization
+ * GraphVisualizer component for BFS/DFS visualization - Enhanced with modern design
  */
 
 import { useCallback, useEffect, useState } from 'react';
+import {
+  Play,
+  Pause,
+  RotateCcw,
+  SkipBack,
+  SkipForward,
+  Gauge,
+  Code2,
+  Layers,
+  GitBranch,
+} from 'lucide-react';
 import type { GraphVisualization, GraphStep } from '../../api/visualization';
 
 interface GraphVisualizerProps {
@@ -11,19 +22,26 @@ interface GraphVisualizerProps {
   speed?: number;
 }
 
-const NODE_COLORS: Record<string, string> = {
-  default: '#94a3b8', // gray
-  current: '#f97316', // orange
-  active: '#3b82f6', // blue
-  visited: '#22c55e', // green
-  found: '#22c55e', // green
+const NODE_COLORS: Record<string, { fill: string; glow: string }> = {
+  default: { fill: '#94a3b8', glow: 'transparent' },
+  current: { fill: '#f97316', glow: '#f97316' },
+  active: { fill: '#3b82f6', glow: '#3b82f6' },
+  visited: { fill: '#22c55e', glow: '#22c55e' },
+  found: { fill: '#22c55e', glow: '#22c55e' },
 };
 
 const EDGE_COLORS: Record<string, string> = {
-  default: '#cbd5e1', // gray
-  active: '#3b82f6', // blue
-  visited: '#22c55e', // green
+  default: '#e2e8f0',
+  active: '#3b82f6',
+  visited: '#22c55e',
 };
+
+const LEGEND_ITEMS = [
+  { color: 'bg-slate-400', label: '미방문' },
+  { color: 'bg-orange-500', label: '현재 노드' },
+  { color: 'bg-blue-500', label: '탐색 중' },
+  { color: 'bg-emerald-500', label: '방문 완료' },
+];
 
 export default function GraphVisualizer({
   visualization,
@@ -80,8 +98,18 @@ export default function GraphVisualizer({
     setCurrentStep((prev) => Math.max(prev - 1, 0));
   }, []);
 
+  const getSpeedLabel = () => {
+    if (playSpeed < 500) return '빠름';
+    if (playSpeed < 1000) return '보통';
+    return '느림';
+  };
+
   if (!step) {
-    return <div>No visualization data</div>;
+    return (
+      <div className="flex items-center justify-center h-64 text-slate-500 dark:text-slate-400">
+        시각화 데이터가 없습니다
+      </div>
+    );
   }
 
   const getNodeColor = (nodeId: string) => {
@@ -96,16 +124,47 @@ export default function GraphVisualizer({
     return EDGE_COLORS[state] || EDGE_COLORS.default;
   };
 
+  const progressPercent = ((currentStep + 1) / steps.length) * 100;
+
   return (
-    <div className="w-full">
+    <div className="w-full space-y-6">
       {/* Graph Visualization */}
-      <div className="bg-gray-50 rounded-lg p-6 mb-4">
-        <svg width="400" height="400" viewBox="0 0 400 400" className="mx-auto">
+      <div className="bg-gradient-to-b from-slate-50 to-slate-100 dark:from-slate-800 dark:to-slate-900 rounded-2xl p-6">
+        <svg width="100%" height="350" viewBox="0 0 400 350" className="mx-auto">
+          <defs>
+            {/* Glow filters for nodes */}
+            {Object.entries(NODE_COLORS).map(([state, colors]) => (
+              colors.glow !== 'transparent' && (
+                <filter key={state} id={`glow-${state}`} x="-50%" y="-50%" width="200%" height="200%">
+                  <feGaussianBlur stdDeviation="4" result="coloredBlur" />
+                  <feMerge>
+                    <feMergeNode in="coloredBlur" />
+                    <feMergeNode in="SourceGraphic" />
+                  </feMerge>
+                </filter>
+              )
+            ))}
+            {/* Arrow marker */}
+            <marker
+              id="arrowhead"
+              markerWidth="10"
+              markerHeight="7"
+              refX="9"
+              refY="3.5"
+              orient="auto"
+            >
+              <polygon points="0 0, 10 3.5, 0 7" fill="#94a3b8" />
+            </marker>
+          </defs>
+
           {/* Edges */}
           {visualization.edges.map((edge, idx) => {
             const sourceNode = visualization.nodes.find((n) => n.id === edge.source);
             const targetNode = visualization.nodes.find((n) => n.id === edge.target);
             if (!sourceNode || !targetNode) return null;
+
+            const edgeColor = getEdgeColor(edge.source, edge.target);
+            const isActive = edgeColor !== EDGE_COLORS.default;
 
             return (
               <line
@@ -114,108 +173,153 @@ export default function GraphVisualizer({
                 y1={sourceNode.y}
                 x2={targetNode.x}
                 y2={targetNode.y}
-                stroke={getEdgeColor(edge.source, edge.target)}
-                strokeWidth={3}
-                className="transition-colors duration-300"
+                stroke={edgeColor}
+                strokeWidth={isActive ? 4 : 3}
+                className="transition-all duration-300"
+                strokeLinecap="round"
               />
             );
           })}
 
           {/* Nodes */}
-          {visualization.nodes.map((node) => (
-            <g key={node.id}>
-              <circle
-                cx={node.x}
-                cy={node.y}
-                r={25}
-                fill={getNodeColor(node.id)}
-                className="transition-colors duration-300"
-                stroke={step.current_node === node.id ? '#000' : 'transparent'}
-                strokeWidth={3}
-              />
-              <text
-                x={node.x}
-                y={node.y}
-                textAnchor="middle"
-                dominantBaseline="middle"
-                fill="white"
-                fontWeight="bold"
-                fontSize="14"
-              >
-                {node.value}
-              </text>
-            </g>
-          ))}
+          {visualization.nodes.map((node) => {
+            const nodeColor = getNodeColor(node.id);
+            const state = step.node_states[node.id] || 'default';
+            const isCurrent = step.current_node === node.id;
+
+            return (
+              <g key={node.id}>
+                {/* Pulse animation for current node */}
+                {isCurrent && (
+                  <circle
+                    cx={node.x}
+                    cy={node.y}
+                    r={35}
+                    fill="none"
+                    stroke={nodeColor.fill}
+                    strokeWidth={2}
+                    className="animate-ping opacity-75"
+                  />
+                )}
+
+                {/* Node circle */}
+                <circle
+                  cx={node.x}
+                  cy={node.y}
+                  r={28}
+                  fill={nodeColor.fill}
+                  className="transition-all duration-300"
+                  filter={state !== 'default' ? `url(#glow-${state})` : undefined}
+                  stroke={isCurrent ? '#fff' : 'transparent'}
+                  strokeWidth={3}
+                />
+
+                {/* Node label */}
+                <text
+                  x={node.x}
+                  y={node.y}
+                  textAnchor="middle"
+                  dominantBaseline="middle"
+                  fill="white"
+                  fontWeight="bold"
+                  fontSize="16"
+                  className="select-none"
+                >
+                  {node.value}
+                </text>
+              </g>
+            );
+          })}
         </svg>
       </div>
 
       {/* Step Description */}
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
-        <p className="text-blue-800">{step.description}</p>
-        <div className="mt-2 flex flex-wrap gap-4 text-sm">
+      <div className="bg-gradient-to-r from-violet-50 to-purple-50 dark:from-violet-900/20 dark:to-purple-900/20 border border-violet-200 dark:border-violet-800 rounded-xl p-4">
+        <p className="text-violet-800 dark:text-violet-200 font-medium">{step.description}</p>
+        <div className="mt-3 flex flex-wrap gap-4">
           {step.queue && (
-            <span className="text-gray-600">
-              큐: [{step.queue.join(', ')}]
-            </span>
+            <div className="flex items-center gap-2 px-3 py-1.5 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
+              <Layers className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+              <span className="text-sm text-blue-700 dark:text-blue-300">
+                큐: [{step.queue.join(', ')}]
+              </span>
+            </div>
           )}
           {step.stack && (
-            <span className="text-gray-600">
-              스택: [{step.stack.join(', ')}]
-            </span>
+            <div className="flex items-center gap-2 px-3 py-1.5 bg-purple-100 dark:bg-purple-900/30 rounded-lg">
+              <GitBranch className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+              <span className="text-sm text-purple-700 dark:text-purple-300">
+                스택: [{step.stack.join(', ')}]
+              </span>
+            </div>
           )}
-          <span className="text-green-600">
-            방문: [{step.visited.join(', ')}]
-          </span>
+          <div className="flex items-center gap-2 px-3 py-1.5 bg-emerald-100 dark:bg-emerald-900/30 rounded-lg">
+            <span className="text-sm text-emerald-700 dark:text-emerald-300">
+              방문: [{step.visited.join(', ')}]
+            </span>
+          </div>
         </div>
       </div>
 
       {/* Controls */}
-      <div className="flex items-center justify-center gap-4 mb-4">
+      <div className="flex items-center justify-center gap-3">
         <button
           onClick={handleReset}
-          className="px-3 py-2 bg-gray-200 hover:bg-gray-300 rounded-lg"
+          className="p-3 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 rounded-xl transition-colors"
           title="처음으로"
         >
-          ⏮️
+          <RotateCcw className="w-5 h-5 text-slate-600 dark:text-slate-300" />
         </button>
         <button
           onClick={handleStepBackward}
           disabled={currentStep === 0}
-          className="px-3 py-2 bg-gray-200 hover:bg-gray-300 disabled:opacity-50 rounded-lg"
+          className="p-3 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 disabled:opacity-50 rounded-xl transition-colors"
           title="이전"
         >
-          ⏪
+          <SkipBack className="w-5 h-5 text-slate-600 dark:text-slate-300" />
         </button>
         {isPlaying ? (
           <button
             onClick={handlePause}
-            className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg"
+            className="p-4 bg-gradient-to-r from-red-500 to-rose-500 hover:from-red-600 hover:to-rose-600 text-white rounded-xl shadow-lg transition-all"
           >
-            ⏸️ 일시정지
+            <Pause className="w-6 h-6" />
           </button>
         ) : (
           <button
             onClick={handlePlay}
-            className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg"
+            className="p-4 bg-gradient-to-r from-emerald-500 to-green-500 hover:from-emerald-600 hover:to-green-600 text-white rounded-xl shadow-lg transition-all"
           >
-            ▶️ 재생
+            <Play className="w-6 h-6" />
           </button>
         )}
         <button
           onClick={handleStepForward}
           disabled={currentStep >= maxStep}
-          className="px-3 py-2 bg-gray-200 hover:bg-gray-300 disabled:opacity-50 rounded-lg"
+          className="p-3 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 disabled:opacity-50 rounded-xl transition-colors"
           title="다음"
         >
-          ⏩
+          <SkipForward className="w-5 h-5 text-slate-600 dark:text-slate-300" />
         </button>
       </div>
 
-      {/* Progress Bar */}
-      <div className="mb-4">
-        <div className="flex justify-between text-sm text-gray-600 mb-1">
-          <span>Step {currentStep + 1} / {steps.length}</span>
+      {/* Progress */}
+      <div className="space-y-3">
+        <div className="flex items-center justify-between text-sm">
+          <span className="text-slate-600 dark:text-slate-400">
+            Step {currentStep + 1} / {steps.length}
+          </span>
         </div>
+
+        {/* Progress Bar */}
+        <div className="relative h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+          <div
+            className="absolute inset-y-0 left-0 bg-gradient-to-r from-violet-500 to-purple-500 rounded-full transition-all duration-300"
+            style={{ width: `${progressPercent}%` }}
+          />
+        </div>
+
+        {/* Step Slider */}
         <input
           type="range"
           min={0}
@@ -225,13 +329,16 @@ export default function GraphVisualizer({
             setIsPlaying(false);
             setCurrentStep(Number(e.target.value));
           }}
-          className="w-full"
+          className="w-full h-2 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer accent-violet-500"
         />
       </div>
 
       {/* Speed Control */}
-      <div className="flex items-center gap-4">
-        <label className="text-sm text-gray-600">속도:</label>
+      <div className="flex items-center gap-4 p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl">
+        <div className="flex items-center gap-2 text-slate-600 dark:text-slate-400">
+          <Gauge className="w-5 h-5" />
+          <span className="text-sm">속도:</span>
+        </div>
         <input
           type="range"
           min={200}
@@ -239,39 +346,42 @@ export default function GraphVisualizer({
           step={100}
           value={2200 - playSpeed}
           onChange={(e) => setPlaySpeed(2200 - Number(e.target.value))}
-          className="w-32"
+          className="flex-1 h-2 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer accent-violet-500"
         />
-        <span className="text-sm text-gray-600">
-          {playSpeed < 500 ? '빠름' : playSpeed < 1000 ? '보통' : '느림'}
+        <span className="text-sm font-medium text-violet-600 dark:text-violet-400 min-w-[40px]">
+          {getSpeedLabel()}
         </span>
       </div>
 
       {/* Code Display */}
-      <div className="mt-6">
-        <h4 className="text-sm font-medium text-gray-700 mb-2">알고리즘 코드</h4>
-        <pre className="bg-gray-900 text-gray-100 p-4 rounded-lg text-sm overflow-x-auto">
-          {visualization.code}
-        </pre>
+      <div>
+        <div className="flex items-center gap-2 mb-3">
+          <Code2 className="w-5 h-5 text-slate-600 dark:text-slate-400" />
+          <h4 className="text-sm font-bold text-slate-700 dark:text-slate-300">알고리즘 코드</h4>
+        </div>
+        <div className="bg-slate-900 rounded-xl overflow-hidden">
+          <div className="px-4 py-2 bg-slate-800 border-b border-slate-700 flex items-center gap-2">
+            <div className="flex gap-1.5">
+              <div className="w-3 h-3 rounded-full bg-red-500" />
+              <div className="w-3 h-3 rounded-full bg-yellow-500" />
+              <div className="w-3 h-3 rounded-full bg-green-500" />
+            </div>
+            <span className="text-xs text-slate-400 ml-2">python</span>
+          </div>
+          <pre className="p-4 text-sm overflow-x-auto max-h-64 text-slate-100">
+            {visualization.code}
+          </pre>
+        </div>
       </div>
 
       {/* Legend */}
-      <div className="mt-4 flex flex-wrap gap-4 text-sm">
-        <div className="flex items-center gap-2">
-          <div className="w-4 h-4 rounded-full" style={{ backgroundColor: NODE_COLORS.default }} />
-          <span>미방문</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <div className="w-4 h-4 rounded-full" style={{ backgroundColor: NODE_COLORS.current }} />
-          <span>현재 노드</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <div className="w-4 h-4 rounded-full" style={{ backgroundColor: NODE_COLORS.active }} />
-          <span>탐색 중</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <div className="w-4 h-4 rounded-full" style={{ backgroundColor: NODE_COLORS.visited }} />
-          <span>방문 완료</span>
-        </div>
+      <div className="flex flex-wrap gap-4 p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl">
+        {LEGEND_ITEMS.map((item) => (
+          <div key={item.label} className="flex items-center gap-2">
+            <div className={`w-4 h-4 ${item.color} rounded-full`} />
+            <span className="text-sm text-slate-600 dark:text-slate-400">{item.label}</span>
+          </div>
+        ))}
       </div>
     </div>
   );
