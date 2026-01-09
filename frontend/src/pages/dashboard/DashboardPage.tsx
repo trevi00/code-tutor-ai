@@ -121,7 +121,7 @@ export default function DashboardPage() {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold text-gray-800 mb-8">대시보드</h1>
+      <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100 mb-8">대시보드</h1>
 
       {/* Activity Heatmap */}
       {heatmap && heatmap.length > 0 && (
@@ -194,15 +194,15 @@ export default function DashboardPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
         {/* Category Progress */}
-        <div className="bg-white rounded-lg shadow p-6">
-          <h2 className="text-xl font-semibold text-gray-800 mb-4">카테고리별 진행률</h2>
+        <div className="bg-white dark:bg-slate-800 rounded-lg shadow p-6">
+          <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-100 mb-4">카테고리별 진행률</h2>
           <div className="space-y-4">
             {category_progress.length > 0 ? (
               category_progress.slice(0, 8).map((cp) => (
                 <CategoryProgressBar key={cp.category} progress={cp} />
               ))
             ) : (
-              <p className="text-gray-500 text-center py-4">
+              <p className="text-gray-500 dark:text-gray-400 text-center py-4">
                 아직 푼 문제가 없습니다. 문제를 풀어보세요!
               </p>
             )}
@@ -218,15 +218,15 @@ export default function DashboardPage() {
         </div>
 
         {/* Recent Submissions */}
-        <div className="bg-white rounded-lg shadow p-6">
-          <h2 className="text-xl font-semibold text-gray-800 mb-4">최근 제출</h2>
+        <div className="bg-white dark:bg-slate-800 rounded-lg shadow p-6">
+          <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-100 mb-4">최근 제출</h2>
           <div className="space-y-3">
             {recent_submissions.length > 0 ? (
               recent_submissions.map((submission) => (
                 <RecentSubmissionItem key={submission.id} submission={submission} />
               ))
             ) : (
-              <p className="text-gray-500 text-center py-4">
+              <p className="text-gray-500 dark:text-gray-400 text-center py-4">
                 아직 제출 기록이 없습니다.
               </p>
             )}
@@ -250,37 +250,37 @@ export default function DashboardPage() {
       )}
 
       {/* Quick Actions */}
-      <div className="bg-white rounded-lg shadow p-6">
-        <h2 className="text-xl font-semibold text-gray-800 mb-4">빠른 시작</h2>
+      <div className="bg-white dark:bg-slate-800 rounded-lg shadow p-6">
+        <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-100 mb-4">빠른 시작</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <Link
             to="/problems"
-            className="flex items-center p-4 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors"
+            className="flex items-center p-4 bg-blue-50 dark:bg-blue-900/30 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-colors"
           >
             <span className="text-2xl mr-3">📝</span>
             <div>
-              <h3 className="font-medium text-blue-900">문제 풀기</h3>
-              <p className="text-sm text-blue-700">알고리즘 문제 도전</p>
+              <h3 className="font-medium text-blue-900 dark:text-blue-100">문제 풀기</h3>
+              <p className="text-sm text-blue-700 dark:text-blue-300">알고리즘 문제 도전</p>
             </div>
           </Link>
           <Link
             to="/chat"
-            className="flex items-center p-4 bg-green-50 rounded-lg hover:bg-green-100 transition-colors"
+            className="flex items-center p-4 bg-green-50 dark:bg-green-900/30 rounded-lg hover:bg-green-100 dark:hover:bg-green-900/50 transition-colors"
           >
             <span className="text-2xl mr-3">💬</span>
             <div>
-              <h3 className="font-medium text-green-900">AI 튜터</h3>
-              <p className="text-sm text-green-700">코드 리뷰 받기</p>
+              <h3 className="font-medium text-green-900 dark:text-green-100">AI 튜터</h3>
+              <p className="text-sm text-green-700 dark:text-green-300">코드 리뷰 받기</p>
             </div>
           </Link>
           <Link
             to="/problems?difficulty=easy"
-            className="flex items-center p-4 bg-purple-50 rounded-lg hover:bg-purple-100 transition-colors"
+            className="flex items-center p-4 bg-purple-50 dark:bg-purple-900/30 rounded-lg hover:bg-purple-100 dark:hover:bg-purple-900/50 transition-colors"
           >
             <span className="text-2xl mr-3">🎯</span>
             <div>
-              <h3 className="font-medium text-purple-900">초급 문제</h3>
-              <p className="text-sm text-purple-700">Easy 문제부터 시작</p>
+              <h3 className="font-medium text-purple-900 dark:text-purple-100">초급 문제</h3>
+              <p className="text-sm text-purple-700 dark:text-purple-300">Easy 문제부터 시작</p>
             </div>
           </Link>
         </div>
@@ -307,15 +307,15 @@ function StatCard({ title, value, subtext, icon, children }: StatCardProps) {
   };
 
   return (
-    <div className="bg-white rounded-lg shadow p-6">
+    <div className="bg-white dark:bg-slate-800 rounded-lg shadow p-6">
       <div className="flex items-center justify-between mb-2">
-        <h3 className="text-sm font-medium text-gray-500">{title}</h3>
+        <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">{title}</h3>
         <span className="text-2xl">{icons[icon]}</span>
       </div>
       {value !== null ? (
         <>
-          <p className="text-3xl font-bold text-gray-800">{value}</p>
-          {subtext && <p className="text-sm text-gray-500 mt-1">{subtext}</p>}
+          <p className="text-3xl font-bold text-gray-800 dark:text-gray-100">{value}</p>
+          {subtext && <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{subtext}</p>}
         </>
       ) : (
         children
@@ -349,14 +349,14 @@ function CategoryProgressBar({ progress }: { progress: CategoryProgress }) {
   return (
     <div>
       <div className="flex justify-between text-sm mb-1">
-        <span className="font-medium text-gray-700">
+        <span className="font-medium text-gray-700 dark:text-gray-300">
           {categoryLabels[progress.category] || progress.category}
         </span>
-        <span className="text-gray-500">
+        <span className="text-gray-500 dark:text-gray-400">
           {progress.solved_problems}/{progress.total_problems}
         </span>
       </div>
-      <div className="w-full bg-gray-200 rounded-full h-2">
+      <div className="w-full bg-gray-200 dark:bg-slate-700 rounded-full h-2">
         <div
           className="bg-blue-600 h-2 rounded-full transition-all duration-300"
           style={{ width: `${percentage}%` }}
@@ -378,11 +378,11 @@ function RecentSubmissionItem({ submission }: { submission: RecentSubmission }) 
   return (
     <Link
       to={`/problems/${submission.problem_id}`}
-      className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+      className="flex items-center justify-between p-3 bg-gray-50 dark:bg-slate-700/50 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors"
     >
       <div className="flex-1 min-w-0">
-        <p className="font-medium text-gray-800 truncate">{submission.problem_title}</p>
-        <p className="text-xs text-gray-500">{formattedDate}</p>
+        <p className="font-medium text-gray-800 dark:text-gray-100 truncate">{submission.problem_title}</p>
+        <p className="text-xs text-gray-500 dark:text-gray-400">{formattedDate}</p>
       </div>
       <span
         className={`px-2 py-1 text-xs font-medium rounded ${
