@@ -47,11 +47,11 @@ export default function LeaderboardPage() {
     <div className="max-w-4xl mx-auto p-6">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-3">
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
           <Trophy className="w-8 h-8 text-yellow-500" />
           리더보드
         </h1>
-        <p className="text-gray-600 mt-2">
+        <p className="text-gray-600 dark:text-gray-400 mt-2">
           코드 튜터 AI의 최고 학습자들을 만나보세요
         </p>
       </div>

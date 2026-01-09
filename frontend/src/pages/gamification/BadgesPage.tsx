@@ -47,7 +47,7 @@ export default function BadgesPage() {
 
   if (!badges) {
     return (
-      <div className="text-center py-12 text-gray-500">
+      <div className="text-center py-12 text-gray-500 dark:text-gray-400">
         배지 정보를 불러올 수 없습니다.
       </div>
     );
@@ -65,36 +65,36 @@ export default function BadgesPage() {
     <div className="max-w-6xl mx-auto p-6">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-3">
-          <Award className="w-8 h-8 text-indigo-600" />
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
+          <Award className="w-8 h-8 text-indigo-600 dark:text-indigo-400" />
           배지 컬렉션
         </h1>
-        <p className="text-gray-600 mt-2">
+        <p className="text-gray-600 dark:text-gray-400 mt-2">
           획득한 배지와 앞으로 도전할 배지들을 확인하세요
         </p>
       </div>
 
       {/* Stats Summary */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-        <div className="bg-white rounded-xl shadow p-4 text-center">
-          <div className="text-3xl font-bold text-indigo-600">{badges.total_earned}</div>
-          <div className="text-sm text-gray-500">획득한 배지</div>
+        <div className="bg-white dark:bg-slate-800 rounded-xl shadow p-4 text-center">
+          <div className="text-3xl font-bold text-indigo-600 dark:text-indigo-400">{badges.total_earned}</div>
+          <div className="text-sm text-gray-500 dark:text-gray-400">획득한 배지</div>
         </div>
-        <div className="bg-white rounded-xl shadow p-4 text-center">
+        <div className="bg-white dark:bg-slate-800 rounded-xl shadow p-4 text-center">
           <div className="text-3xl font-bold text-gray-400">{badges.total_available}</div>
-          <div className="text-sm text-gray-500">미획득 배지</div>
+          <div className="text-sm text-gray-500 dark:text-gray-400">미획득 배지</div>
         </div>
-        <div className="bg-white rounded-xl shadow p-4 text-center">
-          <div className="text-3xl font-bold text-green-600">
+        <div className="bg-white dark:bg-slate-800 rounded-xl shadow p-4 text-center">
+          <div className="text-3xl font-bold text-green-600 dark:text-green-400">
             {badges.total_earned + badges.total_available}
           </div>
-          <div className="text-sm text-gray-500">전체 배지</div>
+          <div className="text-sm text-gray-500 dark:text-gray-400">전체 배지</div>
         </div>
-        <div className="bg-white rounded-xl shadow p-4 text-center">
-          <div className="text-3xl font-bold text-yellow-600">
+        <div className="bg-white dark:bg-slate-800 rounded-xl shadow p-4 text-center">
+          <div className="text-3xl font-bold text-yellow-600 dark:text-yellow-400">
             {((badges.total_earned / (badges.total_earned + badges.total_available)) * 100).toFixed(0)}%
           </div>
-          <div className="text-sm text-gray-500">수집률</div>
+          <div className="text-sm text-gray-500 dark:text-gray-400">수집률</div>
         </div>
       </div>
 
@@ -105,7 +105,7 @@ export default function BadgesPage() {
           className={`px-4 py-2 rounded-lg font-medium transition-colors ${
             selectedCategory === 'all'
               ? 'bg-indigo-600 text-white'
-              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              : 'bg-gray-100 dark:bg-slate-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-slate-600'
           }`}
         >
           전체
@@ -117,7 +117,7 @@ export default function BadgesPage() {
             className={`px-4 py-2 rounded-lg font-medium transition-colors ${
               selectedCategory === category
                 ? 'bg-indigo-600 text-white'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                : 'bg-gray-100 dark:bg-slate-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-slate-600'
             }`}
           >
             {CATEGORY_LABELS[category]}
@@ -128,9 +128,9 @@ export default function BadgesPage() {
       {/* Earned Badges */}
       {earnedFiltered.length > 0 && (
         <section className="mb-12">
-          <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+          <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
             ✨ 획득한 배지
-            <span className="text-sm font-normal text-gray-500">({earnedFiltered.length}개)</span>
+            <span className="text-sm font-normal text-gray-500 dark:text-gray-400">({earnedFiltered.length}개)</span>
           </h2>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
             {earnedFiltered.map((userBadge) => (
@@ -148,9 +148,9 @@ export default function BadgesPage() {
       {/* Available Badges */}
       {availableFiltered.length > 0 && (
         <section>
-          <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+          <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
             🔒 미획득 배지
-            <span className="text-sm font-normal text-gray-500">({availableFiltered.length}개)</span>
+            <span className="text-sm font-normal text-gray-500 dark:text-gray-400">({availableFiltered.length}개)</span>
           </h2>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
             {availableFiltered.map((badge) => (

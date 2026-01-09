@@ -164,10 +164,10 @@ export function ProblemSolvePage() {
 
   if (loading) {
     return (
-      <div className="h-[calc(100vh-4rem)] flex items-center justify-center">
+      <div className="h-[calc(100vh-4rem)] flex items-center justify-center bg-neutral-50 dark:bg-slate-900">
         <div className="text-center">
           <Loader2 className="h-8 w-8 animate-spin text-blue-500 mx-auto" />
-          <p className="mt-2 text-neutral-500">Loading problem...</p>
+          <p className="mt-2 text-neutral-500 dark:text-neutral-400">Loading problem...</p>
         </div>
       </div>
     );
@@ -175,9 +175,9 @@ export function ProblemSolvePage() {
 
   if (error || !problem) {
     return (
-      <div className="h-[calc(100vh-4rem)] flex items-center justify-center">
+      <div className="h-[calc(100vh-4rem)] flex items-center justify-center bg-neutral-50 dark:bg-slate-900">
         <div className="text-center">
-          <p className="text-red-500 mb-4">{error || 'Problem not found'}</p>
+          <p className="text-red-500 dark:text-red-400 mb-4">{error || 'Problem not found'}</p>
           <Link
             to="/problems"
             className="inline-flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
@@ -193,16 +193,16 @@ export function ProblemSolvePage() {
   return (
     <div className="h-[calc(100vh-4rem)] flex flex-col">
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-2 bg-white border-b border-neutral-200">
+      <div className="flex items-center justify-between px-4 py-2 bg-white dark:bg-slate-800 border-b border-neutral-200 dark:border-slate-700">
         <div className="flex items-center gap-4">
           <Link
             to="/problems"
-            className="flex items-center gap-1 text-neutral-600 hover:text-blue-600"
+            className="flex items-center gap-1 text-neutral-600 dark:text-neutral-400 hover:text-blue-600 dark:hover:text-blue-400"
           >
             <ChevronLeft className="h-5 w-5" />
             <span>Back</span>
           </Link>
-          <h1 className="text-lg font-bold">{problem.title}</h1>
+          <h1 className="text-lg font-bold dark:text-white">{problem.title}</h1>
           <span
             className={`px-2 py-0.5 rounded-full text-xs font-medium capitalize ${
               problem.difficulty === 'easy'
@@ -218,7 +218,7 @@ export function ProblemSolvePage() {
         <div className="flex items-center gap-2">
           <Link
             to={`/chat?problem=${id}`}
-            className="flex items-center gap-2 px-3 py-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+            className="flex items-center gap-2 px-3 py-1.5 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-colors"
           >
             <MessageSquare className="h-4 w-4" />
             <span>AI 도움</span>
@@ -229,15 +229,15 @@ export function ProblemSolvePage() {
       {/* Main content */}
       <div className="flex-1 flex overflow-hidden">
         {/* Left panel - Problem description */}
-        <div className="w-1/2 flex flex-col border-r border-neutral-200">
+        <div className="w-1/2 flex flex-col border-r border-neutral-200 dark:border-slate-700 bg-white dark:bg-slate-800">
           {/* Tabs */}
-          <div className="flex border-b border-neutral-200">
+          <div className="flex border-b border-neutral-200 dark:border-slate-700">
             <button
               onClick={() => setActiveTab('description')}
               className={`px-4 py-2 font-medium transition-colors ${
                 activeTab === 'description'
-                  ? 'text-blue-600 border-b-2 border-blue-600'
-                  : 'text-neutral-600 hover:text-neutral-900'
+                  ? 'text-blue-600 dark:text-blue-400 border-b-2 border-blue-600'
+                  : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
               }`}
             >
               문제 설명
@@ -246,8 +246,8 @@ export function ProblemSolvePage() {
               onClick={() => setActiveTab('approach')}
               className={`px-4 py-2 font-medium transition-colors flex items-center gap-1 ${
                 activeTab === 'approach'
-                  ? 'text-purple-600 border-b-2 border-purple-600'
-                  : 'text-neutral-600 hover:text-neutral-900'
+                  ? 'text-purple-600 dark:text-purple-400 border-b-2 border-purple-600'
+                  : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
               }`}
             >
               <Sparkles className="h-4 w-4" />
@@ -257,8 +257,8 @@ export function ProblemSolvePage() {
               onClick={() => setActiveTab('hints')}
               className={`px-4 py-2 font-medium transition-colors ${
                 activeTab === 'hints'
-                  ? 'text-blue-600 border-b-2 border-blue-600'
-                  : 'text-neutral-600 hover:text-neutral-900'
+                  ? 'text-blue-600 dark:text-blue-400 border-b-2 border-blue-600'
+                  : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
               }`}
             >
               힌트 ({(problem.hints || []).length})
@@ -276,7 +276,7 @@ export function ProblemSolvePage() {
                       <Link
                         key={patternId}
                         to={`/patterns/${patternId}`}
-                        className="inline-flex items-center gap-1 px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-sm font-medium hover:bg-purple-200 transition-colors"
+                        className="inline-flex items-center gap-1 px-3 py-1 bg-purple-100 dark:bg-purple-900/50 text-purple-700 dark:text-purple-300 rounded-full text-sm font-medium hover:bg-purple-200 dark:hover:bg-purple-900/70 transition-colors"
                       >
                         <Sparkles className="h-3 w-3" />
                         {PATTERN_NAMES[patternId] || patternId}
@@ -284,7 +284,7 @@ export function ProblemSolvePage() {
                     ))}
                   </div>
                 )}
-                <div className="prose prose-neutral max-w-none">
+                <div className="prose prose-neutral dark:prose-invert max-w-none">
                   <div
                     dangerouslySetInnerHTML={{
                       __html: problem.description
@@ -301,8 +301,8 @@ export function ProblemSolvePage() {
               <div className="space-y-6">
                 {/* Patterns */}
                 {problem.pattern_ids && problem.pattern_ids.length > 0 && (
-                  <div className="bg-purple-50 rounded-lg p-4">
-                    <h3 className="font-bold text-purple-900 mb-2 flex items-center gap-2">
+                  <div className="bg-purple-50 dark:bg-purple-900/30 rounded-lg p-4">
+                    <h3 className="font-bold text-purple-900 dark:text-purple-300 mb-2 flex items-center gap-2">
                       <Sparkles className="h-5 w-5" />
                       적용 패턴
                     </h3>
@@ -311,7 +311,7 @@ export function ProblemSolvePage() {
                         <Link
                           key={patternId}
                           to={`/patterns/${patternId}`}
-                          className="inline-flex items-center gap-1 px-3 py-1 bg-white text-purple-700 rounded-full text-sm font-medium hover:bg-purple-100 transition-colors border border-purple-200"
+                          className="inline-flex items-center gap-1 px-3 py-1 bg-white dark:bg-slate-700 text-purple-700 dark:text-purple-300 rounded-full text-sm font-medium hover:bg-purple-100 dark:hover:bg-purple-900/50 transition-colors border border-purple-200 dark:border-purple-700"
                         >
                           {PATTERN_NAMES[patternId] || patternId}
                         </Link>
@@ -322,43 +322,43 @@ export function ProblemSolvePage() {
 
                 {/* Pattern explanation */}
                 {problem.pattern_explanation && (
-                  <div className="bg-blue-50 rounded-lg p-4">
-                    <h3 className="font-bold text-blue-900 mb-2 flex items-center gap-2">
+                  <div className="bg-blue-50 dark:bg-blue-900/30 rounded-lg p-4">
+                    <h3 className="font-bold text-blue-900 dark:text-blue-300 mb-2 flex items-center gap-2">
                       <Lightbulb className="h-5 w-5" />
                       패턴 적용 방법
                     </h3>
-                    <p className="text-blue-800">{problem.pattern_explanation}</p>
+                    <p className="text-blue-800 dark:text-blue-200">{problem.pattern_explanation}</p>
                   </div>
                 )}
 
                 {/* Approach hint */}
                 {problem.approach_hint && (
-                  <div className="bg-green-50 rounded-lg p-4">
-                    <h3 className="font-bold text-green-900 mb-2">접근법 힌트</h3>
-                    <p className="text-green-800">{problem.approach_hint}</p>
+                  <div className="bg-green-50 dark:bg-green-900/30 rounded-lg p-4">
+                    <h3 className="font-bold text-green-900 dark:text-green-300 mb-2">접근법 힌트</h3>
+                    <p className="text-green-800 dark:text-green-200">{problem.approach_hint}</p>
                   </div>
                 )}
 
                 {/* Complexity hints */}
                 <div className="grid grid-cols-2 gap-4">
                   {problem.time_complexity_hint && (
-                    <div className="bg-neutral-50 rounded-lg p-4">
-                      <h3 className="font-bold text-neutral-700 mb-1 flex items-center gap-2">
+                    <div className="bg-neutral-50 dark:bg-slate-700/50 rounded-lg p-4">
+                      <h3 className="font-bold text-neutral-700 dark:text-neutral-300 mb-1 flex items-center gap-2">
                         <Clock className="h-4 w-4" />
                         목표 시간복잡도
                       </h3>
-                      <p className="text-lg font-mono text-neutral-900">
+                      <p className="text-lg font-mono text-neutral-900 dark:text-white">
                         {problem.time_complexity_hint}
                       </p>
                     </div>
                   )}
                   {problem.space_complexity_hint && (
-                    <div className="bg-neutral-50 rounded-lg p-4">
-                      <h3 className="font-bold text-neutral-700 mb-1 flex items-center gap-2">
+                    <div className="bg-neutral-50 dark:bg-slate-700/50 rounded-lg p-4">
+                      <h3 className="font-bold text-neutral-700 dark:text-neutral-300 mb-1 flex items-center gap-2">
                         <Box className="h-4 w-4" />
                         목표 공간복잡도
                       </h3>
-                      <p className="text-lg font-mono text-neutral-900">
+                      <p className="text-lg font-mono text-neutral-900 dark:text-white">
                         {problem.space_complexity_hint}
                       </p>
                     </div>
@@ -367,10 +367,10 @@ export function ProblemSolvePage() {
 
                 {/* Link to pattern pages */}
                 {problem.pattern_ids && problem.pattern_ids.length > 0 && (
-                  <div className="text-center pt-4 border-t border-neutral-200">
+                  <div className="text-center pt-4 border-t border-neutral-200 dark:border-slate-600">
                     <Link
                       to="/patterns"
-                      className="text-purple-600 hover:text-purple-700 font-medium"
+                      className="text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 font-medium"
                     >
                       패턴 학습 페이지에서 더 자세히 알아보기 →
                     </Link>
@@ -384,37 +384,37 @@ export function ProblemSolvePage() {
                 {(problem.hints || []).map((hint, index) => (
                   <div
                     key={index}
-                    className="border border-neutral-200 rounded-lg overflow-hidden"
+                    className="border border-neutral-200 dark:border-slate-600 rounded-lg overflow-hidden"
                   >
                     <button
                       onClick={() =>
                         setShowHintIndex(showHintIndex === index ? -1 : index)
                       }
-                      className="w-full px-4 py-3 flex items-center justify-between bg-neutral-50 hover:bg-neutral-100 transition-colors"
+                      className="w-full px-4 py-3 flex items-center justify-between bg-neutral-50 dark:bg-slate-700/50 hover:bg-neutral-100 dark:hover:bg-slate-700 transition-colors"
                     >
-                      <span className="font-medium">힌트 {index + 1}</span>
-                      <span className="text-sm text-neutral-500">
+                      <span className="font-medium dark:text-white">힌트 {index + 1}</span>
+                      <span className="text-sm text-neutral-500 dark:text-neutral-400">
                         {showHintIndex === index ? '숨기기' : '보기'}
                       </span>
                     </button>
                     {showHintIndex === index && (
-                      <div className="px-4 py-3 bg-white">{hint}</div>
+                      <div className="px-4 py-3 bg-white dark:bg-slate-700 dark:text-neutral-200">{hint}</div>
                     )}
                   </div>
                 ))}
 
                 {/* Solution */}
                 {problem.reference_solution && (
-                  <div className="border border-orange-200 rounded-lg overflow-hidden mt-6">
+                  <div className="border border-orange-200 dark:border-orange-800 rounded-lg overflow-hidden mt-6">
                     <button
                       onClick={() => setShowSolution(!showSolution)}
-                      className="w-full px-4 py-3 flex items-center justify-between bg-orange-50 hover:bg-orange-100 transition-colors"
+                      className="w-full px-4 py-3 flex items-center justify-between bg-orange-50 dark:bg-orange-900/30 hover:bg-orange-100 dark:hover:bg-orange-900/50 transition-colors"
                     >
-                      <span className="font-medium text-orange-800 flex items-center gap-2">
+                      <span className="font-medium text-orange-800 dark:text-orange-300 flex items-center gap-2">
                         <Code2 className="h-4 w-4" />
                         정답 코드 보기
                       </span>
-                      <span className="text-sm text-orange-600 flex items-center gap-1">
+                      <span className="text-sm text-orange-600 dark:text-orange-400 flex items-center gap-1">
                         {showSolution ? (
                           <>
                             <EyeOff className="h-4 w-4" />
@@ -440,7 +440,7 @@ export function ProblemSolvePage() {
 
                 {/* Warning message */}
                 {problem.reference_solution && !showSolution && (
-                  <p className="text-sm text-neutral-500 text-center mt-4">
+                  <p className="text-sm text-neutral-500 dark:text-neutral-400 text-center mt-4">
                     먼저 힌트를 활용해 직접 풀어보세요!
                   </p>
                 )}

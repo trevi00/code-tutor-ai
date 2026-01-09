@@ -95,21 +95,21 @@ export function ChatPage() {
 
   return (
     <div className="container mx-auto px-4 py-8 h-[calc(100vh-8rem)]">
-      <div className="bg-white rounded-xl shadow-sm border border-neutral-200 h-full flex flex-col">
+      <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-neutral-200 dark:border-slate-700 h-full flex flex-col">
         {/* Header */}
-        <div className="p-4 border-b border-neutral-200 flex items-center justify-between">
+        <div className="p-4 border-b border-neutral-200 dark:border-slate-700 flex items-center justify-between">
           <div>
-            <h1 className="text-xl font-bold flex items-center gap-2">
-              <Bot className="h-6 w-6 text-blue-600" />
+            <h1 className="text-xl font-bold flex items-center gap-2 dark:text-white">
+              <Bot className="h-6 w-6 text-blue-600 dark:text-blue-400" />
               AI 튜터 채팅
             </h1>
-            <p className="text-sm text-neutral-600 mt-1">
+            <p className="text-sm text-neutral-600 dark:text-neutral-400 mt-1">
               알고리즘에 대해 질문하고, 힌트를 받거나, 코드 리뷰를 요청하세요
             </p>
           </div>
           <button
             onClick={handleNewChat}
-            className="flex items-center gap-2 px-3 py-2 text-sm text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+            className="flex items-center gap-2 px-3 py-2 text-sm text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-colors"
           >
             <RefreshCw className="h-4 w-4" />
             새 대화
@@ -124,32 +124,32 @@ export function ChatPage() {
               className={`flex gap-3 ${message.role === 'user' ? 'justify-end' : ''}`}
             >
               {message.role === 'assistant' && (
-                <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
-                  <Bot className="h-5 w-5 text-blue-600" />
+                <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900/50 rounded-full flex items-center justify-center flex-shrink-0">
+                  <Bot className="h-5 w-5 text-blue-600 dark:text-blue-400" />
                 </div>
               )}
               <div
                 className={`max-w-[70%] rounded-2xl px-4 py-3 ${
                   message.role === 'user'
                     ? 'bg-blue-600 text-white'
-                    : 'bg-neutral-100 text-neutral-900'
+                    : 'bg-neutral-100 dark:bg-slate-700 text-neutral-900 dark:text-neutral-100'
                 }`}
               >
                 <p className="whitespace-pre-wrap">{message.content}</p>
               </div>
               {message.role === 'user' && (
-                <div className="w-8 h-8 bg-neutral-200 rounded-full flex items-center justify-center flex-shrink-0">
-                  <User className="h-5 w-5 text-neutral-600" />
+                <div className="w-8 h-8 bg-neutral-200 dark:bg-slate-600 rounded-full flex items-center justify-center flex-shrink-0">
+                  <User className="h-5 w-5 text-neutral-600 dark:text-neutral-300" />
                 </div>
               )}
             </div>
           ))}
           {isLoading && (
             <div className="flex gap-3">
-              <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                <Bot className="h-5 w-5 text-blue-600" />
+              <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900/50 rounded-full flex items-center justify-center">
+                <Bot className="h-5 w-5 text-blue-600 dark:text-blue-400" />
               </div>
-              <div className="bg-neutral-100 rounded-2xl px-4 py-3">
+              <div className="bg-neutral-100 dark:bg-slate-700 rounded-2xl px-4 py-3">
                 <div className="flex gap-1">
                   <span className="w-2 h-2 bg-neutral-400 rounded-full animate-bounce" />
                   <span className="w-2 h-2 bg-neutral-400 rounded-full animate-bounce [animation-delay:0.2s]" />
@@ -162,14 +162,14 @@ export function ChatPage() {
         </div>
 
         {/* Input */}
-        <form onSubmit={handleSubmit} className="p-4 border-t border-neutral-200">
+        <form onSubmit={handleSubmit} className="p-4 border-t border-neutral-200 dark:border-slate-700">
           <div className="flex gap-4">
             <input
               type="text"
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder="메시지를 입력하세요..."
-              className="flex-1 px-4 py-3 border border-neutral-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="flex-1 px-4 py-3 border border-neutral-300 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-slate-700 dark:text-white dark:placeholder-neutral-400"
             />
             <button
               type="submit"

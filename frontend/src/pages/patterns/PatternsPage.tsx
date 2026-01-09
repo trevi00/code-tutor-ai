@@ -69,7 +69,7 @@ export function PatternsPage() {
       <div className="container mx-auto px-4 py-8">
         <div className="flex items-center justify-center py-20">
           <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
-          <span className="ml-2 text-neutral-600">패턴 목록을 불러오는 중...</span>
+          <span className="ml-2 text-neutral-600 dark:text-neutral-400">패턴 목록을 불러오는 중...</span>
         </div>
       </div>
     );
@@ -79,7 +79,7 @@ export function PatternsPage() {
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="text-center py-20">
-          <p className="text-red-500">{error}</p>
+          <p className="text-red-500 dark:text-red-400">{error}</p>
         </div>
       </div>
     );
@@ -89,11 +89,11 @@ export function PatternsPage() {
     <div className="container mx-auto px-4 py-8">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2 flex items-center gap-2">
-          <Sparkles className="h-8 w-8 text-purple-600" />
+        <h1 className="text-3xl font-bold mb-2 flex items-center gap-2 dark:text-white">
+          <Sparkles className="h-8 w-8 text-purple-600 dark:text-purple-400" />
           알고리즘 패턴 학습
         </h1>
-        <p className="text-neutral-600">
+        <p className="text-neutral-600 dark:text-neutral-400">
           25개의 핵심 알고리즘 패턴을 마스터하고 코딩 테스트를 정복하세요
         </p>
       </div>
@@ -107,7 +107,7 @@ export function PatternsPage() {
             placeholder="패턴 검색..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-10 pr-4 py-3 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+            className="w-full pl-10 pr-4 py-3 border border-neutral-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white dark:bg-slate-700 dark:text-white dark:placeholder-neutral-400"
           />
         </div>
 
@@ -117,7 +117,7 @@ export function PatternsPage() {
             className={`px-4 py-2 rounded-lg font-medium transition-colors ${
               filter === 'all'
                 ? 'bg-purple-600 text-white'
-                : 'bg-neutral-100 text-neutral-600 hover:bg-neutral-200'
+                : 'bg-neutral-100 dark:bg-slate-700 text-neutral-600 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-slate-600'
             }`}
           >
             전체 ({patterns.length})
@@ -127,7 +127,7 @@ export function PatternsPage() {
             className={`px-4 py-2 rounded-lg font-medium transition-colors ${
               filter === 'basic'
                 ? 'bg-green-600 text-white'
-                : 'bg-neutral-100 text-neutral-600 hover:bg-neutral-200'
+                : 'bg-neutral-100 dark:bg-slate-700 text-neutral-600 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-slate-600'
             }`}
           >
             기본 패턴
@@ -137,7 +137,7 @@ export function PatternsPage() {
             className={`px-4 py-2 rounded-lg font-medium transition-colors ${
               filter === 'advanced'
                 ? 'bg-orange-600 text-white'
-                : 'bg-neutral-100 text-neutral-600 hover:bg-neutral-200'
+                : 'bg-neutral-100 dark:bg-slate-700 text-neutral-600 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-slate-600'
             }`}
           >
             고급 패턴
@@ -155,29 +155,29 @@ export function PatternsPage() {
             <Link
               key={pattern.id}
               to={`/patterns/${pattern.id}`}
-              className="card-hover bg-white rounded-xl shadow-soft border border-neutral-100 p-6 hover:border-purple-300 group"
+              className="card-hover bg-white dark:bg-slate-800 rounded-xl shadow-soft border border-neutral-100 dark:border-slate-700 p-6 hover:border-purple-300 dark:hover:border-purple-600 group"
             >
               <div className="flex items-start justify-between mb-4">
                 <div>
-                  <h3 className="text-lg font-bold text-neutral-900 group-hover:text-purple-600 transition-colors">
+                  <h3 className="text-lg font-bold text-neutral-900 dark:text-white group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">
                     {pattern.name_ko}
                   </h3>
-                  <p className="text-sm text-neutral-500">{pattern.name}</p>
+                  <p className="text-sm text-neutral-500 dark:text-neutral-400">{pattern.name}</p>
                 </div>
                 <span
                   className={`px-2 py-1 rounded-full text-xs font-medium ${
-                    isBasic ? 'bg-green-100 text-green-700' : 'bg-orange-100 text-orange-700'
+                    isBasic ? 'bg-green-100 text-green-700 dark:bg-green-900/50 dark:text-green-400' : 'bg-orange-100 text-orange-700 dark:bg-orange-900/50 dark:text-orange-400'
                   }`}
                 >
                   {isBasic ? '기본' : '고급'}
                 </span>
               </div>
 
-              <p className="text-neutral-600 text-sm mb-4 line-clamp-2">
+              <p className="text-neutral-600 dark:text-neutral-400 text-sm mb-4 line-clamp-2">
                 {pattern.description_ko}
               </p>
 
-              <div className="flex items-center gap-4 text-sm text-neutral-500 mb-4">
+              <div className="flex items-center gap-4 text-sm text-neutral-500 dark:text-neutral-400 mb-4">
                 <div className="flex items-center gap-1">
                   <Clock className="h-4 w-4" />
                   <span className={`px-2 py-0.5 rounded ${timeInfo.color}`}>
@@ -194,23 +194,23 @@ export function PatternsPage() {
                 {pattern.keywords.slice(0, 4).map((keyword) => (
                   <span
                     key={keyword}
-                    className="px-2 py-1 bg-neutral-100 text-neutral-600 text-xs rounded-full"
+                    className="px-2 py-1 bg-neutral-100 dark:bg-slate-700 text-neutral-600 dark:text-neutral-300 text-xs rounded-full"
                   >
                     {keyword}
                   </span>
                 ))}
                 {pattern.keywords.length > 4 && (
-                  <span className="px-2 py-1 bg-neutral-100 text-neutral-400 text-xs rounded-full">
+                  <span className="px-2 py-1 bg-neutral-100 dark:bg-slate-700 text-neutral-400 text-xs rounded-full">
                     +{pattern.keywords.length - 4}
                   </span>
                 )}
               </div>
 
-              <div className="mt-4 pt-4 border-t border-neutral-100 flex items-center justify-between text-sm">
-                <span className="text-neutral-500">
+              <div className="mt-4 pt-4 border-t border-neutral-100 dark:border-slate-700 flex items-center justify-between text-sm">
+                <span className="text-neutral-500 dark:text-neutral-400">
                   {pattern.use_cases.length}개의 활용 사례
                 </span>
-                <ChevronRight className="h-5 w-5 text-neutral-400 group-hover:text-purple-600 transition-colors" />
+                <ChevronRight className="h-5 w-5 text-neutral-400 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors" />
               </div>
             </Link>
           );
@@ -219,7 +219,7 @@ export function PatternsPage() {
 
       {filteredPatterns.length === 0 && (
         <div className="text-center py-12">
-          <p className="text-neutral-500">검색 결과가 없습니다.</p>
+          <p className="text-neutral-500 dark:text-neutral-400">검색 결과가 없습니다.</p>
         </div>
       )}
     </div>

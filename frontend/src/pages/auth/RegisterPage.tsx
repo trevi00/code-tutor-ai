@@ -31,24 +31,24 @@ export function RegisterPage() {
   const passwordsMatch = password === confirmPassword && password.length > 0;
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 py-12 px-4">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-slate-900 dark:to-slate-800 py-12 px-4">
       <div className="max-w-md w-full">
         {/* Logo */}
         <div className="text-center mb-8">
-          <Link to="/" className="inline-flex items-center gap-2 text-2xl font-bold text-blue-600">
+          <Link to="/" className="inline-flex items-center gap-2 text-2xl font-bold text-blue-600 dark:text-blue-400">
             <BookOpen className="h-8 w-8" />
             <span>Code Tutor AI</span>
           </Link>
-          <p className="mt-2 text-neutral-600">계정을 만들고 학습을 시작하세요</p>
+          <p className="mt-2 text-neutral-600 dark:text-neutral-400">계정을 만들고 학습을 시작하세요</p>
         </div>
 
         {/* Form */}
-        <div className="bg-white rounded-2xl shadow-xl p-8">
+        <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl p-8">
           {success ? (
             <div className="text-center py-8">
               <CheckCircle className="h-16 w-16 text-green-500 mx-auto mb-4" />
-              <h2 className="text-xl font-bold text-neutral-900">회원가입 완료!</h2>
-              <p className="mt-2 text-neutral-600">로그인 페이지로 이동합니다...</p>
+              <h2 className="text-xl font-bold text-neutral-900 dark:text-white">회원가입 완료!</h2>
+              <p className="mt-2 text-neutral-600 dark:text-neutral-400">로그인 페이지로 이동합니다...</p>
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-5">
@@ -67,7 +67,7 @@ export function RegisterPage() {
               )}
 
               <div>
-                <label htmlFor="email" className="block text-sm font-medium text-neutral-700 mb-2">
+                <label htmlFor="email" className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
                   이메일
                 </label>
                 <div className="relative">
@@ -79,13 +79,13 @@ export function RegisterPage() {
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="example@email.com"
                     required
-                    className="w-full pl-10 pr-4 py-3 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                    className="w-full pl-10 pr-4 py-3 border border-neutral-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all bg-white dark:bg-slate-700 dark:text-white"
                   />
                 </div>
               </div>
 
               <div>
-                <label htmlFor="username" className="block text-sm font-medium text-neutral-700 mb-2">
+                <label htmlFor="username" className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
                   사용자명
                 </label>
                 <div className="relative">
@@ -99,13 +99,13 @@ export function RegisterPage() {
                     required
                     minLength={3}
                     maxLength={20}
-                    className="w-full pl-10 pr-4 py-3 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                    className="w-full pl-10 pr-4 py-3 border border-neutral-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all bg-white dark:bg-slate-700 dark:text-white"
                   />
                 </div>
               </div>
 
               <div>
-                <label htmlFor="password" className="block text-sm font-medium text-neutral-700 mb-2">
+                <label htmlFor="password" className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
                   비밀번호
                 </label>
                 <div className="relative">
@@ -118,13 +118,13 @@ export function RegisterPage() {
                     placeholder="8자 이상 입력하세요"
                     required
                     minLength={8}
-                    className="w-full pl-10 pr-4 py-3 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                    className="w-full pl-10 pr-4 py-3 border border-neutral-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all bg-white dark:bg-slate-700 dark:text-white"
                   />
                 </div>
               </div>
 
               <div>
-                <label htmlFor="confirmPassword" className="block text-sm font-medium text-neutral-700 mb-2">
+                <label htmlFor="confirmPassword" className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
                   비밀번호 확인
                 </label>
                 <div className="relative">
@@ -161,9 +161,9 @@ export function RegisterPage() {
           )}
 
           {!success && (
-            <p className="mt-6 text-center text-sm text-neutral-600">
+            <p className="mt-6 text-center text-sm text-neutral-600 dark:text-neutral-400">
               이미 계정이 있으신가요?{' '}
-              <Link to="/login" className="text-blue-600 hover:text-blue-700 font-medium">
+              <Link to="/login" className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium">
                 로그인
               </Link>
             </p>

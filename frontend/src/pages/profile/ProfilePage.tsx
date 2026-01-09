@@ -116,22 +116,22 @@ export default function ProfilePage() {
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">
-      <h1 className="text-3xl font-bold text-gray-800 mb-8">내 프로필</h1>
+      <h1 className="text-3xl font-bold text-gray-800 dark:text-white mb-8">내 프로필</h1>
 
       {/* Alert Messages */}
       {error && (
-        <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
+        <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-lg text-red-700 dark:text-red-300">
           {error}
         </div>
       )}
       {success && (
-        <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg text-green-700">
+        <div className="mb-6 p-4 bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-800 rounded-lg text-green-700 dark:text-green-300">
           {success}
         </div>
       )}
 
       {/* Profile Card */}
-      <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+      <div className="bg-white dark:bg-slate-800 rounded-lg shadow-lg overflow-hidden">
         {/* Header */}
         <div className="bg-gradient-to-r from-blue-500 to-blue-600 px-6 py-8">
           <div className="flex items-center">
@@ -155,20 +155,20 @@ export default function ProfilePage() {
           {!isEditing ? (
             <div className="space-y-6">
               <div>
-                <h3 className="text-sm font-medium text-gray-500 mb-1">사용자명</h3>
-                <p className="text-lg text-gray-800">{user.username}</p>
+                <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">사용자명</h3>
+                <p className="text-lg text-gray-800 dark:text-white">{user.username}</p>
               </div>
               <div>
-                <h3 className="text-sm font-medium text-gray-500 mb-1">이메일</h3>
-                <p className="text-lg text-gray-800">{user.email}</p>
+                <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">이메일</h3>
+                <p className="text-lg text-gray-800 dark:text-white">{user.email}</p>
               </div>
               <div>
-                <h3 className="text-sm font-medium text-gray-500 mb-1">자기소개</h3>
-                <p className="text-lg text-gray-800">{user.bio || '아직 자기소개가 없습니다.'}</p>
+                <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">자기소개</h3>
+                <p className="text-lg text-gray-800 dark:text-white">{user.bio || '아직 자기소개가 없습니다.'}</p>
               </div>
               <div>
-                <h3 className="text-sm font-medium text-gray-500 mb-1">가입일</h3>
-                <p className="text-lg text-gray-800">
+                <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">가입일</h3>
+                <p className="text-lg text-gray-800 dark:text-white">
                   {new Date(user.created_at).toLocaleDateString('ko-KR', {
                     year: 'numeric',
                     month: 'long',
@@ -178,8 +178,8 @@ export default function ProfilePage() {
               </div>
               {user.last_login_at && (
                 <div>
-                  <h3 className="text-sm font-medium text-gray-500 mb-1">마지막 로그인</h3>
-                  <p className="text-lg text-gray-800">
+                  <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">마지막 로그인</h3>
+                  <p className="text-lg text-gray-800 dark:text-white">
                     {new Date(user.last_login_at).toLocaleDateString('ko-KR', {
                       year: 'numeric',
                       month: 'long',
@@ -200,7 +200,7 @@ export default function ProfilePage() {
                 </button>
                 <button
                   onClick={() => setIsChangingPassword(true)}
-                  className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                  className="px-4 py-2 border border-gray-300 dark:border-slate-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors"
                 >
                   비밀번호 변경
                 </button>
@@ -209,7 +209,7 @@ export default function ProfilePage() {
           ) : (
             <form onSubmit={handleUpdateProfile} className="space-y-6">
               <div>
-                <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="username" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   사용자명
                 </label>
                 <input
@@ -217,14 +217,14 @@ export default function ProfilePage() {
                   id="username"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-4 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-slate-700 dark:text-white"
                   minLength={3}
                   maxLength={30}
                   required
                 />
               </div>
               <div>
-                <label htmlFor="bio" className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="bio" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   자기소개
                 </label>
                 <textarea
@@ -232,11 +232,11 @@ export default function ProfilePage() {
                   value={bio}
                   onChange={(e) => setBio(e.target.value)}
                   rows={4}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                  className="w-full px-4 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none bg-white dark:bg-slate-700 dark:text-white"
                   maxLength={200}
                   placeholder="간단한 자기소개를 입력해주세요 (최대 200자)"
                 />
-                <p className="text-sm text-gray-500 mt-1">{bio.length}/200</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{bio.length}/200</p>
               </div>
               <div className="flex gap-4">
                 <button
@@ -249,7 +249,7 @@ export default function ProfilePage() {
                 <button
                   type="button"
                   onClick={cancelEdit}
-                  className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                  className="px-4 py-2 border border-gray-300 dark:border-slate-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors"
                 >
                   취소
                 </button>
@@ -262,11 +262,11 @@ export default function ProfilePage() {
       {/* Password Change Modal */}
       {isChangingPassword && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-md mx-4">
-            <h2 className="text-xl font-bold text-gray-800 mb-6">비밀번호 변경</h2>
+          <div className="bg-white dark:bg-slate-800 rounded-lg shadow-xl p-6 w-full max-w-md mx-4">
+            <h2 className="text-xl font-bold text-gray-800 dark:text-white mb-6">비밀번호 변경</h2>
             <form onSubmit={handleChangePassword} className="space-y-4">
               <div>
-                <label htmlFor="oldPassword" className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="oldPassword" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   현재 비밀번호
                 </label>
                 <input
@@ -274,12 +274,12 @@ export default function ProfilePage() {
                   id="oldPassword"
                   value={oldPassword}
                   onChange={(e) => setOldPassword(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-4 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-slate-700 dark:text-white"
                   required
                 />
               </div>
               <div>
-                <label htmlFor="newPassword" className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="newPassword" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   새 비밀번호
                 </label>
                 <input
@@ -287,13 +287,13 @@ export default function ProfilePage() {
                   id="newPassword"
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-4 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-slate-700 dark:text-white"
                   minLength={8}
                   required
                 />
               </div>
               <div>
-                <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   새 비밀번호 확인
                 </label>
                 <input
@@ -301,7 +301,7 @@ export default function ProfilePage() {
                   id="confirmPassword"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-4 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-slate-700 dark:text-white"
                   minLength={8}
                   required
                 />
@@ -317,7 +317,7 @@ export default function ProfilePage() {
                 <button
                   type="button"
                   onClick={cancelPasswordChange}
-                  className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                  className="flex-1 px-4 py-2 border border-gray-300 dark:border-slate-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors"
                 >
                   취소
                 </button>
@@ -328,18 +328,18 @@ export default function ProfilePage() {
       )}
 
       {/* Account Status */}
-      <div className="mt-8 bg-white rounded-lg shadow p-6">
-        <h2 className="text-xl font-semibold text-gray-800 mb-4">계정 상태</h2>
+      <div className="mt-8 bg-white dark:bg-slate-800 rounded-lg shadow p-6">
+        <h2 className="text-xl font-semibold text-gray-800 dark:text-white mb-4">계정 상태</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="flex items-center">
             <span className={`w-3 h-3 rounded-full mr-2 ${user.is_active ? 'bg-green-500' : 'bg-red-500'}`}></span>
-            <span className="text-gray-700">
+            <span className="text-gray-700 dark:text-gray-300">
               계정 상태: {user.is_active ? '활성' : '비활성'}
             </span>
           </div>
           <div className="flex items-center">
             <span className={`w-3 h-3 rounded-full mr-2 ${user.is_verified ? 'bg-green-500' : 'bg-yellow-500'}`}></span>
-            <span className="text-gray-700">
+            <span className="text-gray-700 dark:text-gray-300">
               이메일 인증: {user.is_verified ? '완료' : '미완료'}
             </span>
           </div>

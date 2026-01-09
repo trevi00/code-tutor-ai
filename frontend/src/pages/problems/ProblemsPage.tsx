@@ -104,25 +104,25 @@ export function ProblemsPage() {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2">문제 목록</h1>
-        <p className="text-neutral-600">AI 힌트와 함께 알고리즘 문제를 풀어보세요</p>
+        <h1 className="text-3xl font-bold mb-2 dark:text-white">문제 목록</h1>
+        <p className="text-neutral-600 dark:text-neutral-400">AI 힌트와 함께 알고리즘 문제를 풀어보세요</p>
       </div>
 
       {/* Active Pattern Filter Banner */}
       {patternInfo && (
-        <div className="mb-6 bg-purple-50/80 border border-purple-200 rounded-xl shadow-sm p-4 flex items-center justify-between">
+        <div className="mb-6 bg-purple-50/80 dark:bg-purple-900/30 border border-purple-200 dark:border-purple-800 rounded-xl shadow-sm p-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <span className="text-purple-600 font-medium">패턴 필터:</span>
-            <span className="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-sm font-medium">
+            <span className="text-purple-600 dark:text-purple-400 font-medium">패턴 필터:</span>
+            <span className="px-3 py-1 bg-purple-100 dark:bg-purple-800/50 text-purple-700 dark:text-purple-300 rounded-full text-sm font-medium">
               {patternInfo.name_ko}
             </span>
-            <span className="text-neutral-500 text-sm">
+            <span className="text-neutral-500 dark:text-neutral-400 text-sm">
               이 패턴과 관련된 문제만 표시됩니다
             </span>
           </div>
           <button
             onClick={clearPatternFilter}
-            className="flex items-center gap-1 px-3 py-1 text-sm text-purple-600 hover:text-purple-700 hover:bg-purple-100 rounded-lg transition-colors"
+            className="flex items-center gap-1 px-3 py-1 text-sm text-purple-600 dark:text-purple-400 hover:text-purple-700 hover:bg-purple-100 dark:hover:bg-purple-800/50 rounded-lg transition-colors"
           >
             <X className="h-4 w-4" />
             필터 해제
@@ -139,7 +139,7 @@ export function ProblemsPage() {
             placeholder="문제 검색..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-10 pr-4 py-3 border border-neutral-200 rounded-lg focus:ring-2 focus:ring-blue-500 shadow-sm focus:border-transparent"
+            className="w-full pl-10 pr-4 py-3 border border-neutral-200 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 shadow-sm focus:border-transparent bg-white dark:bg-slate-700 dark:text-white dark:placeholder-neutral-400"
           />
         </div>
 
@@ -149,7 +149,7 @@ export function ProblemsPage() {
             <select
               value={difficultyFilter}
               onChange={(e) => setDifficultyFilter(e.target.value as Difficulty | '')}
-              className="pl-10 pr-8 py-3 border border-neutral-200 rounded-lg focus:ring-2 focus:ring-blue-500 shadow-sm appearance-none bg-white"
+              className="pl-10 pr-8 py-3 border border-neutral-200 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 shadow-sm appearance-none bg-white dark:bg-slate-700 dark:text-white"
             >
               <option value="">전체 난이도</option>
               <option value="easy">쉬움</option>
@@ -161,7 +161,7 @@ export function ProblemsPage() {
           <select
             value={categoryFilter}
             onChange={(e) => setCategoryFilter(e.target.value as Category | '')}
-            className="px-4 py-3 border border-neutral-200 rounded-lg focus:ring-2 focus:ring-blue-500 shadow-sm appearance-none bg-white"
+            className="px-4 py-3 border border-neutral-200 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 shadow-sm appearance-none bg-white dark:bg-slate-700 dark:text-white"
           >
             <option value="">전체 카테고리</option>
             {Object.entries(CATEGORY_LABELS).map(([value, label]) => (
@@ -174,23 +174,23 @@ export function ProblemsPage() {
       </div>
 
       {/* Problem List */}
-      <div className="bg-white rounded-xl shadow-soft border border-neutral-100 overflow-hidden">
+      <div className="bg-white dark:bg-slate-800 rounded-xl shadow-soft border border-neutral-100 dark:border-slate-700 overflow-hidden">
         <table className="w-full">
-          <thead className="bg-neutral-50 border-b border-neutral-200">
+          <thead className="bg-neutral-50 dark:bg-slate-700/50 border-b border-neutral-200 dark:border-slate-600">
             <tr>
-              <th className="text-left py-4 px-6 font-medium text-neutral-600">제목</th>
-              <th className="text-left py-4 px-4 font-medium text-neutral-600">난이도</th>
-              <th className="text-left py-4 px-4 font-medium text-neutral-600">카테고리</th>
+              <th className="text-left py-4 px-6 font-medium text-neutral-600 dark:text-neutral-300">제목</th>
+              <th className="text-left py-4 px-4 font-medium text-neutral-600 dark:text-neutral-300">난이도</th>
+              <th className="text-left py-4 px-4 font-medium text-neutral-600 dark:text-neutral-300">카테고리</th>
               <th className="w-12"></th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-neutral-200">
+          <tbody className="divide-y divide-neutral-200 dark:divide-slate-600">
             {problems.map((problem) => (
-              <tr key={problem.id} className="hover:bg-blue-50/50 transition-all duration-200">
+              <tr key={problem.id} className="hover:bg-blue-50/50 dark:hover:bg-slate-700/50 transition-all duration-200">
                 <td className="py-4 px-6">
                   <Link
                     to={`/problems/${problem.id}/solve`}
-                    className="text-blue-600 hover:text-blue-700 font-medium hover:underline decoration-blue-300 underline-offset-4"
+                    className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium hover:underline decoration-blue-300 underline-offset-4"
                   >
                     {problem.title}
                   </Link>
@@ -204,13 +204,13 @@ export function ProblemsPage() {
                     {DIFFICULTY_LABELS[problem.difficulty]}
                   </span>
                 </td>
-                <td className="py-4 px-4 text-neutral-600">
+                <td className="py-4 px-4 text-neutral-600 dark:text-neutral-400">
                   {CATEGORY_LABELS[problem.category] || problem.category}
                 </td>
                 <td className="py-4 px-4">
                   <Link
                     to={`/problems/${problem.id}/solve`}
-                    className="text-neutral-400 hover:text-blue-600"
+                    className="text-neutral-400 hover:text-blue-600 dark:hover:text-blue-400"
                   >
                     <ChevronRight className="h-5 w-5" />
                   </Link>
@@ -223,13 +223,13 @@ export function ProblemsPage() {
         {loading && (
           <div className="py-12 text-center">
             <Loader2 className="h-8 w-8 animate-spin text-blue-500 mx-auto" />
-            <p className="mt-2 text-neutral-500">문제를 불러오는 중...</p>
+            <p className="mt-2 text-neutral-500 dark:text-neutral-400">문제를 불러오는 중...</p>
           </div>
         )}
 
         {error && !loading && (
           <div className="py-12 text-center">
-            <p className="text-red-500 mb-4">{error}</p>
+            <p className="text-red-500 dark:text-red-400 mb-4">{error}</p>
             <button
               onClick={fetchProblems}
               className="inline-flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
@@ -241,7 +241,7 @@ export function ProblemsPage() {
         )}
 
         {!loading && !error && problems.length === 0 && (
-          <div className="py-12 text-center text-neutral-500">
+          <div className="py-12 text-center text-neutral-500 dark:text-neutral-400">
             필터에 맞는 문제가 없습니다.
           </div>
         )}
@@ -253,17 +253,17 @@ export function ProblemsPage() {
           <button
             onClick={() => setPage((p) => Math.max(1, p - 1))}
             disabled={page === 1}
-            className="px-4 py-2 border border-neutral-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-neutral-50"
+            className="px-4 py-2 border border-neutral-300 dark:border-slate-600 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-neutral-50 dark:hover:bg-slate-700 bg-white dark:bg-slate-800 dark:text-white"
           >
             이전
           </button>
-          <span className="px-4 py-2 text-neutral-600">
+          <span className="px-4 py-2 text-neutral-600 dark:text-neutral-400">
             {page} / {totalPages} 페이지
           </span>
           <button
             onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
             disabled={page === totalPages}
-            className="px-4 py-2 border border-neutral-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-neutral-50"
+            className="px-4 py-2 border border-neutral-300 dark:border-slate-600 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-neutral-50 dark:hover:bg-slate-700 bg-white dark:bg-slate-800 dark:text-white"
           >
             다음
           </button>

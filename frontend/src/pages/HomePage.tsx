@@ -54,19 +54,19 @@ export function HomePage() {
           <svg viewBox="0 0 1440 120" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path
               d="M0 120L60 105C120 90 240 60 360 45C480 30 600 30 720 37.5C840 45 960 60 1080 67.5C1200 75 1320 75 1380 75L1440 75V120H1380C1320 120 1200 120 1080 120C960 120 840 120 720 120C600 120 480 120 360 120C240 120 120 120 60 120H0Z"
-              fill="#f8fafc"
+              className="fill-neutral-50 dark:fill-slate-900"
             />
           </svg>
         </div>
       </section>
 
       {/* Features Section */}
-      <section className="py-24 bg-neutral-50">
+      <section className="py-24 bg-neutral-50 dark:bg-slate-900">
         <div className="container mx-auto px-4">
           <h2 className="text-3xl md:text-5xl font-bold text-center mb-4 gradient-text">
             왜 Code Tutor AI인가요?
           </h2>
-          <p className="text-xl text-neutral-600 text-center mb-12 max-w-2xl mx-auto">
+          <p className="text-xl text-neutral-600 dark:text-neutral-400 text-center mb-12 max-w-2xl mx-auto">
             나만의 속도로 알고리즘을 마스터할 수 있도록 설계된 지능형 학습 플랫폼입니다.
           </p>
 
@@ -96,15 +96,15 @@ export function HomePage() {
       </section>
 
       {/* Patterns Section */}
-      <section className="py-20 bg-white">
+      <section className="py-20 bg-white dark:bg-slate-800">
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-center gap-2 mb-4">
             <Sparkles className="h-6 w-6 text-yellow-500" />
-            <h2 className="text-3xl md:text-4xl font-bold text-center">
+            <h2 className="text-3xl md:text-4xl font-bold text-center dark:text-white">
               리트코드 패턴 학습
             </h2>
           </div>
-          <p className="text-xl text-neutral-600 text-center mb-12 max-w-2xl mx-auto">
+          <p className="text-xl text-neutral-600 dark:text-neutral-400 text-center mb-12 max-w-2xl mx-auto">
             코딩 테스트에 자주 나오는 25개 핵심 알고리즘 패턴을 체계적으로 학습하세요.
           </p>
           <div className="grid md:grid-cols-3 lg:grid-cols-5 gap-4 max-w-4xl mx-auto">
@@ -122,9 +122,9 @@ export function HomePage() {
             ].map((pattern) => (
               <div
                 key={pattern}
-                className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-5 text-center border border-blue-100/50 group cursor-pointer card-hover"
+                className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/30 dark:to-indigo-900/30 rounded-xl p-5 text-center border border-blue-100/50 dark:border-blue-800/50 group cursor-pointer card-hover"
               >
-                <span className="text-sm font-medium text-blue-700">{pattern}</span>
+                <span className="text-sm font-medium text-blue-700 dark:text-blue-300">{pattern}</span>
               </div>
             ))}
           </div>
@@ -141,12 +141,12 @@ export function HomePage() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-24 bg-neutral-50">
+      <section className="py-24 bg-neutral-50 dark:bg-slate-900">
         <div className="container mx-auto px-4 text-center">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">
+          <h2 className="text-3xl md:text-4xl font-bold mb-4 dark:text-white">
             지금 바로 학습을 시작하세요
           </h2>
-          <p className="text-xl text-neutral-600 mb-8">
+          <p className="text-xl text-neutral-600 dark:text-neutral-400 mb-8">
             AI와 함께 알고리즘을 마스터하는 수천 명의 학습자와 함께하세요.
           </p>
           {!isAuthenticated && (
@@ -174,12 +174,12 @@ function FeatureCard({
   description: string;
 }) {
   return (
-    <div className="card-hover bg-white rounded-2xl p-7 shadow-soft border border-neutral-100">
-      <div className="w-14 h-14 bg-blue-100 text-blue-600 rounded-xl flex items-center justify-center mb-5 shadow-lg">
+    <div className="card-hover bg-white dark:bg-slate-800 rounded-2xl p-7 shadow-soft border border-neutral-100 dark:border-slate-700">
+      <div className="w-14 h-14 bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400 rounded-xl flex items-center justify-center mb-5 shadow-lg">
         {icon}
       </div>
-      <h3 className="text-xl font-bold mb-3 text-neutral-800">{title}</h3>
-      <p className="text-neutral-600">{description}</p>
+      <h3 className="text-xl font-bold mb-3 text-neutral-800 dark:text-neutral-100">{title}</h3>
+      <p className="text-neutral-600 dark:text-neutral-400">{description}</p>
     </div>
   );
 }
