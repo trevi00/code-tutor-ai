@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { dashboardApi, qualityApi } from '@/api';
 import { ActivityHeatmap } from '@/components/dashboard/ActivityHeatmap';
+import { CategoryProgressChart } from '@/components/dashboard/CategoryProgressChart';
 import { CodeQualityCard } from '@/components/dashboard/CodeQualityCard';
 import { LearningInsights } from '@/components/dashboard/LearningInsights';
 import { QualityRecommendations } from '@/components/dashboard/QualityRecommendations';
@@ -193,29 +194,8 @@ export default function DashboardPage() {
       )}
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-        {/* Category Progress */}
-        <div className="bg-white dark:bg-slate-800 rounded-lg shadow p-6">
-          <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-100 mb-4">카테고리별 진행률</h2>
-          <div className="space-y-4">
-            {category_progress.length > 0 ? (
-              category_progress.slice(0, 8).map((cp) => (
-                <CategoryProgressBar key={cp.category} progress={cp} />
-              ))
-            ) : (
-              <p className="text-gray-500 dark:text-gray-400 text-center py-4">
-                아직 푼 문제가 없습니다. 문제를 풀어보세요!
-              </p>
-            )}
-          </div>
-          {category_progress.length > 8 && (
-            <Link
-              to="/problems"
-              className="block mt-4 text-center text-blue-600 hover:text-blue-800"
-            >
-              더 보기
-            </Link>
-          )}
-        </div>
+        {/* Category Progress Chart */}
+        <CategoryProgressChart data={category_progress} maxItems={8} />
 
         {/* Recent Submissions */}
         <div className="bg-white dark:bg-slate-800 rounded-lg shadow p-6">
@@ -320,48 +300,6 @@ function StatCard({ title, value, subtext, icon, children }: StatCardProps) {
       ) : (
         children
       )}
-    </div>
-  );
-}
-
-// Category Progress Bar Component
-function CategoryProgressBar({ progress }: { progress: CategoryProgress }) {
-  const categoryLabels: Record<string, string> = {
-    array: '배열',
-    string: '문자열',
-    linked_list: '연결 리스트',
-    stack: '스택',
-    queue: '큐',
-    hash_table: '해시 테이블',
-    tree: '트리',
-    graph: '그래프',
-    dp: 'DP',
-    greedy: '그리디',
-    binary_search: '이진 탐색',
-    sorting: '정렬',
-    design: '설계',
-    dfs: 'DFS',
-    bfs: 'BFS',
-  };
-
-  const percentage = (progress.solved_problems / progress.total_problems) * 100;
-
-  return (
-    <div>
-      <div className="flex justify-between text-sm mb-1">
-        <span className="font-medium text-gray-700 dark:text-gray-300">
-          {categoryLabels[progress.category] || progress.category}
-        </span>
-        <span className="text-gray-500 dark:text-gray-400">
-          {progress.solved_problems}/{progress.total_problems}
-        </span>
-      </div>
-      <div className="w-full bg-gray-200 dark:bg-slate-700 rounded-full h-2">
-        <div
-          className="bg-blue-600 h-2 rounded-full transition-all duration-300"
-          style={{ width: `${percentage}%` }}
-        />
-      </div>
     </div>
   );
 }

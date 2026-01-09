@@ -1,3 +1,7 @@
+import { useEffect, useState } from 'react';
+import {
+  BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Cell, Tooltip, ReferenceLine
+} from 'recharts';
 import type { SkillPrediction } from '@/types';
 
 interface SkillPredictionsProps {
@@ -25,7 +29,38 @@ const categoryLabels: Record<string, string> = {
   recursion: '재귀',
 };
 
+// Category icons
+const categoryIcons: Record<string, string> = {
+  array: '📊',
+  string: '📝',
+  linked_list: '🔗',
+  stack: '📚',
+  queue: '📋',
+  hash_table: '🗂️',
+  tree: '🌳',
+  graph: '🕸️',
+  dp: '🧮',
+  greedy: '💰',
+  binary_search: '🔍',
+  sorting: '📈',
+  design: '🏗️',
+  dfs: '🔎',
+  bfs: '🔭',
+  math: '➗',
+  bit_manipulation: '🔢',
+  recursion: '🔄',
+};
+
 export function SkillPredictions({ predictions }: SkillPredictionsProps) {
+  const [animatedData, setAnimatedData] = useState<SkillPrediction[]>([]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setAnimatedData(predictions);
+    }, 100);
+    return () => clearTimeout(timer);
+  }, [predictions]);
+
   if (predictions.length === 0) {
     return null;
   }
@@ -38,81 +73,191 @@ export function SkillPredictions({ predictions }: SkillPredictionsProps) {
     return a.current_level - b.current_level;
   });
 
+  // Prepare chart data
+  const chartData = sortedPredictions.slice(0, 8).map(p => ({
+    category: categoryLabels[p.category] || p.category,
+    current: p.current_level,
+    predicted: p.predicted_level,
+    recommended: p.recommended_focus,
+    confidence: p.confidence,
+    icon: categoryIcons[p.category] || '📌',
+  }));
+
+  // Custom tooltip
+  const CustomTooltip = ({ active, payload }: {
+    active?: boolean;
+    payload?: Array<{
+      payload: {
+        category: string;
+        current: number;
+        predicted: number;
+        confidence: number;
+        icon: string;
+      }
+    }>
+  }) => {
+    if (!active || !payload || payload.length === 0) return null;
+    const data = payload[0].payload;
+    const improvement = data.predicted - data.current;
+    return (
+      <div className="bg-white dark:bg-slate-700 rounded-lg shadow-xl border border-gray-200 dark:border-slate-600 px-4 py-3 min-w-[160px]">
+        <p className="text-sm font-bold text-gray-800 dark:text-gray-100 flex items-center gap-2 mb-2">
+          <span>{data.icon}</span>
+          {data.category}
+        </p>
+        <div className="space-y-1 text-sm">
+          <div className="flex justify-between">
+            <span className="text-gray-500 dark:text-gray-400">현재</span>
+            <span className="font-medium text-blue-600 dark:text-blue-400">{data.current.toFixed(0)}%</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-gray-500 dark:text-gray-400">예측</span>
+            <span className="font-medium text-green-600 dark:text-green-400">{data.predicted.toFixed(0)}%</span>
+          </div>
+          {improvement > 0 && (
+            <div className="flex justify-between pt-1 border-t border-gray-100 dark:border-slate-600">
+              <span className="text-gray-500 dark:text-gray-400">성장</span>
+              <span className="font-medium text-emerald-500">+{improvement.toFixed(0)}%</span>
+            </div>
+          )}
+        </div>
+        <div className="mt-2 pt-2 border-t border-gray-100 dark:border-slate-600">
+          <div className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400">
+            <span>신뢰도:</span>
+            <div className="flex gap-0.5">
+              {[0.25, 0.5, 0.75, 1].map((threshold, i) => (
+                <div
+                  key={i}
+                  className={`w-1.5 h-1.5 rounded-full ${
+                    data.confidence >= threshold ? 'bg-indigo-500' : 'bg-gray-300 dark:bg-slate-500'
+                  }`}
+                />
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   return (
-    <div className="bg-white rounded-lg shadow p-6">
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-xl font-semibold text-gray-800">스킬 분석</h2>
-        <span className="text-xs text-gray-500">AI 기반 예측</span>
+    <div className="bg-white dark:bg-slate-800 rounded-xl shadow-lg p-6">
+      <div className="flex justify-between items-center mb-6">
+        <div>
+          <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-100">스킬 분석</h2>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">AI 기반 실력 예측</p>
+        </div>
+        <div className="flex items-center gap-4 text-xs">
+          <div className="flex items-center gap-1.5">
+            <span className="w-3 h-3 rounded bg-blue-500"></span>
+            <span className="text-gray-600 dark:text-gray-400">현재</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <span className="w-3 h-3 rounded bg-green-500"></span>
+            <span className="text-gray-600 dark:text-gray-400">예측</span>
+          </div>
+        </div>
       </div>
 
-      <div className="space-y-4">
-        {sortedPredictions.slice(0, 6).map((prediction) => (
-          <SkillItem key={prediction.category} prediction={prediction} />
-        ))}
+      {/* Horizontal Bar Chart */}
+      <div className="h-80">
+        <ResponsiveContainer width="100%" height="100%">
+          <BarChart
+            data={chartData}
+            layout="vertical"
+            margin={{ top: 5, right: 30, left: 60, bottom: 5 }}
+          >
+            <XAxis
+              type="number"
+              domain={[0, 100]}
+              tick={{ fontSize: 11, fill: '#9ca3af' }}
+              axisLine={false}
+              tickLine={false}
+            />
+            <YAxis
+              type="category"
+              dataKey="category"
+              tick={{ fontSize: 12, fill: '#6b7280' }}
+              axisLine={false}
+              tickLine={false}
+              width={60}
+            />
+            <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(107, 114, 128, 0.1)' }} />
+            <ReferenceLine x={50} stroke="#e5e7eb" strokeDasharray="3 3" />
+            <Bar
+              dataKey="current"
+              name="현재 레벨"
+              fill="#3b82f6"
+              radius={[0, 4, 4, 0]}
+              barSize={12}
+              animationDuration={1000}
+            />
+            <Bar
+              dataKey="predicted"
+              name="예측 레벨"
+              fill="#22c55e"
+              radius={[0, 4, 4, 0]}
+              barSize={12}
+              animationDuration={1000}
+              animationBegin={500}
+            >
+              {chartData.map((entry, index) => (
+                <Cell
+                  key={`cell-${index}`}
+                  fill={entry.recommended ? '#f59e0b' : '#22c55e'}
+                  opacity={0.7}
+                />
+              ))}
+            </Bar>
+          </BarChart>
+        </ResponsiveContainer>
       </div>
 
+      {/* Recommended Focus Items */}
       {predictions.some(p => p.recommended_focus) && (
-        <div className="mt-4 p-3 bg-blue-50 rounded-lg text-sm text-blue-700">
-          <span className="font-medium">💡 추천:</span> 표시된 카테고리에 더 집중하면 실력 향상에 도움이 됩니다.
+        <div className="mt-6 p-4 bg-gradient-to-r from-amber-50 to-yellow-50 dark:from-amber-900/20 dark:to-yellow-900/20 rounded-xl border border-amber-200 dark:border-amber-800/50">
+          <div className="flex items-start gap-3">
+            <span className="text-2xl">💡</span>
+            <div>
+              <p className="font-medium text-amber-800 dark:text-amber-200 mb-1">집중 추천 영역</p>
+              <div className="flex flex-wrap gap-2 mt-2">
+                {predictions.filter(p => p.recommended_focus).map(p => (
+                  <span
+                    key={p.category}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-100 dark:bg-amber-900/40 text-amber-800 dark:text-amber-200 rounded-full text-sm font-medium"
+                  >
+                    <span>{categoryIcons[p.category] || '📌'}</span>
+                    {categoryLabels[p.category] || p.category}
+                  </span>
+                ))}
+              </div>
+              <p className="text-sm text-amber-700 dark:text-amber-300/80 mt-2">
+                이 영역에 집중하면 빠른 실력 향상을 기대할 수 있어요!
+              </p>
+            </div>
+          </div>
         </div>
       )}
-    </div>
-  );
-}
 
-function SkillItem({ prediction }: { prediction: SkillPrediction }) {
-  const categoryName = categoryLabels[prediction.category] || prediction.category;
-  const currentLevel = Math.round(prediction.current_level);
-  const predictedLevel = Math.round(prediction.predicted_level);
-  const improvement = predictedLevel - currentLevel;
-
-  return (
-    <div className={`p-3 rounded-lg ${prediction.recommended_focus ? 'bg-yellow-50 border border-yellow-200' : 'bg-gray-50'}`}>
-      <div className="flex items-center justify-between mb-2">
-        <div className="flex items-center gap-2">
-          <span className="font-medium text-gray-800">{categoryName}</span>
-          {prediction.recommended_focus && (
-            <span className="px-2 py-0.5 text-xs bg-yellow-200 text-yellow-800 rounded-full">
-              집중 추천
-            </span>
-          )}
+      {/* Quick Stats */}
+      <div className="mt-6 grid grid-cols-3 gap-4 pt-4 border-t border-gray-100 dark:border-slate-700">
+        <div className="text-center">
+          <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">평균 현재 레벨</p>
+          <p className="text-xl font-bold text-blue-600 dark:text-blue-400">
+            {(predictions.reduce((sum, p) => sum + p.current_level, 0) / predictions.length).toFixed(0)}%
+          </p>
         </div>
-        <div className="flex items-center gap-2 text-sm">
-          <span className="text-gray-600">{currentLevel}%</span>
-          <span className="text-gray-400">→</span>
-          <span className="text-green-600 font-medium">{predictedLevel}%</span>
-          {improvement > 0 && (
-            <span className="text-green-500 text-xs">+{improvement}</span>
-          )}
+        <div className="text-center">
+          <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">평균 예측 레벨</p>
+          <p className="text-xl font-bold text-green-600 dark:text-green-400">
+            {(predictions.reduce((sum, p) => sum + p.predicted_level, 0) / predictions.length).toFixed(0)}%
+          </p>
         </div>
-      </div>
-
-      {/* Progress bar */}
-      <div className="relative h-2 bg-gray-200 rounded-full overflow-hidden">
-        {/* Current level */}
-        <div
-          className="absolute h-full bg-blue-500 rounded-full transition-all duration-500"
-          style={{ width: `${currentLevel}%` }}
-        />
-        {/* Predicted level indicator */}
-        <div
-          className="absolute h-full w-1 bg-green-400 rounded-full"
-          style={{ left: `${predictedLevel}%` }}
-        />
-      </div>
-
-      {/* Confidence indicator */}
-      <div className="mt-1 flex items-center gap-1 text-xs text-gray-500">
-        <span>신뢰도:</span>
-        <div className="flex gap-0.5">
-          {[0.25, 0.5, 0.75, 1].map((threshold, i) => (
-            <div
-              key={i}
-              className={`w-2 h-2 rounded-full ${
-                prediction.confidence >= threshold ? 'bg-blue-500' : 'bg-gray-300'
-              }`}
-            />
-          ))}
+        <div className="text-center">
+          <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">평균 성장률</p>
+          <p className="text-xl font-bold text-emerald-500">
+            +{(predictions.reduce((sum, p) => sum + (p.predicted_level - p.current_level), 0) / predictions.length).toFixed(0)}%
+          </p>
         </div>
       </div>
     </div>
