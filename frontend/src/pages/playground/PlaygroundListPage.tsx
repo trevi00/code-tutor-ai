@@ -14,7 +14,6 @@ import {
   GitFork,
   Globe,
   Lock,
-  Users,
   Flame,
   Sparkles,
   Terminal,

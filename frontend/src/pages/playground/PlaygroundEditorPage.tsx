@@ -24,9 +24,7 @@ import {
   Globe,
   Lock,
   Link2,
-  ExternalLink,
   Code2,
-  Zap,
   AlertCircle,
   CheckCircle,
 } from 'lucide-react';
