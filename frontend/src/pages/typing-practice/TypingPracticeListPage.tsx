@@ -226,7 +226,7 @@ export default function TypingPracticeListPage() {
             <div className="w-16 h-16 rounded-full bg-gradient-to-r from-orange-500 to-amber-500 animate-pulse" />
             <Loader2 className="w-8 h-8 text-white absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 animate-spin" />
           </div>
-          <p className="text-slate-500 dark:text-slate-400 animate-pulse">연습 목록 불러오는 중...</p>
+          <p className="text-neutral-500 dark:text-slate-400 animate-pulse">연습 목록 불러오는 중...</p>
         </div>
       </div>
     );

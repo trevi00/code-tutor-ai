@@ -58,13 +58,13 @@ export default function BadgesPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-slate-900 to-slate-800 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-b from-neutral-50 dark:from-slate-900 to-neutral-100 dark:to-slate-800 flex items-center justify-center">
         <div className="text-center">
           <div className="relative inline-block">
             <div className="w-16 h-16 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 animate-pulse" />
-            <Loader2 className="w-8 h-8 text-white absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 animate-spin" />
+            <Loader2 className="w-8 h-8 text-neutral-900 dark:text-white absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 animate-spin" />
           </div>
-          <p className="mt-4 text-slate-400">배지 컬렉션 불러오는 중...</p>
+          <p className="mt-4 text-neutral-500 dark:text-slate-400">배지 컬렉션 불러오는 중...</p>
         </div>
       </div>
     );
@@ -72,12 +72,12 @@ export default function BadgesPage() {
 
   if (!badges) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-slate-900 to-slate-800 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-b from-neutral-50 dark:from-slate-900 to-neutral-100 dark:to-slate-800 flex items-center justify-center">
         <div className="text-center">
           <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-red-500/20 flex items-center justify-center">
             <Award className="w-10 h-10 text-red-400" />
           </div>
-          <p className="text-slate-400">배지 정보를 불러올 수 없습니다.</p>
+          <p className="text-neutral-500 dark:text-slate-400">배지 정보를 불러올 수 없습니다.</p>
         </div>
       </div>
     );
@@ -93,7 +93,7 @@ export default function BadgesPage() {
   const collectionRate = ((badges.total_earned / (badges.total_earned + badges.total_available)) * 100);
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-900 to-slate-800">
+    <div className="min-h-screen bg-gradient-to-b from-neutral-50 dark:from-slate-900 to-neutral-100 dark:to-slate-800">
       {/* Hero Section */}
       <div className="bg-gradient-to-r from-amber-600 via-orange-600 to-yellow-600 relative overflow-hidden">
         {/* Background decorations */}
@@ -127,28 +127,28 @@ export default function BadgesPage() {
                 <div className="w-10 h-10 mx-auto mb-2 rounded-lg bg-emerald-500/20 flex items-center justify-center">
                   <Trophy className="w-5 h-5 text-emerald-300" />
                 </div>
-                <div className="text-2xl font-bold text-white">{badges.total_earned}</div>
+                <div className="text-2xl font-bold text-neutral-900 dark:text-white">{badges.total_earned}</div>
                 <div className="text-xs text-amber-200">획득</div>
               </div>
               <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 text-center min-w-[90px]">
                 <div className="w-10 h-10 mx-auto mb-2 rounded-lg bg-slate-500/20 flex items-center justify-center">
                   <Lock className="w-5 h-5 text-slate-300" />
                 </div>
-                <div className="text-2xl font-bold text-white">{badges.total_available}</div>
+                <div className="text-2xl font-bold text-neutral-900 dark:text-white">{badges.total_available}</div>
                 <div className="text-xs text-amber-200">미획득</div>
               </div>
               <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 text-center min-w-[90px]">
                 <div className="w-10 h-10 mx-auto mb-2 rounded-lg bg-blue-500/20 flex items-center justify-center">
                   <Award className="w-5 h-5 text-blue-300" />
                 </div>
-                <div className="text-2xl font-bold text-white">{badges.total_earned + badges.total_available}</div>
+                <div className="text-2xl font-bold text-neutral-900 dark:text-white">{badges.total_earned + badges.total_available}</div>
                 <div className="text-xs text-amber-200">전체</div>
               </div>
               <div className="bg-white/20 backdrop-blur-sm rounded-xl p-4 text-center min-w-[90px] border border-white/30">
                 <div className="w-10 h-10 mx-auto mb-2 rounded-lg bg-yellow-500/20 flex items-center justify-center">
                   <Star className="w-5 h-5 text-yellow-300" />
                 </div>
-                <div className="text-2xl font-bold text-white">{collectionRate.toFixed(0)}%</div>
+                <div className="text-2xl font-bold text-neutral-900 dark:text-white">{collectionRate.toFixed(0)}%</div>
                 <div className="text-xs text-amber-200">수집률</div>
               </div>
             </div>
@@ -173,14 +173,14 @@ export default function BadgesPage() {
       {/* Main Content */}
       <div className="max-w-6xl mx-auto px-6 py-8 -mt-4">
         {/* Category Filter */}
-        <div className="bg-slate-800/50 backdrop-blur-sm rounded-2xl border border-slate-700/50 p-4 mb-8">
+        <div className="bg-white/80 dark:bg-slate-800/50 backdrop-blur-sm rounded-2xl border border-neutral-200/50 dark:border-slate-700/50 p-4 mb-8">
           <div className="flex flex-wrap gap-2">
             <button
               onClick={() => setSelectedCategory('all')}
               className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium transition-all ${
                 selectedCategory === 'all'
                   ? 'bg-gradient-to-r from-amber-600 to-orange-600 text-white shadow-lg shadow-amber-500/25'
-                  : 'bg-slate-700/50 text-slate-300 hover:bg-slate-700 hover:text-white'
+                  : 'bg-neutral-200/50 dark:bg-slate-700/50 text-neutral-600 dark:text-slate-300 hover:bg-neutral-300 dark:hover:bg-slate-700 hover:text-neutral-900 dark:hover:text-white'
               }`}
             >
               <Sparkles className="w-4 h-4" />
@@ -193,7 +193,7 @@ export default function BadgesPage() {
                 className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium transition-all ${
                   selectedCategory === category
                     ? 'bg-gradient-to-r from-amber-600 to-orange-600 text-white shadow-lg shadow-amber-500/25'
-                    : 'bg-slate-700/50 text-slate-300 hover:bg-slate-700 hover:text-white'
+                    : 'bg-neutral-200/50 dark:bg-slate-700/50 text-neutral-600 dark:text-slate-300 hover:bg-neutral-300 dark:hover:bg-slate-700 hover:text-neutral-900 dark:hover:text-white'
                 }`}
               >
                 {CATEGORY_ICONS[category]}
@@ -211,8 +211,8 @@ export default function BadgesPage() {
                 <Sparkles className="w-5 h-5 text-emerald-400" />
               </div>
               <div>
-                <h2 className="text-xl font-bold text-white">획득한 배지</h2>
-                <p className="text-sm text-slate-400">{earnedFiltered.length}개의 배지를 획득했습니다</p>
+                <h2 className="text-xl font-bold text-neutral-900 dark:text-white">획득한 배지</h2>
+                <p className="text-sm text-neutral-500 dark:text-slate-400">{earnedFiltered.length}개의 배지를 획득했습니다</p>
               </div>
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
@@ -236,8 +236,8 @@ export default function BadgesPage() {
                 <Lock className="w-5 h-5 text-slate-400" />
               </div>
               <div>
-                <h2 className="text-xl font-bold text-white">미획득 배지</h2>
-                <p className="text-sm text-slate-400">{availableFiltered.length}개의 배지에 도전하세요</p>
+                <h2 className="text-xl font-bold text-neutral-900 dark:text-white">미획득 배지</h2>
+                <p className="text-sm text-neutral-500 dark:text-slate-400">{availableFiltered.length}개의 배지에 도전하세요</p>
               </div>
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
@@ -251,11 +251,11 @@ export default function BadgesPage() {
         {/* Empty State */}
         {earnedFiltered.length === 0 && availableFiltered.length === 0 && (
           <div className="text-center py-16">
-            <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-slate-700/50 flex items-center justify-center">
+            <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-neutral-200/50 dark:bg-slate-700/50 flex items-center justify-center">
               <Award className="w-10 h-10 text-slate-500" />
             </div>
-            <h3 className="text-xl font-bold text-white mb-2">배지가 없습니다</h3>
-            <p className="text-slate-400">이 카테고리에는 아직 배지가 없습니다.</p>
+            <h3 className="text-xl font-bold text-neutral-900 dark:text-white mb-2">배지가 없습니다</h3>
+            <p className="text-neutral-500 dark:text-slate-400">이 카테고리에는 아직 배지가 없습니다.</p>
           </div>
         )}
       </div>

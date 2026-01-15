@@ -292,13 +292,13 @@ export default function PlaygroundEditorPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-slate-900 to-slate-800 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-b from-neutral-50 dark:from-slate-900 to-neutral-100 dark:to-slate-800 flex items-center justify-center">
         <div className="text-center">
           <div className="relative inline-block">
             <div className="w-16 h-16 rounded-full bg-gradient-to-r from-emerald-500 to-teal-500 animate-pulse" />
-            <Loader2 className="w-8 h-8 text-white absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 animate-spin" />
+            <Loader2 className="w-8 h-8 text-neutral-900 dark:text-white absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 animate-spin" />
           </div>
-          <p className="mt-4 text-slate-400">플레이그라운드 불러오는 중...</p>
+          <p className="mt-4 text-neutral-500 dark:text-slate-400">플레이그라운드 불러오는 중...</p>
         </div>
       </div>
     );
@@ -306,7 +306,7 @@ export default function PlaygroundEditorPage() {
 
   if (error && !playground) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-slate-900 to-slate-800 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-b from-neutral-50 dark:from-slate-900 to-neutral-100 dark:to-slate-800 flex items-center justify-center">
         <div className="text-center">
           <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-red-500/20 flex items-center justify-center">
             <AlertCircle className="w-8 h-8 text-red-400" />
@@ -314,7 +314,7 @@ export default function PlaygroundEditorPage() {
           <p className="text-red-400 mb-4">{error}</p>
           <button
             onClick={() => navigate('/playground')}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg transition-colors"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-neutral-100 dark:bg-slate-700 hover:bg-neutral-200 dark:hover:bg-slate-600 text-neutral-900 dark:text-white rounded-lg transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />
             플레이그라운드 목록으로
@@ -329,13 +329,13 @@ export default function PlaygroundEditorPage() {
   }
 
   return (
-    <div className="flex flex-col h-screen bg-slate-900">
+    <div className="flex flex-col h-screen bg-white dark:bg-slate-900">
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 bg-slate-800 border-b border-slate-700 relative z-[60]">
+      <div className="flex items-center justify-between px-4 py-3 bg-neutral-100 dark:bg-slate-800 border-b border-neutral-200 dark:border-slate-700 relative z-[60]">
         <div className="flex items-center gap-4">
           <button
             onClick={() => navigate('/playground')}
-            className="p-2 text-slate-400 hover:text-white hover:bg-slate-700 rounded-lg transition-colors"
+            className="p-2 text-neutral-500 dark:text-slate-400 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-200 dark:hover:bg-slate-700 rounded-lg transition-colors"
           >
             <ArrowLeft className="w-5 h-5" />
           </button>
@@ -346,7 +346,7 @@ export default function PlaygroundEditorPage() {
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h1 className="font-semibold text-white">{playground.title}</h1>
+                <h1 className="font-semibold text-neutral-900 dark:text-white">{playground.title}</h1>
                 {playground.is_forked && (
                   <span className="flex items-center gap-1 px-2 py-0.5 text-xs bg-purple-500/20 text-purple-400 rounded-full">
                     <GitFork className="w-3 h-3" />
@@ -354,7 +354,7 @@ export default function PlaygroundEditorPage() {
                   </span>
                 )}
               </div>
-              <div className="flex items-center gap-2 text-xs text-slate-400">
+              <div className="flex items-center gap-2 text-xs text-neutral-500 dark:text-slate-400">
                 <span>{getLanguageDisplayName(playground.language)}</span>
                 <span>•</span>
                 <span className="flex items-center gap-1">
@@ -379,7 +379,7 @@ export default function PlaygroundEditorPage() {
             <select
               value={playground.language}
               onChange={(e) => handleLanguageChange(e.target.value)}
-              className="px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-sm text-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+              className="px-3 py-2 bg-neutral-100 dark:bg-slate-700 border border-neutral-200 dark:border-slate-600 rounded-lg text-sm text-neutral-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
             >
               {languages.map((lang) => (
                 <option key={lang.id} value={lang.id}>
@@ -413,7 +413,7 @@ export default function PlaygroundEditorPage() {
             <button
               onClick={handleSave}
               disabled={saving || !hasUnsavedChanges}
-              className="flex items-center gap-2 px-3 py-2 bg-slate-700 hover:bg-slate-600 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg text-sm text-white transition-colors"
+              className="flex items-center gap-2 px-3 py-2 bg-neutral-100 dark:bg-slate-700 hover:bg-neutral-200 dark:hover:bg-slate-600 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg text-sm text-neutral-900 dark:text-white transition-colors"
             >
               {saving ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
@@ -428,7 +428,7 @@ export default function PlaygroundEditorPage() {
           {user && !isOwner && (
             <button
               onClick={handleFork}
-              className="flex items-center gap-2 px-3 py-2 bg-slate-700 hover:bg-slate-600 rounded-lg text-sm text-white transition-colors"
+              className="flex items-center gap-2 px-3 py-2 bg-neutral-100 dark:bg-slate-700 hover:bg-neutral-200 dark:hover:bg-slate-600 rounded-lg text-sm text-neutral-900 dark:text-white transition-colors"
             >
               <GitFork className="w-4 h-4" />
               Fork
@@ -438,7 +438,7 @@ export default function PlaygroundEditorPage() {
           {/* Share button */}
           <button
             onClick={() => setShowShareModal(true)}
-            className="flex items-center gap-2 px-3 py-2 bg-slate-700 hover:bg-slate-600 rounded-lg text-sm text-white transition-colors"
+            className="flex items-center gap-2 px-3 py-2 bg-neutral-100 dark:bg-slate-700 hover:bg-neutral-200 dark:hover:bg-slate-600 rounded-lg text-sm text-neutral-900 dark:text-white transition-colors"
           >
             <Share2 className="w-4 h-4" />
             공유
@@ -448,7 +448,7 @@ export default function PlaygroundEditorPage() {
           {isOwner && (
             <button
               onClick={() => setShowSettings(true)}
-              className="p-2 bg-slate-700 hover:bg-slate-600 rounded-lg text-white transition-colors"
+              className="p-2 bg-neutral-100 dark:bg-slate-700 hover:bg-neutral-200 dark:hover:bg-slate-600 rounded-lg text-neutral-900 dark:text-white transition-colors"
             >
               <Settings className="w-5 h-5" />
             </button>
@@ -459,15 +459,15 @@ export default function PlaygroundEditorPage() {
       {/* Main content */}
       <div className="flex-1 flex overflow-hidden">
         {/* Code editor panel */}
-        <div className="flex-1 flex flex-col border-r border-slate-700">
-          <div className="flex items-center justify-between px-4 py-2 bg-slate-800 border-b border-slate-700">
-            <div className="flex items-center gap-2 text-sm text-slate-400">
+        <div className="flex-1 flex flex-col border-r border-neutral-200 dark:border-slate-700">
+          <div className="flex items-center justify-between px-4 py-2 bg-neutral-100 dark:bg-slate-800 border-b border-neutral-200 dark:border-slate-700">
+            <div className="flex items-center gap-2 text-sm text-neutral-500 dark:text-slate-400">
               <Code2 className="w-4 h-4" />
               코드
             </div>
             <button
               onClick={copyCode}
-              className="flex items-center gap-1.5 px-2 py-1 text-xs text-slate-400 hover:text-white hover:bg-slate-700 rounded transition-colors"
+              className="flex items-center gap-1.5 px-2 py-1 text-xs text-neutral-500 dark:text-slate-400 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-200 dark:hover:bg-slate-700 rounded transition-colors"
             >
               {copied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
               {copied ? '복사됨' : '복사'}
@@ -476,7 +476,7 @@ export default function PlaygroundEditorPage() {
           <textarea
             value={code}
             onChange={(e) => handleCodeChange(e.target.value)}
-            className="flex-1 p-4 bg-slate-900 text-slate-100 font-mono text-sm resize-none focus:outline-none placeholder-slate-600"
+            className="flex-1 p-4 bg-white dark:bg-slate-900 text-neutral-900 dark:text-slate-100 font-mono text-sm resize-none focus:outline-none placeholder-neutral-400 dark:placeholder-slate-600"
             placeholder="여기에 코드를 작성하세요..."
             spellCheck={false}
             readOnly={!isOwner}
@@ -484,17 +484,17 @@ export default function PlaygroundEditorPage() {
         </div>
 
         {/* Right panel */}
-        <div className="w-[400px] flex flex-col bg-slate-850">
+        <div className="w-[400px] flex flex-col bg-neutral-50 dark:bg-slate-850">
           {/* Input panel */}
-          <div className="flex-1 flex flex-col border-b border-slate-700">
-            <div className="flex items-center gap-2 px-4 py-2 bg-slate-800 border-b border-slate-700 text-sm text-slate-400">
+          <div className="flex-1 flex flex-col border-b border-neutral-200 dark:border-slate-700">
+            <div className="flex items-center gap-2 px-4 py-2 bg-neutral-100 dark:bg-slate-800 border-b border-neutral-200 dark:border-slate-700 text-sm text-neutral-500 dark:text-slate-400">
               <FileInput className="w-4 h-4" />
               입력 (stdin)
             </div>
             <textarea
               value={stdin}
               onChange={(e) => handleStdinChange(e.target.value)}
-              className="flex-1 p-4 bg-slate-900 text-slate-100 font-mono text-sm resize-none focus:outline-none placeholder-slate-600"
+              className="flex-1 p-4 bg-white dark:bg-slate-900 text-neutral-900 dark:text-slate-100 font-mono text-sm resize-none focus:outline-none placeholder-neutral-400 dark:placeholder-slate-600"
               placeholder="프로그램에 전달할 입력값..."
               spellCheck={false}
               readOnly={!isOwner}
@@ -503,8 +503,8 @@ export default function PlaygroundEditorPage() {
 
           {/* Output panel */}
           <div className="flex-1 flex flex-col">
-            <div className="flex items-center justify-between px-4 py-2 bg-slate-800 border-b border-slate-700">
-              <div className="flex items-center gap-2 text-sm text-slate-400">
+            <div className="flex items-center justify-between px-4 py-2 bg-neutral-100 dark:bg-slate-800 border-b border-neutral-200 dark:border-slate-700">
+              <div className="flex items-center gap-2 text-sm text-neutral-500 dark:text-slate-400">
                 <FileOutput className="w-4 h-4" />
                 출력
               </div>
@@ -520,23 +520,23 @@ export default function PlaygroundEditorPage() {
                     <AlertCircle className="w-3.5 h-3.5" />
                   )}
                   {executionResult.is_success ? '성공' : `Exit: ${executionResult.exit_code}`}
-                  <span className="flex items-center gap-1 text-slate-400">
+                  <span className="flex items-center gap-1 text-neutral-500 dark:text-slate-400">
                     <Clock className="w-3 h-3" />
                     {executionResult.execution_time_ms}ms
                   </span>
                 </div>
               )}
             </div>
-            <div className="flex-1 p-4 font-mono text-sm overflow-auto bg-slate-900">
+            <div className="flex-1 p-4 font-mono text-sm overflow-auto bg-white dark:bg-slate-900">
               {executing ? (
-                <div className="flex items-center gap-2 text-slate-400">
+                <div className="flex items-center gap-2 text-neutral-500 dark:text-slate-400">
                   <Loader2 className="w-4 h-4 animate-spin" />
                   실행 중...
                 </div>
               ) : executionResult ? (
                 <div>
                   {executionResult.stdout && (
-                    <pre className="whitespace-pre-wrap text-slate-100">{executionResult.stdout}</pre>
+                    <pre className="whitespace-pre-wrap text-neutral-900 dark:text-slate-100">{executionResult.stdout}</pre>
                   )}
                   {executionResult.stderr && (
                     <pre className="text-red-400 whitespace-pre-wrap mt-2">
@@ -544,11 +544,11 @@ export default function PlaygroundEditorPage() {
                     </pre>
                   )}
                   {!executionResult.stdout && !executionResult.stderr && (
-                    <span className="text-slate-500">(출력 없음)</span>
+                    <span className="text-neutral-500 dark:text-slate-500">(출력 없음)</span>
                   )}
                 </div>
               ) : (
-                <div className="flex flex-col items-center justify-center h-full text-slate-500">
+                <div className="flex flex-col items-center justify-center h-full text-neutral-500 dark:text-slate-500">
                   <Terminal className="w-8 h-8 mb-2 opacity-50" />
                   <p>"실행" 버튼을 눌러 코드를 실행하세요</p>
                 </div>
@@ -559,7 +559,7 @@ export default function PlaygroundEditorPage() {
       </div>
 
       {/* Stats bar */}
-      <div className="px-4 py-2 bg-slate-800 border-t border-slate-700 text-xs text-slate-400 flex items-center gap-6">
+      <div className="px-4 py-2 bg-neutral-100 dark:bg-slate-800 border-t border-neutral-200 dark:border-slate-700 text-xs text-neutral-500 dark:text-slate-400 flex items-center gap-6">
         <span className="flex items-center gap-1">
           <Play className="w-3.5 h-3.5" />
           {playground.run_count} runs
@@ -577,25 +577,25 @@ export default function PlaygroundEditorPage() {
       {/* Share Modal */}
       {showShareModal && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-slate-800 rounded-2xl p-6 w-full max-w-md shadow-2xl border border-slate-700 animate-fade-in">
+          <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 w-full max-w-md shadow-2xl border border-neutral-200 dark:border-slate-700 animate-fade-in">
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-lg bg-gradient-to-r from-emerald-500 to-teal-500 flex items-center justify-center">
                   <Share2 className="w-5 h-5 text-white" />
                 </div>
-                <h2 className="text-xl font-bold text-white">플레이그라운드 공유</h2>
+                <h2 className="text-xl font-bold text-neutral-900 dark:text-white">플레이그라운드 공유</h2>
               </div>
               <button
                 onClick={() => setShowShareModal(false)}
-                className="p-2 hover:bg-slate-700 rounded-lg transition-colors"
+                className="p-2 hover:bg-neutral-100 dark:hover:bg-slate-700 rounded-lg transition-colors"
               >
-                <X className="w-5 h-5 text-slate-400" />
+                <X className="w-5 h-5 text-neutral-500 dark:text-slate-400" />
               </button>
             </div>
 
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-slate-300 mb-2">
+                <label className="block text-sm font-medium text-neutral-600 dark:text-slate-300 mb-2">
                   공유 URL
                 </label>
                 <div className="flex gap-2">
@@ -603,7 +603,7 @@ export default function PlaygroundEditorPage() {
                     type="text"
                     value={shareUrl}
                     readOnly
-                    className="flex-1 px-4 py-2.5 bg-slate-700 border border-slate-600 rounded-xl text-sm text-slate-200"
+                    className="flex-1 px-4 py-2.5 bg-neutral-100 dark:bg-slate-700 border border-neutral-200 dark:border-slate-600 rounded-xl text-sm text-neutral-700 dark:text-slate-200"
                   />
                   <button
                     onClick={copyShareUrl}
@@ -616,8 +616,8 @@ export default function PlaygroundEditorPage() {
               </div>
 
               {isOwner && (
-                <div className="flex items-center justify-between pt-4 border-t border-slate-700">
-                  <div className="flex items-center gap-2 text-sm text-slate-400">
+                <div className="flex items-center justify-between pt-4 border-t border-neutral-200 dark:border-slate-700">
+                  <div className="flex items-center gap-2 text-sm text-neutral-500 dark:text-slate-400">
                     {getVisibilityIcon(playground.visibility)}
                     {playground.visibility === 'public' && '모든 사용자가 볼 수 있음'}
                     {playground.visibility === 'unlisted' && '링크가 있는 사용자만'}
@@ -641,49 +641,49 @@ export default function PlaygroundEditorPage() {
       {/* Settings Modal */}
       {showSettings && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-slate-800 rounded-2xl p-6 w-full max-w-md shadow-2xl border border-slate-700 animate-fade-in">
+          <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 w-full max-w-md shadow-2xl border border-neutral-200 dark:border-slate-700 animate-fade-in">
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-gradient-to-r from-slate-600 to-slate-500 flex items-center justify-center">
+                <div className="w-10 h-10 rounded-lg bg-gradient-to-r from-neutral-400 dark:from-slate-600 to-neutral-300 dark:to-slate-500 flex items-center justify-center">
                   <Settings className="w-5 h-5 text-white" />
                 </div>
-                <h2 className="text-xl font-bold text-white">플레이그라운드 설정</h2>
+                <h2 className="text-xl font-bold text-neutral-900 dark:text-white">플레이그라운드 설정</h2>
               </div>
               <button
                 onClick={() => setShowSettings(false)}
-                className="p-2 hover:bg-slate-700 rounded-lg transition-colors"
+                className="p-2 hover:bg-neutral-100 dark:hover:bg-slate-700 rounded-lg transition-colors"
               >
-                <X className="w-5 h-5 text-slate-400" />
+                <X className="w-5 h-5 text-neutral-500 dark:text-slate-400" />
               </button>
             </div>
 
             <div className="space-y-5">
               <div>
-                <label className="block text-sm font-medium text-slate-300 mb-2">
+                <label className="block text-sm font-medium text-neutral-600 dark:text-slate-300 mb-2">
                   제목
                 </label>
                 <input
                   type="text"
                   value={editTitle}
                   onChange={(e) => setEditTitle(e.target.value)}
-                  className="w-full px-4 py-2.5 bg-slate-700 border border-slate-600 rounded-xl text-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all"
+                  className="w-full px-4 py-2.5 bg-neutral-100 dark:bg-slate-700 border border-neutral-200 dark:border-slate-600 rounded-xl text-neutral-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-slate-300 mb-2">
+                <label className="block text-sm font-medium text-neutral-600 dark:text-slate-300 mb-2">
                   설명
                 </label>
                 <textarea
                   value={editDescription}
                   onChange={(e) => setEditDescription(e.target.value)}
                   rows={3}
-                  className="w-full px-4 py-2.5 bg-slate-700 border border-slate-600 rounded-xl text-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all resize-none"
+                  className="w-full px-4 py-2.5 bg-neutral-100 dark:bg-slate-700 border border-neutral-200 dark:border-slate-600 rounded-xl text-neutral-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all resize-none"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-slate-300 mb-2">
+                <label className="block text-sm font-medium text-neutral-600 dark:text-slate-300 mb-2">
                   공개 설정
                 </label>
                 <div className="space-y-2">
@@ -700,15 +700,15 @@ export default function PlaygroundEditorPage() {
                         className={`w-full flex items-center gap-3 p-3 rounded-xl border-2 transition-all ${
                           editVisibility === option.value
                             ? 'border-emerald-500 bg-emerald-500/10'
-                            : 'border-slate-600 hover:border-slate-500'
+                            : 'border-neutral-200 dark:border-slate-600 hover:border-neutral-300 dark:hover:border-slate-500'
                         }`}
                       >
-                        <Icon className={`w-5 h-5 ${editVisibility === option.value ? 'text-emerald-400' : 'text-slate-400'}`} />
+                        <Icon className={`w-5 h-5 ${editVisibility === option.value ? 'text-emerald-400' : 'text-neutral-500 dark:text-slate-400'}`} />
                         <div className="text-left">
-                          <div className={`text-sm font-medium ${editVisibility === option.value ? 'text-emerald-400' : 'text-white'}`}>
+                          <div className={`text-sm font-medium ${editVisibility === option.value ? 'text-emerald-400' : 'text-neutral-900 dark:text-white'}`}>
                             {option.label}
                           </div>
-                          <div className="text-xs text-slate-400">{option.desc}</div>
+                          <div className="text-xs text-neutral-500 dark:text-slate-400">{option.desc}</div>
                         </div>
                       </button>
                     );
@@ -716,7 +716,7 @@ export default function PlaygroundEditorPage() {
                 </div>
               </div>
 
-              <div className="pt-4 border-t border-slate-700">
+              <div className="pt-4 border-t border-neutral-200 dark:border-slate-700">
                 <button
                   onClick={handleDelete}
                   className="flex items-center gap-2 text-sm text-red-400 hover:text-red-300 transition-colors"
@@ -730,7 +730,7 @@ export default function PlaygroundEditorPage() {
             <div className="flex gap-3 mt-8">
               <button
                 onClick={() => setShowSettings(false)}
-                className="flex-1 px-4 py-3 bg-slate-700 hover:bg-slate-600 text-white rounded-xl font-medium transition-colors"
+                className="flex-1 px-4 py-3 bg-neutral-100 dark:bg-slate-700 hover:bg-neutral-200 dark:hover:bg-slate-600 text-neutral-900 dark:text-white rounded-xl font-medium transition-colors"
               >
                 취소
               </button>

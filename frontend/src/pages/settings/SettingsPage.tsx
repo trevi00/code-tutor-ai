@@ -100,26 +100,26 @@ export default function SettingsPage() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white dark:from-slate-900 dark:to-slate-800">
       {/* Hero Section */}
-      <div className="bg-gradient-to-r from-slate-700 via-slate-800 to-slate-900 relative overflow-hidden">
+      <div className="bg-gradient-to-r from-slate-200 via-slate-300 to-slate-400 dark:from-slate-700 dark:via-slate-800 dark:to-slate-900 relative overflow-hidden">
         {/* Background decorations */}
         <div className="absolute inset-0 overflow-hidden">
           <div className="absolute -top-24 -right-24 w-96 h-96 bg-white/5 rounded-full blur-3xl" />
           <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-slate-500/10 rounded-full blur-3xl" />
-          <Settings className="absolute top-10 right-[10%] w-12 h-12 text-white/10 animate-float" />
-          <Shield className="absolute bottom-10 left-[15%] w-10 h-10 text-white/10 animate-float-delayed" />
+          <Settings className="absolute top-10 right-[10%] w-12 h-12 text-slate-500/20 dark:text-white/10 animate-float" />
+          <Shield className="absolute bottom-10 left-[15%] w-10 h-10 text-slate-500/20 dark:text-white/10 animate-float-delayed" />
         </div>
 
         <div className="max-w-4xl mx-auto px-6 py-10 relative">
           <div className="flex items-center gap-4">
-            <div className="w-14 h-14 rounded-2xl bg-white/10 backdrop-blur-sm flex items-center justify-center">
-              <Settings className="w-7 h-7 text-white" />
+            <div className="w-14 h-14 rounded-2xl bg-slate-600/20 dark:bg-white/10 backdrop-blur-sm flex items-center justify-center">
+              <Settings className="w-7 h-7 text-slate-700 dark:text-white" />
             </div>
             <div>
-              <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/10 rounded-full text-white/80 text-sm mb-2">
+              <div className="inline-flex items-center gap-2 px-3 py-1 bg-slate-600/20 dark:bg-white/10 rounded-full text-slate-700/80 dark:text-white/80 text-sm mb-2">
                 <Sparkles className="w-3.5 h-3.5" />
                 설정 관리
               </div>
-              <h1 className="text-2xl md:text-3xl font-bold text-white">설정</h1>
+              <h1 className="text-2xl md:text-3xl font-bold text-slate-800 dark:text-white">설정</h1>
             </div>
           </div>
         </div>

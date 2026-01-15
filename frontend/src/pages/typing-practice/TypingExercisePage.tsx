@@ -222,13 +222,13 @@ export default function TypingExercisePage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-slate-900 to-slate-800 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-b from-neutral-50 dark:from-slate-900 to-neutral-100 dark:to-slate-800 flex items-center justify-center">
         <div className="text-center">
           <div className="relative inline-block">
             <div className="w-16 h-16 rounded-full bg-gradient-to-r from-orange-500 to-amber-500 animate-pulse" />
-            <Loader2 className="w-8 h-8 text-white absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 animate-spin" />
+            <Loader2 className="w-8 h-8 text-neutral-900 dark:text-white absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 animate-spin" />
           </div>
-          <p className="mt-4 text-slate-400">연습 불러오는 중...</p>
+          <p className="mt-4 text-neutral-500 dark:text-slate-400">연습 불러오는 중...</p>
         </div>
       </div>
     );
@@ -236,7 +236,7 @@ export default function TypingExercisePage() {
 
   if (error || !exercise) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-slate-900 to-slate-800 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-b from-neutral-50 dark:from-slate-900 to-neutral-100 dark:to-slate-800 flex items-center justify-center">
         <div className="text-center max-w-md mx-auto px-4">
           <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-red-500/20 flex items-center justify-center">
             <AlertCircle className="w-8 h-8 text-red-400" />
@@ -244,7 +244,7 @@ export default function TypingExercisePage() {
           <p className="text-red-400 mb-4">{error || '연습을 찾을 수 없습니다.'}</p>
           <button
             onClick={() => navigate('/typing-practice')}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg transition-colors"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-neutral-100 dark:bg-slate-700 hover:bg-neutral-200 dark:hover:bg-slate-600 text-neutral-900 dark:text-white rounded-lg transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />
             목록으로 돌아가기
@@ -262,15 +262,15 @@ export default function TypingExercisePage() {
     : 0;
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-900 to-slate-800">
+    <div className="min-h-screen bg-gradient-to-b from-neutral-50 dark:from-slate-900 to-neutral-100 dark:to-slate-800">
       {/* Header */}
-      <div className="bg-slate-800/80 backdrop-blur-sm border-b border-slate-700 sticky top-0 z-50">
+      <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border-b border-neutral-200 dark:border-slate-700 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <button
                 onClick={() => navigate('/typing-practice')}
-                className="p-2 text-slate-400 hover:text-white hover:bg-slate-700 rounded-lg transition-colors"
+                className="p-2 text-neutral-500 dark:text-slate-400 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-slate-700 rounded-lg transition-colors"
               >
                 <ArrowLeft className="w-5 h-5" />
               </button>
@@ -280,8 +280,8 @@ export default function TypingExercisePage() {
                   <Keyboard className="w-5 h-5 text-white" />
                 </div>
                 <div>
-                  <h1 className="font-semibold text-white">{exercise.title}</h1>
-                  <div className="flex items-center gap-2 text-xs text-slate-400">
+                  <h1 className="font-semibold text-neutral-900 dark:text-white">{exercise.title}</h1>
+                  <div className="flex items-center gap-2 text-xs text-neutral-500 dark:text-slate-400">
                     <span className="flex items-center gap-1">
                       <FileCode className="w-3 h-3" />
                       {exercise.line_count}줄
@@ -312,12 +312,12 @@ export default function TypingExercisePage() {
                         ? 'bg-emerald-500 shadow-lg shadow-emerald-500/50'
                         : currentAttempt && i === completedCount
                         ? 'bg-orange-500 animate-pulse shadow-lg shadow-orange-500/50'
-                        : 'bg-slate-600'
+                        : 'bg-neutral-300 dark:bg-slate-600'
                     }`}
                   />
                 ))}
               </div>
-              <span className="text-sm text-slate-400 font-medium">
+              <span className="text-sm text-neutral-500 dark:text-slate-400 font-medium">
                 {completedCount}/{requiredCount}
               </span>
               {isMastered && (
@@ -335,15 +335,15 @@ export default function TypingExercisePage() {
       <div className="max-w-7xl mx-auto px-4 py-6">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Source Code (Read-only) */}
-          <div className="bg-slate-800 rounded-xl shadow-xl overflow-hidden border border-slate-700">
-            <div className="px-4 py-3 bg-slate-700/50 border-b border-slate-600 flex items-center justify-between">
+          <div className="bg-neutral-100 dark:bg-slate-800 rounded-xl shadow-xl overflow-hidden border border-neutral-200 dark:border-slate-700">
+            <div className="px-4 py-3 bg-neutral-200/50 dark:bg-slate-700/50 border-b border-neutral-300 dark:border-slate-600 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <div className="w-3 h-3 rounded-full bg-red-500" />
                 <div className="w-3 h-3 rounded-full bg-yellow-500" />
                 <div className="w-3 h-3 rounded-full bg-green-500" />
-                <span className="ml-2 text-sm font-medium text-slate-300">원본 코드</span>
+                <span className="ml-2 text-sm font-medium text-neutral-600 dark:text-slate-300">원본 코드</span>
               </div>
-              <span className="text-xs text-slate-500">{exercise.language}</span>
+              <span className="text-xs text-neutral-500 dark:text-slate-500">{exercise.language}</span>
             </div>
             <div className="h-[400px]">
               <Editor
@@ -366,16 +366,16 @@ export default function TypingExercisePage() {
           </div>
 
           {/* Typing Area */}
-          <div className="bg-slate-800 rounded-xl shadow-xl overflow-hidden border border-slate-700">
-            <div className="px-4 py-3 bg-slate-700/50 border-b border-slate-600 flex items-center justify-between">
+          <div className="bg-neutral-100 dark:bg-slate-800 rounded-xl shadow-xl overflow-hidden border border-neutral-200 dark:border-slate-700">
+            <div className="px-4 py-3 bg-neutral-200/50 dark:bg-slate-700/50 border-b border-neutral-300 dark:border-slate-600 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <div className="w-3 h-3 rounded-full bg-orange-500 animate-pulse" />
-                <span className="text-sm font-medium text-slate-300">타이핑 영역</span>
+                <span className="text-sm font-medium text-neutral-600 dark:text-slate-300">타이핑 영역</span>
               </div>
               {currentAttempt && (
                 <button
                   onClick={resetAttempt}
-                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-slate-400 hover:text-white hover:bg-slate-600 rounded-lg transition-colors"
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-neutral-500 dark:text-slate-400 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-200 dark:hover:bg-slate-600 rounded-lg transition-colors"
                 >
                   <RotateCcw className="w-3.5 h-3.5" />
                   다시 시작
@@ -406,10 +406,10 @@ export default function TypingExercisePage() {
                   <div className="w-20 h-20 rounded-full bg-gradient-to-r from-orange-500 to-amber-500 flex items-center justify-center mb-6 shadow-lg shadow-orange-500/30">
                     <Play className="w-10 h-10 text-white ml-1" />
                   </div>
-                  <h3 className="text-xl font-semibold text-white mb-2">
+                  <h3 className="text-xl font-semibold text-neutral-900 dark:text-white mb-2">
                     {completedCount > 0 ? '다음 시도 준비 완료!' : '연습을 시작하세요'}
                   </h3>
-                  <p className="text-slate-400 text-center mb-6 max-w-sm">
+                  <p className="text-neutral-500 dark:text-slate-400 text-center mb-6 max-w-sm">
                     왼쪽의 코드를 보고 똑같이 타이핑하세요. {requiredCount}번 완료하면 마스터입니다!
                   </p>
                   <button
@@ -427,11 +427,11 @@ export default function TypingExercisePage() {
 
         {/* Stats Bar */}
         {currentAttempt && (
-          <div className="mt-6 bg-slate-800 rounded-xl shadow-xl p-5 border border-slate-700">
+          <div className="mt-6 bg-neutral-100 dark:bg-slate-800 rounded-xl shadow-xl p-5 border border-neutral-200 dark:border-slate-700">
             <div className="grid grid-cols-4 gap-6">
               {/* Accuracy */}
               <div className="text-center">
-                <div className="flex items-center justify-center gap-2 text-slate-400 mb-2">
+                <div className="flex items-center justify-center gap-2 text-neutral-500 dark:text-slate-400 mb-2">
                   <Target className="w-5 h-5" />
                   <span className="text-sm font-medium">정확률</span>
                 </div>
@@ -442,7 +442,7 @@ export default function TypingExercisePage() {
 
               {/* WPM */}
               <div className="text-center">
-                <div className="flex items-center justify-center gap-2 text-slate-400 mb-2">
+                <div className="flex items-center justify-center gap-2 text-neutral-500 dark:text-slate-400 mb-2">
                   <Zap className="w-5 h-5" />
                   <span className="text-sm font-medium">속도</span>
                 </div>
@@ -451,28 +451,28 @@ export default function TypingExercisePage() {
 
               {/* Time */}
               <div className="text-center">
-                <div className="flex items-center justify-center gap-2 text-slate-400 mb-2">
+                <div className="flex items-center justify-center gap-2 text-neutral-500 dark:text-slate-400 mb-2">
                   <Clock className="w-5 h-5" />
                   <span className="text-sm font-medium">시간</span>
                 </div>
-                <p className="text-3xl font-bold text-white">{formatTime(elapsedTime)}</p>
+                <p className="text-3xl font-bold text-neutral-900 dark:text-white">{formatTime(elapsedTime)}</p>
               </div>
 
               {/* Characters */}
               <div className="text-center">
-                <div className="flex items-center justify-center gap-2 text-slate-400 mb-2">
+                <div className="flex items-center justify-center gap-2 text-neutral-500 dark:text-slate-400 mb-2">
                   <FileCode className="w-5 h-5" />
                   <span className="text-sm font-medium">진행</span>
                 </div>
-                <p className="text-3xl font-bold text-white">
-                  {userCode.length}<span className="text-lg text-slate-500">/{exercise.source_code.length}</span>
+                <p className="text-3xl font-bold text-neutral-900 dark:text-white">
+                  {userCode.length}<span className="text-lg text-neutral-500 dark:text-slate-500">/{exercise.source_code.length}</span>
                 </p>
               </div>
             </div>
 
             {/* Progress bar */}
             <div className="mt-5">
-              <div className="h-3 bg-slate-700 rounded-full overflow-hidden">
+              <div className="h-3 bg-neutral-200 dark:bg-slate-700 rounded-full overflow-hidden">
                 <div
                   className={`h-full ${getAccuracyBg(accuracy)} transition-all duration-300 relative`}
                   style={{ width: `${progressPercent}%` }}
@@ -480,9 +480,9 @@ export default function TypingExercisePage() {
                   <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shine" />
                 </div>
               </div>
-              <div className="flex justify-between mt-2 text-xs text-slate-500">
+              <div className="flex justify-between mt-2 text-xs text-neutral-500 dark:text-slate-500">
                 <span>0%</span>
-                <span className="font-medium text-slate-400">{progressPercent.toFixed(1)}% 완료</span>
+                <span className="font-medium text-neutral-500 dark:text-slate-400">{progressPercent.toFixed(1)}% 완료</span>
                 <span>100%</span>
               </div>
             </div>
@@ -491,10 +491,10 @@ export default function TypingExercisePage() {
 
         {/* Previous Attempts */}
         {progress && progress.attempts.length > 0 && (
-          <div className="mt-6 bg-slate-800 rounded-xl shadow-xl p-5 border border-slate-700">
+          <div className="mt-6 bg-neutral-100 dark:bg-slate-800 rounded-xl shadow-xl p-5 border border-neutral-200 dark:border-slate-700">
             <div className="flex items-center gap-2 mb-4">
-              <TrendingUp className="w-5 h-5 text-slate-400" />
-              <h3 className="font-medium text-white">이전 시도 기록</h3>
+              <TrendingUp className="w-5 h-5 text-neutral-500 dark:text-slate-400" />
+              <h3 className="font-medium text-neutral-900 dark:text-white">이전 시도 기록</h3>
             </div>
             <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
               {progress.attempts
@@ -502,9 +502,9 @@ export default function TypingExercisePage() {
                 .map((attempt, index) => (
                   <div
                     key={attempt.id}
-                    className="bg-slate-700/50 rounded-xl p-4 text-center border border-slate-600 hover:border-slate-500 transition-colors"
+                    className="bg-neutral-200/50 dark:bg-slate-700/50 rounded-xl p-4 text-center border border-neutral-300 dark:border-slate-600 hover:border-neutral-400 dark:hover:border-slate-500 transition-colors"
                   >
-                    <div className="text-xs text-slate-500 mb-2">#{index + 1}</div>
+                    <div className="text-xs text-neutral-500 dark:text-slate-500 mb-2">#{index + 1}</div>
                     <div className={`text-lg font-bold ${getAccuracyColor(attempt.accuracy)}`}>
                       {attempt.accuracy.toFixed(1)}%
                     </div>

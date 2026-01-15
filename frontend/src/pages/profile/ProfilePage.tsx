@@ -129,20 +129,20 @@ export default function ProfilePage() {
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-slate-900 to-slate-800 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-b from-neutral-50 dark:from-slate-900 to-neutral-100 dark:to-slate-800 flex items-center justify-center">
         <div className="text-center">
           <div className="relative inline-block">
             <div className="w-16 h-16 rounded-full bg-gradient-to-r from-emerald-500 to-teal-500 animate-pulse" />
-            <Loader2 className="w-8 h-8 text-white absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 animate-spin" />
+            <Loader2 className="w-8 h-8 text-neutral-900 dark:text-white absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 animate-spin" />
           </div>
-          <p className="mt-4 text-slate-400">프로필 로딩 중...</p>
+          <p className="mt-4 text-neutral-500 dark:text-slate-400">프로필 로딩 중...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-900 to-slate-800">
+    <div className="min-h-screen bg-gradient-to-b from-neutral-50 dark:from-slate-900 to-neutral-100 dark:to-slate-800">
       {/* Hero Header */}
       <div className="bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 relative overflow-hidden">
         {/* Decorative elements */}
@@ -158,7 +158,7 @@ export default function ProfilePage() {
             </div>
             <div>
               <div className="flex items-center gap-3">
-                <h1 className="text-3xl font-bold text-white">{user.username}</h1>
+                <h1 className="text-3xl font-bold text-neutral-900 dark:text-white">{user.username}</h1>
                 {user.role === 'admin' && (
                   <span className="flex items-center gap-1 px-3 py-1 text-sm bg-amber-500/20 text-amber-300 rounded-full border border-amber-400/30">
                     <Crown className="w-4 h-4" />
@@ -213,11 +213,11 @@ export default function ProfilePage() {
         )}
 
         {/* Profile Info Card */}
-        <div className="bg-slate-800/50 backdrop-blur-sm rounded-2xl border border-slate-700/50 overflow-hidden shadow-xl">
-          <div className="px-6 py-4 border-b border-slate-700/50 flex items-center justify-between">
+        <div className="bg-white/80 dark:bg-slate-800/50 backdrop-blur-sm rounded-2xl border border-neutral-200 dark:border-slate-700/50 overflow-hidden shadow-xl">
+          <div className="px-6 py-4 border-b border-neutral-200 dark:border-slate-700/50 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <User className="w-5 h-5 text-emerald-400" />
-              <h2 className="text-lg font-semibold text-white">프로필 정보</h2>
+              <h2 className="text-lg font-semibold text-neutral-900 dark:text-white">프로필 정보</h2>
             </div>
             {!isEditing && (
               <button
@@ -234,32 +234,32 @@ export default function ProfilePage() {
             {!isEditing ? (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-1">
-                  <label className="text-sm text-slate-400 flex items-center gap-2">
+                  <label className="text-sm text-neutral-500 dark:text-slate-400 flex items-center gap-2">
                     <User className="w-4 h-4" />
                     사용자명
                   </label>
-                  <p className="text-white text-lg">{user.username}</p>
+                  <p className="text-neutral-900 dark:text-white text-lg">{user.username}</p>
                 </div>
                 <div className="space-y-1">
-                  <label className="text-sm text-slate-400 flex items-center gap-2">
+                  <label className="text-sm text-neutral-500 dark:text-slate-400 flex items-center gap-2">
                     <Mail className="w-4 h-4" />
                     이메일
                   </label>
-                  <p className="text-white text-lg">{user.email}</p>
+                  <p className="text-neutral-900 dark:text-white text-lg">{user.email}</p>
                 </div>
                 <div className="md:col-span-2 space-y-1">
-                  <label className="text-sm text-slate-400 flex items-center gap-2">
+                  <label className="text-sm text-neutral-500 dark:text-slate-400 flex items-center gap-2">
                     <FileText className="w-4 h-4" />
                     자기소개
                   </label>
-                  <p className="text-white">{user.bio || '아직 자기소개가 없습니다.'}</p>
+                  <p className="text-neutral-900 dark:text-white">{user.bio || '아직 자기소개가 없습니다.'}</p>
                 </div>
                 <div className="space-y-1">
-                  <label className="text-sm text-slate-400 flex items-center gap-2">
+                  <label className="text-sm text-neutral-500 dark:text-slate-400 flex items-center gap-2">
                     <Calendar className="w-4 h-4" />
                     가입일
                   </label>
-                  <p className="text-white">
+                  <p className="text-neutral-900 dark:text-white">
                     {new Date(user.created_at).toLocaleDateString('ko-KR', {
                       year: 'numeric',
                       month: 'long',
@@ -269,11 +269,11 @@ export default function ProfilePage() {
                 </div>
                 {user.last_login_at && (
                   <div className="space-y-1">
-                    <label className="text-sm text-slate-400 flex items-center gap-2">
+                    <label className="text-sm text-neutral-500 dark:text-slate-400 flex items-center gap-2">
                       <Clock className="w-4 h-4" />
                       마지막 로그인
                     </label>
-                    <p className="text-white">
+                    <p className="text-neutral-900 dark:text-white">
                       {new Date(user.last_login_at).toLocaleDateString('ko-KR', {
                         year: 'numeric',
                         month: 'long',
@@ -288,7 +288,7 @@ export default function ProfilePage() {
             ) : (
               <form onSubmit={handleUpdateProfile} className="space-y-6">
                 <div>
-                  <label htmlFor="username" className="block text-sm font-medium text-slate-300 mb-2">
+                  <label htmlFor="username" className="block text-sm font-medium text-neutral-600 dark:text-slate-300 mb-2">
                     사용자명
                   </label>
                   <input
@@ -296,14 +296,14 @@ export default function ProfilePage() {
                     id="username"
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
-                    className="w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                    className="w-full px-4 py-3 bg-neutral-100 dark:bg-slate-700/50 border border-neutral-200 dark:border-slate-600 rounded-xl text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
                     minLength={3}
                     maxLength={30}
                     required
                   />
                 </div>
                 <div>
-                  <label htmlFor="bio" className="block text-sm font-medium text-slate-300 mb-2">
+                  <label htmlFor="bio" className="block text-sm font-medium text-neutral-600 dark:text-slate-300 mb-2">
                     자기소개
                   </label>
                   <textarea
@@ -311,7 +311,7 @@ export default function ProfilePage() {
                     value={bio}
                     onChange={(e) => setBio(e.target.value)}
                     rows={4}
-                    className="w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent resize-none"
+                    className="w-full px-4 py-3 bg-neutral-100 dark:bg-slate-700/50 border border-neutral-200 dark:border-slate-600 rounded-xl text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent resize-none"
                     maxLength={200}
                     placeholder="간단한 자기소개를 입력해주세요 (최대 200자)"
                   />
@@ -333,7 +333,7 @@ export default function ProfilePage() {
                   <button
                     type="button"
                     onClick={cancelEdit}
-                    className="flex items-center gap-2 px-5 py-2.5 bg-slate-700 hover:bg-slate-600 text-slate-300 rounded-xl transition-colors"
+                    className="flex items-center gap-2 px-5 py-2.5 bg-neutral-100 dark:bg-slate-700 hover:bg-neutral-200 dark:hover:bg-slate-600 text-neutral-600 dark:text-slate-300 rounded-xl transition-colors"
                   >
                     <X className="w-4 h-4" />
                     취소
@@ -345,11 +345,11 @@ export default function ProfilePage() {
         </div>
 
         {/* Security Card */}
-        <div className="mt-6 bg-slate-800/50 backdrop-blur-sm rounded-2xl border border-slate-700/50 overflow-hidden shadow-xl">
-          <div className="px-6 py-4 border-b border-slate-700/50 flex items-center justify-between">
+        <div className="mt-6 bg-white/80 dark:bg-slate-800/50 backdrop-blur-sm rounded-2xl border border-neutral-200 dark:border-slate-700/50 overflow-hidden shadow-xl">
+          <div className="px-6 py-4 border-b border-neutral-200 dark:border-slate-700/50 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Lock className="w-5 h-5 text-amber-400" />
-              <h2 className="text-lg font-semibold text-white">보안</h2>
+              <h2 className="text-lg font-semibold text-neutral-900 dark:text-white">보안</h2>
             </div>
             {!isChangingPassword && (
               <button
@@ -364,19 +364,19 @@ export default function ProfilePage() {
 
           <div className="p-6">
             {!isChangingPassword ? (
-              <div className="flex items-center gap-4 p-4 bg-slate-700/30 rounded-xl">
+              <div className="flex items-center gap-4 p-4 bg-neutral-100 dark:bg-slate-700/30 rounded-xl">
                 <div className="w-12 h-12 rounded-xl bg-amber-500/20 flex items-center justify-center">
                   <Shield className="w-6 h-6 text-amber-400" />
                 </div>
                 <div>
-                  <h3 className="text-white font-medium">비밀번호</h3>
-                  <p className="text-sm text-slate-400">정기적으로 비밀번호를 변경하여 계정을 안전하게 보호하세요.</p>
+                  <h3 className="text-neutral-900 dark:text-white font-medium">비밀번호</h3>
+                  <p className="text-sm text-neutral-500 dark:text-slate-400">정기적으로 비밀번호를 변경하여 계정을 안전하게 보호하세요.</p>
                 </div>
               </div>
             ) : (
               <form onSubmit={handleChangePassword} className="space-y-4">
                 <div>
-                  <label htmlFor="oldPassword" className="block text-sm font-medium text-slate-300 mb-2">
+                  <label htmlFor="oldPassword" className="block text-sm font-medium text-neutral-600 dark:text-slate-300 mb-2">
                     현재 비밀번호
                   </label>
                   <input
@@ -384,12 +384,12 @@ export default function ProfilePage() {
                     id="oldPassword"
                     value={oldPassword}
                     onChange={(e) => setOldPassword(e.target.value)}
-                    className="w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+                    className="w-full px-4 py-3 bg-neutral-100 dark:bg-slate-700/50 border border-neutral-200 dark:border-slate-600 rounded-xl text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent"
                     required
                   />
                 </div>
                 <div>
-                  <label htmlFor="newPassword" className="block text-sm font-medium text-slate-300 mb-2">
+                  <label htmlFor="newPassword" className="block text-sm font-medium text-neutral-600 dark:text-slate-300 mb-2">
                     새 비밀번호
                   </label>
                   <input
@@ -397,13 +397,13 @@ export default function ProfilePage() {
                     id="newPassword"
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
-                    className="w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+                    className="w-full px-4 py-3 bg-neutral-100 dark:bg-slate-700/50 border border-neutral-200 dark:border-slate-600 rounded-xl text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent"
                     minLength={8}
                     required
                   />
                 </div>
                 <div>
-                  <label htmlFor="confirmPassword" className="block text-sm font-medium text-slate-300 mb-2">
+                  <label htmlFor="confirmPassword" className="block text-sm font-medium text-neutral-600 dark:text-slate-300 mb-2">
                     새 비밀번호 확인
                   </label>
                   <input
@@ -411,7 +411,7 @@ export default function ProfilePage() {
                     id="confirmPassword"
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
-                    className="w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+                    className="w-full px-4 py-3 bg-neutral-100 dark:bg-slate-700/50 border border-neutral-200 dark:border-slate-600 rounded-xl text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent"
                     minLength={8}
                     required
                   />
@@ -435,7 +435,7 @@ export default function ProfilePage() {
                   <button
                     type="button"
                     onClick={cancelPasswordChange}
-                    className="flex items-center gap-2 px-5 py-2.5 bg-slate-700 hover:bg-slate-600 text-slate-300 rounded-xl transition-colors"
+                    className="flex items-center gap-2 px-5 py-2.5 bg-neutral-100 dark:bg-slate-700 hover:bg-neutral-200 dark:hover:bg-slate-600 text-neutral-600 dark:text-slate-300 rounded-xl transition-colors"
                   >
                     <X className="w-4 h-4" />
                     취소

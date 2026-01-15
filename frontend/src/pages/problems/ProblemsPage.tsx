@@ -248,7 +248,7 @@ export function ProblemsPage() {
           <div className="flex flex-col lg:flex-row gap-4">
             {/* Search */}
             <div className="relative flex-1">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-neutral-500 dark:text-slate-400" />
               <input
                 type="text"
                 placeholder="문제 검색..."
@@ -291,7 +291,7 @@ export function ProblemsPage() {
                   className={`p-2 rounded-lg transition-all ${
                     viewMode === 'grid'
                       ? 'bg-white dark:bg-slate-600 shadow-sm text-teal-600 dark:text-teal-400'
-                      : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'
+                      : 'text-neutral-500 dark:text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'
                   }`}
                 >
                   <LayoutGrid className="w-5 h-5" />
@@ -301,7 +301,7 @@ export function ProblemsPage() {
                   className={`p-2 rounded-lg transition-all ${
                     viewMode === 'list'
                       ? 'bg-white dark:bg-slate-600 shadow-sm text-teal-600 dark:text-teal-400'
-                      : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'
+                      : 'text-neutral-500 dark:text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'
                   }`}
                 >
                   <List className="w-5 h-5" />
@@ -343,10 +343,10 @@ export function ProblemsPage() {
         {!loading && !error && problems.length === 0 && (
           <div className="py-16 text-center">
             <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-slate-100 dark:bg-slate-700 flex items-center justify-center">
-              <Search className="w-8 h-8 text-slate-400" />
+              <Search className="w-8 h-8 text-neutral-500 dark:text-slate-400" />
             </div>
             <p className="text-slate-500 dark:text-slate-400 font-medium">필터에 맞는 문제가 없습니다</p>
-            <p className="text-sm text-slate-400 dark:text-slate-500 mt-1">다른 필터를 시도해보세요</p>
+            <p className="text-sm text-neutral-500 dark:text-slate-500 mt-1">다른 필터를 시도해보세요</p>
           </div>
         )}
 
@@ -482,7 +482,7 @@ function ProblemCard({ problem, delay }: ProblemCardProps) {
           </span>
           {DIFFICULTY_LABELS[problem.difficulty]}
         </div>
-        <ArrowRight className="w-5 h-5 text-slate-300 dark:text-slate-600 group-hover:text-teal-500 group-hover:translate-x-1 transition-all" />
+        <ArrowRight className="w-5 h-5 text-neutral-600 dark:text-slate-300 group-hover:text-teal-500 group-hover:translate-x-1 transition-all" />
       </div>
 
       <h3 className="font-semibold text-slate-800 dark:text-white mb-2 group-hover:text-teal-600 dark:group-hover:text-teal-400 transition-colors line-clamp-2">
@@ -533,7 +533,7 @@ function ProblemListItem({ problem, delay }: ProblemListItemProps) {
         {DIFFICULTY_LABELS[problem.difficulty]}
       </div>
 
-      <ChevronRight className="w-5 h-5 text-slate-300 dark:text-slate-600 group-hover:text-teal-500 group-hover:translate-x-1 transition-all flex-shrink-0" />
+      <ChevronRight className="w-5 h-5 text-neutral-600 dark:text-slate-300 group-hover:text-teal-500 group-hover:translate-x-1 transition-all flex-shrink-0" />
     </Link>
   );
 }

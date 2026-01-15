@@ -24,9 +24,9 @@ export function HomePage() {
   const { isAuthenticated } = useAuthStore();
 
   return (
-    <div className="min-h-screen overflow-hidden bg-slate-900">
+    <div className="min-h-screen overflow-hidden bg-white dark:bg-slate-900">
       {/* Hero Section */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-slate-900 via-emerald-900/20 to-slate-900 text-white">
+      <section className="relative overflow-hidden bg-gradient-to-br from-neutral-50 via-emerald-100/20 to-neutral-50 dark:from-slate-900 dark:via-emerald-900/20 dark:to-slate-900 text-neutral-900 dark:text-white">
         {/* Background decorations */}
         <div className="absolute inset-0 overflow-hidden">
           <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-emerald-500/10 rounded-full blur-3xl" />
@@ -55,7 +55,7 @@ export function HomePage() {
               <br className="hidden md:block" />
               알고리즘 마스터
             </h1>
-            <p className="text-xl md:text-2xl text-slate-300 mb-10 max-w-2xl mx-auto">
+            <p className="text-xl md:text-2xl text-neutral-600 dark:text-slate-300 mb-10 max-w-2xl mx-auto">
               맞춤형 AI 가이드, 실시간 코드 피드백, 인터랙티브 문제 풀이로
               Python 알고리즘을 단계별로 학습하세요.
             </p>
@@ -79,7 +79,7 @@ export function HomePage() {
                   </Link>
                   <Link
                     to="/login"
-                    className="inline-flex items-center justify-center px-8 py-4 border-2 border-slate-600 text-white rounded-xl font-semibold hover:bg-slate-800 hover:border-slate-500 transition-all duration-300"
+                    className="inline-flex items-center justify-center px-8 py-4 border-2 border-neutral-300 dark:border-slate-600 text-neutral-900 dark:text-white rounded-xl font-semibold hover:bg-neutral-100 dark:hover:bg-slate-800 hover:border-neutral-400 dark:hover:border-slate-500 transition-all duration-300"
                   >
                     로그인
                   </Link>
@@ -88,18 +88,18 @@ export function HomePage() {
             </div>
 
             {/* Stats */}
-            <div className="flex flex-wrap justify-center gap-8 mt-16 pt-8 border-t border-slate-700/50">
+            <div className="flex flex-wrap justify-center gap-8 mt-16 pt-8 border-t border-neutral-200 dark:border-slate-700/50">
               <div className="text-center">
                 <div className="text-3xl font-bold text-emerald-400">25+</div>
-                <div className="text-sm text-slate-400">알고리즘 패턴</div>
+                <div className="text-sm text-neutral-500 dark:text-slate-400">알고리즘 패턴</div>
               </div>
               <div className="text-center">
                 <div className="text-3xl font-bold text-teal-400">100+</div>
-                <div className="text-sm text-slate-400">연습 문제</div>
+                <div className="text-sm text-neutral-500 dark:text-slate-400">연습 문제</div>
               </div>
               <div className="text-center">
                 <div className="text-3xl font-bold text-cyan-400">24/7</div>
-                <div className="text-sm text-slate-400">AI 튜터 지원</div>
+                <div className="text-sm text-neutral-500 dark:text-slate-400">AI 튜터 지원</div>
               </div>
             </div>
           </div>
@@ -110,28 +110,28 @@ export function HomePage() {
           <svg viewBox="0 0 1440 120" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path
               d="M0 120L60 105C120 90 240 60 360 45C480 30 600 30 720 37.5C840 45 960 60 1080 67.5C1200 75 1320 75 1380 75L1440 75V120H1380C1320 120 1200 120 1080 120C960 120 840 120 720 120C600 120 480 120 360 120C240 120 120 120 60 120H0Z"
-              className="fill-slate-800"
+              className="fill-neutral-100 dark:fill-slate-800"
             />
           </svg>
         </div>
       </section>
 
       {/* Features Section */}
-      <section className="py-24 bg-slate-800">
+      <section className="py-24 bg-neutral-100 dark:bg-slate-800">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
             <div className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-500/10 border border-emerald-500/20 rounded-full text-emerald-400 text-sm mb-4">
               <Zap className="w-4 h-4" />
               핵심 기능
             </div>
-            <h2 className="text-3xl md:text-5xl font-bold text-white mb-4">
+            <h2 className="text-3xl md:text-5xl font-bold text-neutral-900 dark:text-white mb-4">
               왜{' '}
               <span className="bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent">
                 Code Tutor AI
               </span>
               인가요?
             </h2>
-            <p className="text-xl text-slate-400 max-w-2xl mx-auto">
+            <p className="text-xl text-neutral-500 dark:text-slate-400 max-w-2xl mx-auto">
               나만의 속도로 알고리즘을 마스터할 수 있도록 설계된 지능형 학습 플랫폼입니다.
             </p>
           </div>
@@ -166,17 +166,17 @@ export function HomePage() {
       </section>
 
       {/* Patterns Section */}
-      <section className="py-24 bg-slate-900">
+      <section className="py-24 bg-white dark:bg-slate-900">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
             <div className="inline-flex items-center gap-2 px-4 py-2 bg-amber-500/10 border border-amber-500/20 rounded-full text-amber-400 text-sm mb-4">
               <Sparkles className="w-4 h-4" />
               알고리즘 패턴
             </div>
-            <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
+            <h2 className="text-3xl md:text-4xl font-bold text-neutral-900 dark:text-white mb-4">
               리트코드 패턴 학습
             </h2>
-            <p className="text-xl text-slate-400 max-w-2xl mx-auto">
+            <p className="text-xl text-neutral-500 dark:text-slate-400 max-w-2xl mx-auto">
               코딩 테스트에 자주 나오는 25개 핵심 알고리즘 패턴을 체계적으로 학습하세요.
             </p>
           </div>
@@ -196,10 +196,10 @@ export function HomePage() {
             ].map((pattern) => (
               <div
                 key={pattern.name}
-                className="group bg-slate-800/50 hover:bg-slate-800 rounded-xl p-5 text-center border border-slate-700/50 hover:border-emerald-500/30 transition-all duration-300 cursor-pointer hover:-translate-y-1"
+                className="group bg-neutral-50 dark:bg-slate-800/50 hover:bg-neutral-100 dark:hover:bg-slate-800 rounded-xl p-5 text-center border border-neutral-200 dark:border-slate-700/50 hover:border-emerald-500/30 transition-all duration-300 cursor-pointer hover:-translate-y-1"
               >
                 <div className="text-2xl mb-2">{pattern.icon}</div>
-                <span className="text-sm font-medium text-slate-300 group-hover:text-emerald-400 transition-colors">
+                <span className="text-sm font-medium text-neutral-600 dark:text-slate-300 group-hover:text-emerald-500 dark:group-hover:text-emerald-400 transition-colors">
                   {pattern.name}
                 </span>
               </div>
@@ -219,36 +219,36 @@ export function HomePage() {
       </section>
 
       {/* Social Proof Section */}
-      <section className="py-20 bg-slate-800">
+      <section className="py-20 bg-neutral-100 dark:bg-slate-800">
         <div className="container mx-auto px-4">
           <div className="grid md:grid-cols-3 gap-8">
-            <div className="bg-slate-900/50 rounded-2xl p-8 border border-slate-700/50 text-center">
+            <div className="bg-white dark:bg-slate-900/50 rounded-2xl p-8 border border-neutral-200 dark:border-slate-700/50 text-center">
               <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-emerald-500/20 flex items-center justify-center">
                 <Users className="w-8 h-8 text-emerald-400" />
               </div>
-              <div className="text-3xl font-bold text-white mb-2">1,000+</div>
-              <div className="text-slate-400">활성 학습자</div>
+              <div className="text-3xl font-bold text-neutral-900 dark:text-white mb-2">1,000+</div>
+              <div className="text-neutral-500 dark:text-slate-400">활성 학습자</div>
             </div>
-            <div className="bg-slate-900/50 rounded-2xl p-8 border border-slate-700/50 text-center">
+            <div className="bg-white dark:bg-slate-900/50 rounded-2xl p-8 border border-neutral-200 dark:border-slate-700/50 text-center">
               <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-teal-500/20 flex items-center justify-center">
                 <Trophy className="w-8 h-8 text-teal-400" />
               </div>
-              <div className="text-3xl font-bold text-white mb-2">50,000+</div>
-              <div className="text-slate-400">해결된 문제</div>
+              <div className="text-3xl font-bold text-neutral-900 dark:text-white mb-2">50,000+</div>
+              <div className="text-neutral-500 dark:text-slate-400">해결된 문제</div>
             </div>
-            <div className="bg-slate-900/50 rounded-2xl p-8 border border-slate-700/50 text-center">
+            <div className="bg-white dark:bg-slate-900/50 rounded-2xl p-8 border border-neutral-200 dark:border-slate-700/50 text-center">
               <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-cyan-500/20 flex items-center justify-center">
                 <Rocket className="w-8 h-8 text-cyan-400" />
               </div>
-              <div className="text-3xl font-bold text-white mb-2">95%</div>
-              <div className="text-slate-400">만족도</div>
+              <div className="text-3xl font-bold text-neutral-900 dark:text-white mb-2">95%</div>
+              <div className="text-neutral-500 dark:text-slate-400">만족도</div>
             </div>
           </div>
         </div>
       </section>
 
       {/* CTA Section */}
-      <section className="py-24 bg-gradient-to-b from-slate-900 to-slate-800 relative overflow-hidden">
+      <section className="py-24 bg-gradient-to-b from-white to-neutral-100 dark:from-slate-900 dark:to-slate-800 relative overflow-hidden">
         {/* Background decorations */}
         <div className="absolute inset-0 overflow-hidden">
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-emerald-500/5 rounded-full blur-3xl" />
@@ -260,10 +260,10 @@ export function HomePage() {
               <Rocket className="w-4 h-4" />
               지금 시작하세요
             </div>
-            <h2 className="text-3xl md:text-5xl font-bold text-white mb-4">
+            <h2 className="text-3xl md:text-5xl font-bold text-neutral-900 dark:text-white mb-4">
               알고리즘 마스터가 되어보세요
             </h2>
-            <p className="text-xl text-slate-400 mb-10">
+            <p className="text-xl text-neutral-500 dark:text-slate-400 mb-10">
               AI와 함께 알고리즘을 마스터하는 수천 명의 학습자와 함께하세요.
             </p>
             {!isAuthenticated && (
@@ -320,14 +320,14 @@ function FeatureCard({
   };
 
   return (
-    <div className="group bg-slate-900/50 hover:bg-slate-900 rounded-2xl p-7 border border-slate-700/50 hover:border-emerald-500/30 transition-all duration-300 hover:-translate-y-1">
+    <div className="group bg-white dark:bg-slate-900/50 hover:bg-neutral-50 dark:hover:bg-slate-900 rounded-2xl p-7 border border-neutral-200 dark:border-slate-700/50 hover:border-emerald-500/30 transition-all duration-300 hover:-translate-y-1">
       <div
         className={`w-14 h-14 rounded-xl flex items-center justify-center mb-5 transition-colors ${colorClasses[color]}`}
       >
         {icon}
       </div>
-      <h3 className="text-xl font-bold mb-3 text-white">{title}</h3>
-      <p className="text-slate-400">{description}</p>
+      <h3 className="text-xl font-bold mb-3 text-neutral-900 dark:text-white">{title}</h3>
+      <p className="text-neutral-500 dark:text-slate-400">{description}</p>
     </div>
   );
 }

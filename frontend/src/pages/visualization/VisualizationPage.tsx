@@ -183,7 +183,7 @@ export default function VisualizationPage() {
               className={`relative p-5 rounded-2xl text-left transition-all duration-300 group overflow-hidden ${
                 selectedCategory === cat.id
                   ? 'bg-white dark:bg-slate-800 shadow-xl ring-2 ring-cyan-500'
-                  : 'bg-white/80 dark:bg-slate-800/80 shadow-lg hover:shadow-xl hover:-translate-y-1'
+                  : 'bg-white/80 dark:bg-slate-800/50 shadow-lg hover:shadow-xl hover:-translate-y-1'
               }`}
             >
               {/* Gradient overlay when selected */}
@@ -198,7 +198,7 @@ export default function VisualizationPage() {
                 <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-1">
                   {cat.name}
                 </h3>
-                <p className="text-sm text-slate-600 dark:text-slate-400">
+                <p className="text-sm text-neutral-600 dark:text-slate-400">
                   {cat.description}
                 </p>
                 {selectedCategory === cat.id && (
@@ -255,14 +255,14 @@ export default function VisualizationPage() {
                   </div>
                   <h3 className="font-bold text-slate-900 dark:text-white">알고리즘 정보</h3>
                 </div>
-                <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">
+                <p className="text-sm text-neutral-600 dark:text-slate-400 mb-4">
                   {selectedAlgoInfo.description}
                 </p>
                 <div className="space-y-3">
                   <div className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-700/50 rounded-xl">
                     <div className="flex items-center gap-2">
                       <Clock className="w-4 h-4 text-amber-500" />
-                      <span className="text-sm text-slate-600 dark:text-slate-400">시간 복잡도</span>
+                      <span className="text-sm text-neutral-600 dark:text-slate-400">시간 복잡도</span>
                     </div>
                     <span className="font-mono text-sm font-bold text-slate-900 dark:text-white">
                       {selectedAlgoInfo.time_complexity}
@@ -271,7 +271,7 @@ export default function VisualizationPage() {
                   <div className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-700/50 rounded-xl">
                     <div className="flex items-center gap-2">
                       <Database className="w-4 h-4 text-purple-500" />
-                      <span className="text-sm text-slate-600 dark:text-slate-400">공간 복잡도</span>
+                      <span className="text-sm text-neutral-600 dark:text-slate-400">공간 복잡도</span>
                     </div>
                     <span className="font-mono text-sm font-bold text-slate-900 dark:text-white">
                       {selectedAlgoInfo.space_complexity}
@@ -292,7 +292,7 @@ export default function VisualizationPage() {
               <div className="space-y-4">
                 {(selectedCategory === 'sorting' || selectedCategory === 'searching') && (
                   <div>
-                    <label className="flex items-center justify-between text-sm text-slate-600 dark:text-slate-400 mb-2">
+                    <label className="flex items-center justify-between text-sm text-neutral-600 dark:text-slate-400 mb-2">
                       <span>배열 크기</span>
                       <span className="font-bold text-cyan-600 dark:text-cyan-400">{arraySize}</span>
                     </label>
@@ -313,7 +313,7 @@ export default function VisualizationPage() {
 
                 {selectedCategory === 'searching' && (
                   <div>
-                    <label className="block text-sm text-slate-600 dark:text-slate-400 mb-2">
+                    <label className="block text-sm text-neutral-600 dark:text-slate-400 mb-2">
                       찾을 값 (비워두면 랜덤)
                     </label>
                     <input
@@ -323,7 +323,7 @@ export default function VisualizationPage() {
                         setSearchTarget(e.target.value ? Number(e.target.value) : undefined)
                       }
                       placeholder="랜덤"
-                      className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-cyan-500 focus:border-transparent text-slate-900 dark:text-white"
+                      className="w-full px-4 py-2.5 bg-neutral-50 dark:bg-slate-700 border border-neutral-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-cyan-500 focus:border-transparent text-neutral-900 dark:text-white"
                     />
                   </div>
                 )}
@@ -353,7 +353,7 @@ export default function VisualizationPage() {
           <div className="lg:col-span-3">
             <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-lg overflow-hidden">
               {/* Panel Header */}
-              <div className="px-6 py-4 bg-gradient-to-r from-slate-100 to-slate-50 dark:from-slate-700 dark:to-slate-800 border-b border-slate-200 dark:border-slate-700">
+              <div className="px-6 py-4 bg-gradient-to-r from-neutral-50 to-white dark:from-slate-700 dark:to-slate-800 border-b border-neutral-200 dark:border-slate-700">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <div className="flex gap-1.5">
@@ -361,12 +361,12 @@ export default function VisualizationPage() {
                       <div className="w-3 h-3 rounded-full bg-yellow-500" />
                       <div className="w-3 h-3 rounded-full bg-green-500" />
                     </div>
-                    <span className="text-sm font-medium text-slate-600 dark:text-slate-400">
+                    <span className="text-sm font-medium text-neutral-600 dark:text-slate-400">
                       시각화 패널
                     </span>
                   </div>
                   {selectedAlgoInfo && (
-                    <span className="text-sm text-slate-500 dark:text-slate-400">
+                    <span className="text-sm text-neutral-500 dark:text-slate-400">
                       {selectedAlgoInfo.name}
                     </span>
                   )}
@@ -381,21 +381,21 @@ export default function VisualizationPage() {
                       <div className="w-20 h-20 rounded-full bg-gradient-to-r from-cyan-500 to-teal-500 animate-pulse" />
                       <Loader2 className="w-10 h-10 text-white absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 animate-spin" />
                     </div>
-                    <p className="text-slate-500 dark:text-slate-400 mt-4 animate-pulse">시각화 생성 중...</p>
+                    <p className="text-neutral-500 dark:text-slate-400 mt-4 animate-pulse">시각화 생성 중...</p>
                   </div>
                 ) : sortingViz ? (
                   <SortingVisualizer visualization={sortingViz} />
                 ) : graphViz ? (
                   <GraphVisualizer visualization={graphViz} />
                 ) : (
-                  <div className="flex flex-col items-center justify-center h-96 text-slate-400 dark:text-slate-500">
-                    <div className="w-24 h-24 rounded-full bg-slate-100 dark:bg-slate-700 flex items-center justify-center mb-6">
-                      <Eye className="w-12 h-12 text-slate-300 dark:text-slate-600" />
+                  <div className="flex flex-col items-center justify-center h-96 text-neutral-400 dark:text-slate-500">
+                    <div className="w-24 h-24 rounded-full bg-neutral-100 dark:bg-slate-700 flex items-center justify-center mb-6">
+                      <Eye className="w-12 h-12 text-neutral-300 dark:text-slate-600" />
                     </div>
-                    <p className="text-lg font-medium text-slate-600 dark:text-slate-400 mb-2">
+                    <p className="text-lg font-medium text-neutral-600 dark:text-slate-400 mb-2">
                       알고리즘을 선택하세요
                     </p>
-                    <p className="text-sm text-slate-400 dark:text-slate-500">
+                    <p className="text-sm text-neutral-400 dark:text-slate-500">
                       "시각화 시작" 버튼을 클릭하여 알고리즘의 동작을 확인하세요
                     </p>
                   </div>

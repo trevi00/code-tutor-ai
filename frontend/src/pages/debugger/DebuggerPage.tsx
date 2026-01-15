@@ -210,7 +210,7 @@ export default function DebuggerPage() {
                   value={code}
                   onChange={(e) => setCode(e.target.value)}
                   placeholder="Python 코드를 입력하세요..."
-                  className="w-full h-64 font-mono text-sm p-4 bg-slate-900 text-slate-100 rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  className="w-full h-64 font-mono text-sm p-4 bg-neutral-100 dark:bg-slate-900 text-neutral-900 dark:text-slate-100 rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-purple-500"
                   spellCheck={false}
                 />
               </div>

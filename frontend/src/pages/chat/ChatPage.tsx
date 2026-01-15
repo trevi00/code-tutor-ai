@@ -37,13 +37,13 @@ function CodeBlock({ language, children }: { language: string; children: string 
       <div className="absolute right-2 top-2 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
         <button
           onClick={handleCopy}
-          className="p-1.5 rounded bg-slate-700 hover:bg-slate-600 text-slate-300 transition-colors"
+          className="p-1.5 rounded bg-neutral-100 dark:bg-slate-700 hover:bg-neutral-200 dark:hover:bg-slate-600 text-neutral-600 dark:text-slate-300 transition-colors"
           title="코드 복사"
         >
           {copied ? <Check className="h-4 w-4 text-green-400" /> : <Copy className="h-4 w-4" />}
         </button>
       </div>
-      <div className="text-xs text-slate-400 bg-slate-800 px-3 py-1 rounded-t border-b border-slate-700">
+      <div className="text-xs text-neutral-500 dark:text-slate-400 bg-neutral-100 dark:bg-slate-800 px-3 py-1 rounded-t border-b border-neutral-200 dark:border-slate-700">
         {language || 'code'}
       </div>
       <SyntaxHighlighter
