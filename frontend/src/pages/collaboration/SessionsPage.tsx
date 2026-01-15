@@ -101,20 +101,20 @@ export default function SessionsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-slate-900 to-slate-800 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-b from-neutral-50 to-neutral-100 dark:from-slate-900 dark:to-slate-800 flex items-center justify-center">
         <div className="text-center">
           <div className="relative inline-block">
             <div className="w-16 h-16 rounded-full bg-gradient-to-r from-violet-500 to-purple-500 animate-pulse" />
             <Loader2 className="w-8 h-8 text-white absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 animate-spin" />
           </div>
-          <p className="mt-4 text-slate-400">세션 불러오는 중...</p>
+          <p className="mt-4 text-neutral-500 dark:text-slate-400">세션 불러오는 중...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-900 to-slate-800">
+    <div className="min-h-screen bg-gradient-to-b from-neutral-50 to-neutral-100 dark:from-slate-900 dark:to-slate-800">
       {/* Hero Section */}
       <div className="bg-gradient-to-r from-violet-600 via-purple-600 to-fuchsia-600 relative overflow-hidden">
         {/* Background decorations */}
@@ -182,17 +182,17 @@ export default function SessionsPage() {
               <User className="w-5 h-5 text-violet-400" />
             </div>
             <div>
-              <h2 className="text-xl font-bold text-white">내 세션</h2>
-              <p className="text-sm text-slate-400">내가 생성한 협업 세션들</p>
+              <h2 className="text-xl font-bold text-neutral-900 dark:text-white">내 세션</h2>
+              <p className="text-sm text-neutral-500 dark:text-slate-400">내가 생성한 협업 세션들</p>
             </div>
           </div>
 
           {mySessions.length === 0 ? (
-            <div className="bg-slate-800/50 backdrop-blur-sm rounded-2xl border border-slate-700/50 p-8 text-center">
-              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-slate-700/50 flex items-center justify-center">
-                <Users className="w-8 h-8 text-slate-500" />
+            <div className="bg-white/80 dark:bg-slate-800/50 backdrop-blur-sm rounded-2xl border border-neutral-200/50 dark:border-slate-700/50 p-8 text-center shadow-lg dark:shadow-none">
+              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-neutral-100 dark:bg-slate-700/50 flex items-center justify-center">
+                <Users className="w-8 h-8 text-neutral-400 dark:text-slate-500" />
               </div>
-              <p className="text-slate-400 mb-4">아직 생성한 세션이 없습니다.</p>
+              <p className="text-neutral-500 dark:text-slate-400 mb-4">아직 생성한 세션이 없습니다.</p>
               <button
                 onClick={() => setShowCreateModal(true)}
                 className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-500 hover:to-purple-500 text-white rounded-xl font-medium transition-all shadow-lg shadow-violet-500/25"
@@ -211,10 +211,10 @@ export default function SessionsPage() {
                   <div
                     key={session.id}
                     onClick={() => navigate(`/collaboration/${session.id}`)}
-                    className="bg-slate-800/50 backdrop-blur-sm rounded-2xl border border-slate-700/50 p-5 hover:border-violet-500/50 hover:bg-slate-800/70 transition-all cursor-pointer group"
+                    className="bg-white/80 dark:bg-slate-800/50 backdrop-blur-sm rounded-2xl border border-neutral-200/50 dark:border-slate-700/50 p-5 hover:border-violet-500/50 hover:bg-neutral-50 dark:hover:bg-slate-800/70 transition-all cursor-pointer group shadow-lg dark:shadow-none"
                   >
                     <div className="flex justify-between items-start mb-3">
-                      <h3 className="font-semibold text-white group-hover:text-violet-400 transition-colors truncate flex-1 mr-2">
+                      <h3 className="font-semibold text-neutral-900 dark:text-white group-hover:text-violet-600 dark:group-hover:text-violet-400 transition-colors truncate flex-1 mr-2">
                         {session.title}
                       </h3>
                       <span className={`inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium rounded-lg ${statusInfo.color}`}>
@@ -225,13 +225,13 @@ export default function SessionsPage() {
 
                     <div className="space-y-2">
                       <div className="flex items-center gap-2">
-                        <Code2 className="w-4 h-4 text-slate-500" />
+                        <Code2 className="w-4 h-4 text-neutral-400 dark:text-slate-500" />
                         <span className={`px-2 py-0.5 text-xs font-medium rounded-lg ${langInfo.color}`}>
                           {langInfo.label}
                         </span>
                       </div>
-                      <div className="flex items-center gap-2 text-sm text-slate-400">
-                        <Users className="w-4 h-4 text-slate-500" />
+                      <div className="flex items-center gap-2 text-sm text-neutral-500 dark:text-slate-400">
+                        <Users className="w-4 h-4 text-neutral-400 dark:text-slate-500" />
                         <span>{session.participant_count} / {session.max_participants} 참가자</span>
                       </div>
                     </div>
@@ -249,17 +249,17 @@ export default function SessionsPage() {
               <Globe className="w-5 h-5 text-emerald-400" />
             </div>
             <div>
-              <h2 className="text-xl font-bold text-white">활성 세션</h2>
-              <p className="text-sm text-slate-400">참여 가능한 공개 세션들</p>
+              <h2 className="text-xl font-bold text-neutral-900 dark:text-white">활성 세션</h2>
+              <p className="text-sm text-neutral-500 dark:text-slate-400">참여 가능한 공개 세션들</p>
             </div>
           </div>
 
           {activeSessions.length === 0 ? (
-            <div className="bg-slate-800/50 backdrop-blur-sm rounded-2xl border border-slate-700/50 p-8 text-center">
-              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-slate-700/50 flex items-center justify-center">
-                <Globe className="w-8 h-8 text-slate-500" />
+            <div className="bg-white/80 dark:bg-slate-800/50 backdrop-blur-sm rounded-2xl border border-neutral-200/50 dark:border-slate-700/50 p-8 text-center shadow-lg dark:shadow-none">
+              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-neutral-100 dark:bg-slate-700/50 flex items-center justify-center">
+                <Globe className="w-8 h-8 text-neutral-400 dark:text-slate-500" />
               </div>
-              <p className="text-slate-400">현재 활성화된 공개 세션이 없습니다.</p>
+              <p className="text-neutral-500 dark:text-slate-400">현재 활성화된 공개 세션이 없습니다.</p>
             </div>
           ) : (
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -270,10 +270,10 @@ export default function SessionsPage() {
                   <div
                     key={session.id}
                     onClick={() => navigate(`/collaboration/${session.id}`)}
-                    className="bg-slate-800/50 backdrop-blur-sm rounded-2xl border border-slate-700/50 p-5 hover:border-emerald-500/50 hover:bg-slate-800/70 transition-all cursor-pointer group"
+                    className="bg-white/80 dark:bg-slate-800/50 backdrop-blur-sm rounded-2xl border border-neutral-200/50 dark:border-slate-700/50 p-5 hover:border-emerald-500/50 hover:bg-neutral-50 dark:hover:bg-slate-800/70 transition-all cursor-pointer group shadow-lg dark:shadow-none"
                   >
                     <div className="flex justify-between items-start mb-3">
-                      <h3 className="font-semibold text-white group-hover:text-emerald-400 transition-colors truncate flex-1 mr-2">
+                      <h3 className="font-semibold text-neutral-900 dark:text-white group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors truncate flex-1 mr-2">
                         {session.title}
                       </h3>
                       <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium rounded-lg bg-emerald-500/20 text-emerald-400">
@@ -284,13 +284,13 @@ export default function SessionsPage() {
 
                     <div className="space-y-2">
                       <div className="flex items-center gap-2">
-                        <Code2 className="w-4 h-4 text-slate-500" />
+                        <Code2 className="w-4 h-4 text-neutral-400 dark:text-slate-500" />
                         <span className={`px-2 py-0.5 text-xs font-medium rounded-lg ${langInfo.color}`}>
                           {langInfo.label}
                         </span>
                       </div>
-                      <div className="flex items-center gap-2 text-sm text-slate-400">
-                        <Users className="w-4 h-4 text-slate-500" />
+                      <div className="flex items-center gap-2 text-sm text-neutral-500 dark:text-slate-400">
+                        <Users className="w-4 h-4 text-neutral-400 dark:text-slate-500" />
                         <span>{session.participant_count} / {session.max_participants} 참가자</span>
                       </div>
                     </div>
@@ -304,10 +304,10 @@ export default function SessionsPage() {
 
       {/* Create Session Modal */}
       {showCreateModal && (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-slate-800 rounded-2xl p-6 w-full max-w-md border border-slate-700/50 shadow-2xl">
+        <div className="fixed inset-0 bg-black/50 dark:bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 w-full max-w-md border border-neutral-200 dark:border-slate-700/50 shadow-2xl">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-bold text-white flex items-center gap-3">
+              <h2 className="text-xl font-bold text-neutral-900 dark:text-white flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-violet-500/20 flex items-center justify-center">
                   <Plus className="w-5 h-5 text-violet-400" />
                 </div>
@@ -315,7 +315,7 @@ export default function SessionsPage() {
               </h2>
               <button
                 onClick={() => setShowCreateModal(false)}
-                className="p-2 text-slate-400 hover:text-white hover:bg-slate-700 rounded-lg transition-colors"
+                className="p-2 text-neutral-400 dark:text-slate-400 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-slate-700 rounded-lg transition-colors"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -323,7 +323,7 @@ export default function SessionsPage() {
 
             <div className="space-y-5">
               <div>
-                <label className="block text-sm font-medium text-slate-300 mb-2">
+                <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-2">
                   세션 제목
                 </label>
                 <input
@@ -331,12 +331,12 @@ export default function SessionsPage() {
                   value={newSessionTitle}
                   onChange={(e) => setNewSessionTitle(e.target.value)}
                   placeholder="예: Two Sum 문제 풀기"
-                  className="w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent transition-all"
+                  className="w-full px-4 py-3 bg-neutral-100 dark:bg-slate-700/50 border border-neutral-200 dark:border-slate-600 rounded-xl text-neutral-900 dark:text-white placeholder-neutral-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent transition-all"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-slate-300 mb-2">
+                <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-2">
                   프로그래밍 언어
                 </label>
                 <div className="grid grid-cols-2 gap-2">
@@ -347,7 +347,7 @@ export default function SessionsPage() {
                       className={`flex items-center gap-2 px-4 py-3 rounded-xl font-medium transition-all ${
                         newSessionLanguage === key
                           ? 'bg-violet-600 text-white'
-                          : 'bg-slate-700/50 text-slate-300 hover:bg-slate-700 hover:text-white border border-slate-600'
+                          : 'bg-neutral-100 dark:bg-slate-700/50 text-neutral-700 dark:text-slate-300 hover:bg-neutral-200 dark:hover:bg-slate-700 hover:text-neutral-900 dark:hover:text-white border border-neutral-200 dark:border-slate-600'
                       }`}
                     >
                       <Code2 className="w-4 h-4" />
@@ -361,7 +361,7 @@ export default function SessionsPage() {
             <div className="flex gap-3 mt-8">
               <button
                 onClick={() => setShowCreateModal(false)}
-                className="flex-1 px-4 py-3 text-slate-300 hover:text-white hover:bg-slate-700 rounded-xl font-medium transition-colors border border-slate-600"
+                className="flex-1 px-4 py-3 text-neutral-600 dark:text-slate-300 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-slate-700 rounded-xl font-medium transition-colors border border-neutral-200 dark:border-slate-600"
               >
                 취소
               </button>
