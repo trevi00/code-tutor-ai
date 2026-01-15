@@ -55,17 +55,17 @@ export default function BadgeCard({
       {/* Badge Info */}
       {showDetails && (
         <div className="mt-3 text-center">
-          <h4 className="font-medium text-gray-900">{badge.name}</h4>
-          <p className="text-sm text-gray-500 mt-1 max-w-[150px]">{badge.description}</p>
+          <h4 className="font-medium text-neutral-900 dark:text-white">{badge.name}</h4>
+          <p className="text-sm text-neutral-500 dark:text-slate-400 mt-1 max-w-[150px]">{badge.description}</p>
 
           {badge.xp_reward > 0 && (
-            <div className="mt-1 text-xs text-indigo-600 font-medium">
+            <div className="mt-1 text-xs text-indigo-600 dark:text-indigo-400 font-medium">
               +{badge.xp_reward} XP
             </div>
           )}
 
           {earnedAt && (
-            <div className="mt-1 text-xs text-gray-400">
+            <div className="mt-1 text-xs text-neutral-400 dark:text-slate-500">
               {new Date(earnedAt).toLocaleDateString('ko-KR')} 획득
             </div>
           )}
@@ -84,7 +84,7 @@ export function BadgeListItem({ userBadge }: BadgeListItemProps) {
   const colors = RARITY_COLORS[userBadge.badge.rarity];
 
   return (
-    <div className="flex items-center gap-3 p-3 bg-white rounded-lg shadow-sm border">
+    <div className="flex items-center gap-3 p-3 bg-white dark:bg-slate-800 rounded-lg shadow-sm dark:shadow-none border border-neutral-200 dark:border-slate-700">
       <div
         className={`w-12 h-12 ${colors.bg} ${colors.border} border rounded-full flex items-center justify-center`}
       >
@@ -92,14 +92,14 @@ export function BadgeListItem({ userBadge }: BadgeListItemProps) {
       </div>
       <div className="flex-1">
         <div className="flex items-center gap-2">
-          <h4 className="font-medium text-gray-900">{userBadge.badge.name}</h4>
+          <h4 className="font-medium text-neutral-900 dark:text-white">{userBadge.badge.name}</h4>
           <span className={`px-1.5 py-0.5 rounded text-xs ${colors.bg} ${colors.text}`}>
             {RARITY_LABELS[userBadge.badge.rarity]}
           </span>
         </div>
-        <p className="text-sm text-gray-500">{userBadge.badge.description}</p>
+        <p className="text-sm text-neutral-500 dark:text-slate-400">{userBadge.badge.description}</p>
       </div>
-      <div className="text-xs text-gray-400">
+      <div className="text-xs text-neutral-400 dark:text-slate-500">
         {new Date(userBadge.earned_at).toLocaleDateString('ko-KR')}
       </div>
     </div>
