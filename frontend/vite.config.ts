@@ -20,4 +20,28 @@ export default defineConfig({
       },
     },
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          // Core React libraries
+          'vendor-react': ['react', 'react-dom', 'react-router-dom'],
+          // State management & data fetching
+          'vendor-state': ['zustand', '@tanstack/react-query', 'axios'],
+          // Monaco Editor (largest dependency)
+          'vendor-monaco': ['@monaco-editor/react'],
+          // Charts library
+          'vendor-charts': ['recharts'],
+          // Syntax highlighter
+          'vendor-syntax': ['react-syntax-highlighter'],
+          // Markdown
+          'vendor-markdown': ['react-markdown', 'remark-gfm'],
+          // UI utilities
+          'vendor-ui': ['lucide-react', 'clsx'],
+        },
+      },
+    },
+    // Increase chunk size warning limit (Monaco is inherently large)
+    chunkSizeWarningLimit: 600,
+  },
 })
