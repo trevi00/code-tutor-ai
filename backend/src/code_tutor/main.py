@@ -42,6 +42,7 @@ from code_tutor.shared.infrastructure.database import close_db, get_session_cont
 from code_tutor.shared.infrastructure.logging import configure_logging, get_logger
 from code_tutor.shared.infrastructure.redis import close_redis, get_redis_client
 from code_tutor.shared.middleware import RateLimitMiddleware
+from code_tutor.shared.monitoring import setup_prometheus, get_health_checker
 from code_tutor.tutor.interface.routes import router as tutor_router
 from code_tutor.typing_practice.interface.routes import router as typing_practice_router
 from code_tutor.roadmap.interface.routes import router as roadmap_router
@@ -238,46 +239,17 @@ API 요청은 분당 60회로 제한됩니다.
     app.include_router(typing_practice_router, prefix="/api/v1")
     app.include_router(roadmap_router, prefix="/api/v1")
 
-    # Health check endpoint
+    # Health check endpoint (enhanced with latency metrics)
     @app.get("/api/health", tags=["Health"])
     async def health_check() -> dict:
-        """Health check endpoint with service status"""
-        from sqlalchemy import text
-
-        health_status = {
-            "status": "healthy",
-            "version": settings.APP_VERSION,
-            "environment": settings.ENVIRONMENT,
-            "services": {
-                "database": "unknown",
-                "redis": "unknown",
-            },
-        }
-
-        # Check database connectivity
-        try:
-            async with get_session_context() as session:
-                await session.execute(text("SELECT 1"))
-            health_status["services"]["database"] = "healthy"
-        except Exception as e:
-            health_status["services"]["database"] = "unhealthy"
-            health_status["status"] = "degraded"
-            logger.warning(f"Database health check failed: {e}")
-
-        # Check Redis connectivity
-        try:
-            redis = get_redis_client()
-            if redis and redis._client:
-                await redis._client.ping()
-                health_status["services"]["redis"] = "healthy"
-            else:
-                health_status["services"]["redis"] = "not_configured"
-        except Exception as e:
-            health_status["services"]["redis"] = "unhealthy"
-            health_status["status"] = "degraded"
-            logger.warning(f"Redis health check failed: {e}")
-
-        return success_response(health_status)
+        """
+        Health check endpoint with detailed service status.
+        
+        Returns latency metrics for each service and overall health status.
+        """
+        health_checker = get_health_checker()
+        health_data = await health_checker.check_all()
+        return success_response(health_data)
 
     # Root endpoint
     @app.get("/", tags=["Root"])
@@ -290,6 +262,9 @@ API 요청은 분당 60회로 제한됩니다.
                 "docs": "/docs" if settings.DEBUG else "disabled",
             }
         )
+
+    # Setup Prometheus metrics
+    setup_prometheus(app)
 
     return app
 
