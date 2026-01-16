@@ -34,8 +34,8 @@ export default defineConfig({
           'vendor-charts': ['recharts'],
           // Syntax highlighter
           'vendor-syntax': ['react-syntax-highlighter'],
-          // Markdown
-          'vendor-markdown': ['react-markdown', 'remark-gfm'],
+          // Markdown (marked is much lighter than react-markdown)
+          'vendor-markdown': ['marked'],
           // UI utilities
           'vendor-ui': ['lucide-react', 'clsx'],
         },

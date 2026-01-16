@@ -1,8 +1,7 @@
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { Send, Bot, User, RefreshCw, Copy, Check, Sparkles, Code, Lightbulb, BookOpen, ExternalLink } from 'lucide-react';
-import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
+import { marked } from 'marked';
 // Use light build with only required languages (reduces bundle ~600KB -> ~50KB)
 import { PrismLight as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
@@ -37,6 +36,12 @@ SyntaxHighlighter.registerLanguage('sql', sql);
 SyntaxHighlighter.registerLanguage('bash', bash);
 SyntaxHighlighter.registerLanguage('sh', bash);
 SyntaxHighlighter.registerLanguage('json', json);
+
+// Configure marked options
+marked.setOptions({
+  gfm: true,
+  breaks: true,
+});
 
 interface Message {
   id: string;
@@ -93,82 +98,91 @@ function CodeBlock({ language, children }: { language: string; children: string 
   );
 }
 
-// Markdown message renderer
+// Parse content and split into text and code blocks
+interface ContentPart {
+  type: 'text' | 'code';
+  content: string;
+  language?: string;
+}
+
+function parseContent(content: string): ContentPart[] {
+  const parts: ContentPart[] = [];
+  const codeBlockRegex = /```(\w*)\n([\s\S]*?)```/g;
+  let lastIndex = 0;
+  let match;
+
+  while ((match = codeBlockRegex.exec(content)) !== null) {
+    // Add text before code block
+    if (match.index > lastIndex) {
+      parts.push({
+        type: 'text',
+        content: content.slice(lastIndex, match.index),
+      });
+    }
+    // Add code block
+    parts.push({
+      type: 'code',
+      language: match[1] || 'text',
+      content: match[2].trim(),
+    });
+    lastIndex = match.index + match[0].length;
+  }
+
+  // Add remaining text
+  if (lastIndex < content.length) {
+    parts.push({
+      type: 'text',
+      content: content.slice(lastIndex),
+    });
+  }
+
+  return parts;
+}
+
+// Markdown message renderer using marked (lighter than react-markdown)
 function MarkdownMessage({ content }: { content: string }) {
+  const parts = useMemo(() => parseContent(content), [content]);
+
+  const renderTextPart = (text: string, index: number) => {
+    // Parse markdown to HTML
+    const html = marked.parse(text, { async: false }) as string;
+
+    return (
+      <div
+        key={`text-${index}`}
+        className="markdown-content"
+        dangerouslySetInnerHTML={{ __html: html }}
+      />
+    );
+  };
+
   return (
-    <ReactMarkdown
-      remarkPlugins={[remarkGfm]}
-      components={{
-        code({ className, children, ...props }) {
-          const match = /language-(\w+)/.exec(className || '');
-          const isInline = !match && !className;
-
-          if (isInline) {
-            return (
-              <code className="bg-slate-200 dark:bg-slate-700 px-1.5 py-0.5 rounded text-sm font-mono text-pink-600 dark:text-pink-400" {...props}>
-                {children}
-              </code>
-            );
-          }
-
-          return (
-            <CodeBlock language={match ? match[1] : ''}>
-              {String(children).replace(/\n$/, '')}
-            </CodeBlock>
-          );
-        },
-        p({ children }) {
-          return <p className="mb-2 last:mb-0">{children}</p>;
-        },
-        ul({ children }) {
-          return <ul className="list-disc list-inside mb-2 space-y-1">{children}</ul>;
-        },
-        ol({ children }) {
-          return <ol className="list-decimal list-inside mb-2 space-y-1">{children}</ol>;
-        },
-        li({ children }) {
-          return <li className="ml-2">{children}</li>;
-        },
-        h1({ children }) {
-          return <h1 className="text-xl font-bold mb-2 mt-4 first:mt-0">{children}</h1>;
-        },
-        h2({ children }) {
-          return <h2 className="text-lg font-bold mb-2 mt-3 first:mt-0">{children}</h2>;
-        },
-        h3({ children }) {
-          return <h3 className="text-base font-bold mb-2 mt-2 first:mt-0">{children}</h3>;
-        },
-        blockquote({ children }) {
-          return (
-            <blockquote className="border-l-4 border-blue-500 pl-4 my-2 text-slate-600 dark:text-slate-400 italic">
-              {children}
-            </blockquote>
-          );
-        },
-        a({ href, children }) {
-          return (
-            <a href={href} target="_blank" rel="noopener noreferrer" className="text-blue-600 dark:text-blue-400 hover:underline">
-              {children}
-            </a>
-          );
-        },
-        table({ children }) {
-          return (
-            <div className="overflow-x-auto my-2">
-              <table className="min-w-full border border-slate-300 dark:border-slate-600">{children}</table>
-            </div>
-          );
-        },
-        th({ children }) {
-          return <th className="border border-slate-300 dark:border-slate-600 px-3 py-1 bg-slate-100 dark:bg-slate-700 font-semibold">{children}</th>;
-        },
-        td({ children }) {
-          return <td className="border border-slate-300 dark:border-slate-600 px-3 py-1">{children}</td>;
-        },
-      }}
-    >
-      {content}
-    </ReactMarkdown>
+    <div className="prose prose-slate dark:prose-invert prose-sm max-w-none
+      [&_p]:mb-2 [&_p:last-child]:mb-0
+      [&_ul]:list-disc [&_ul]:list-inside [&_ul]:mb-2 [&_ul]:space-y-1
+      [&_ol]:list-decimal [&_ol]:list-inside [&_ol]:mb-2 [&_ol]:space-y-1
+      [&_li]:ml-2
+      [&_h1]:text-xl [&_h1]:font-bold [&_h1]:mb-2 [&_h1]:mt-4 [&_h1:first-child]:mt-0
+      [&_h2]:text-lg [&_h2]:font-bold [&_h2]:mb-2 [&_h2]:mt-3 [&_h2:first-child]:mt-0
+      [&_h3]:text-base [&_h3]:font-bold [&_h3]:mb-2 [&_h3]:mt-2 [&_h3:first-child]:mt-0
+      [&_blockquote]:border-l-4 [&_blockquote]:border-blue-500 [&_blockquote]:pl-4 [&_blockquote]:my-2 [&_blockquote]:text-slate-600 dark:[&_blockquote]:text-slate-400 [&_blockquote]:italic
+      [&_a]:text-blue-600 dark:[&_a]:text-blue-400 [&_a]:hover:underline
+      [&_table]:min-w-full [&_table]:border [&_table]:border-slate-300 dark:[&_table]:border-slate-600 [&_table]:my-2
+      [&_th]:border [&_th]:border-slate-300 dark:[&_th]:border-slate-600 [&_th]:px-3 [&_th]:py-1 [&_th]:bg-slate-100 dark:[&_th]:bg-slate-700 [&_th]:font-semibold
+      [&_td]:border [&_td]:border-slate-300 dark:[&_td]:border-slate-600 [&_td]:px-3 [&_td]:py-1
+      [&_code]:bg-slate-200 dark:[&_code]:bg-slate-700 [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:rounded [&_code]:text-sm [&_code]:font-mono [&_code]:text-pink-600 dark:[&_code]:text-pink-400
+      [&_pre]:bg-transparent [&_pre]:p-0 [&_pre_code]:bg-transparent [&_pre_code]:p-0
+    ">
+      {parts.map((part, index) =>
+        part.type === 'code' ? (
+          <CodeBlock key={`code-${index}`} language={part.language || ''}>
+            {part.content}
+          </CodeBlock>
+        ) : (
+          renderTextPart(part.content, index)
+        )
+      )}
+    </div>
   );
 }
 
