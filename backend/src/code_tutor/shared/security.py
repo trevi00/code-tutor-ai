@@ -5,7 +5,8 @@ from typing import Any
 from uuid import uuid4
 
 import bcrypt
-from jose import JWTError, jwt
+import jwt
+from jwt.exceptions import InvalidTokenError
 
 from code_tutor.shared.config import get_settings
 from code_tutor.shared.exceptions import UnauthorizedError
@@ -101,7 +102,7 @@ def decode_token(token: str) -> dict[str, Any]:
             algorithms=[settings.JWT_ALGORITHM],
         )
         return payload
-    except JWTError as e:
+    except InvalidTokenError as e:
         raise UnauthorizedError(f"Invalid token: {str(e)}")
 
 
@@ -116,7 +117,7 @@ def get_token_jti(token: str) -> str:
             options={"verify_exp": False},
         )
         return payload.get("jti", "")
-    except JWTError:
+    except InvalidTokenError:
         return ""
 
 
