@@ -281,3 +281,76 @@ def reset_auth_rate_limiters() -> None:
     _auth_login_limiter = InMemoryRateLimiter(requests_per_minute=5, burst_size=3)
     _auth_register_limiter = InMemoryRateLimiter(requests_per_minute=3, burst_size=2)
     _auth_refresh_limiter = InMemoryRateLimiter(requests_per_minute=10, burst_size=5)
+
+
+# =============================================================================
+# Code Execution Rate Limiters (expensive operations)
+# =============================================================================
+_code_execution_limiter = InMemoryRateLimiter(
+    requests_per_minute=20,  # 20 executions per minute
+    burst_size=5,  # Max 5 rapid executions
+)
+_playground_execution_limiter = InMemoryRateLimiter(
+    requests_per_minute=30,  # 30 playground runs per minute
+    burst_size=10,  # Max 10 rapid runs
+)
+
+
+def code_execution_rate_limit(request: Request) -> None:
+    """Dependency for code execution rate limiting (20/min)"""
+    check_auth_rate_limit(_code_execution_limiter, request)
+
+
+def playground_rate_limit(request: Request) -> None:
+    """Dependency for playground execution rate limiting (30/min)"""
+    check_auth_rate_limit(_playground_execution_limiter, request)
+
+
+# =============================================================================
+# AI Tutor Rate Limiters (API cost control)
+# =============================================================================
+_ai_chat_limiter = InMemoryRateLimiter(
+    requests_per_minute=10,  # 10 AI messages per minute
+    burst_size=3,  # Max 3 rapid messages
+)
+_ai_hint_limiter = InMemoryRateLimiter(
+    requests_per_minute=20,  # 20 hints per minute
+    burst_size=5,  # Max 5 rapid hints
+)
+_ai_review_limiter = InMemoryRateLimiter(
+    requests_per_minute=5,  # 5 code reviews per minute (expensive)
+    burst_size=2,  # Max 2 rapid reviews
+)
+
+
+def ai_chat_rate_limit(request: Request) -> None:
+    """Dependency for AI chat rate limiting (10/min)"""
+    check_auth_rate_limit(_ai_chat_limiter, request)
+
+
+def ai_hint_rate_limit(request: Request) -> None:
+    """Dependency for AI hint rate limiting (20/min)"""
+    check_auth_rate_limit(_ai_hint_limiter, request)
+
+
+def ai_review_rate_limit(request: Request) -> None:
+    """Dependency for AI code review rate limiting (5/min)"""
+    check_auth_rate_limit(_ai_review_limiter, request)
+
+
+# =============================================================================
+# Reset functions for testing
+# =============================================================================
+def reset_execution_rate_limiters() -> None:
+    """Reset execution rate limiters (for testing)"""
+    global _code_execution_limiter, _playground_execution_limiter
+    _code_execution_limiter = InMemoryRateLimiter(requests_per_minute=20, burst_size=5)
+    _playground_execution_limiter = InMemoryRateLimiter(requests_per_minute=30, burst_size=10)
+
+
+def reset_ai_rate_limiters() -> None:
+    """Reset AI rate limiters (for testing)"""
+    global _ai_chat_limiter, _ai_hint_limiter, _ai_review_limiter
+    _ai_chat_limiter = InMemoryRateLimiter(requests_per_minute=10, burst_size=3)
+    _ai_hint_limiter = InMemoryRateLimiter(requests_per_minute=20, burst_size=5)
+    _ai_review_limiter = InMemoryRateLimiter(requests_per_minute=5, burst_size=2)

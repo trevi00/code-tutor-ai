@@ -3,13 +3,14 @@
 from typing import Annotated
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from code_tutor.identity.application.dto import UserResponse
 from code_tutor.identity.interface.dependencies import get_current_active_user
 from code_tutor.shared.exceptions import AppException
 from code_tutor.shared.infrastructure.database import get_async_session
+from code_tutor.shared.middleware import ai_chat_rate_limit, ai_review_rate_limit
 from code_tutor.tutor.application.dto import (
     ChatRequest,
     ChatResponse,
@@ -43,13 +44,19 @@ async def get_tutor_service(
     "/chat",
     response_model=ChatResponse,
     summary="Send a chat message",
+    responses={429: {"description": "요청 한도 초과 (10/min)"}},
 )
 async def chat(
     request: ChatRequest,
     service: Annotated[TutorService, Depends(get_tutor_service)],
     current_user: Annotated[UserResponse, Depends(get_current_active_user)],
+    _: Annotated[None, Depends(ai_chat_rate_limit)],
 ) -> ChatResponse:
-    """Send a message and get AI tutor response"""
+    """
+    Send a message and get AI tutor response.
+    
+    Rate limited to 10 messages per minute.
+    """
     try:
         return await service.chat(current_user.id, request)
     except AppException as e:
@@ -109,11 +116,13 @@ async def close_conversation(
     "/review",
     response_model=CodeReviewResponse,
     summary="Get AI code review",
+    responses={429: {"description": "요청 한도 초과 (5/min)"}},
 )
 async def review_code(
     request: CodeReviewRequest,
     service: Annotated[TutorService, Depends(get_tutor_service)],
     current_user: Annotated[UserResponse, Depends(get_current_active_user)],
+    _: Annotated[None, Depends(ai_review_rate_limit)],
 ) -> CodeReviewResponse:
     """
     Get AI-powered code review with feedback on:
@@ -121,5 +130,7 @@ async def review_code(
     - Potential bugs and issues
     - Performance suggestions
     - Best practices
+    
+    Rate limited to 5 reviews per minute (expensive operation).
     """
     return await service.review_code(current_user.id, request)
