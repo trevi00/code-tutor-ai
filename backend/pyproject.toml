@@ -25,6 +25,8 @@ dependencies = [
     # DI & Utils
     "dependency-injector>=4.41.0",
     "structlog>=24.1.0",
+    # ML/Numeric
+    "numpy>=1.26.0",
     # ML/AI (optional, for later phases)
     # "torch>=2.1.0",
     # "transformers>=4.36.0",

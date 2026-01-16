@@ -8,7 +8,7 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
       POSTGRES_DB: ${POSTGRES_DB:-codetutor}
     ports:
-      - "5432:5432"
+      - "5433:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -22,7 +22,7 @@ services:
     image: redis:7-alpine
     container_name: codetutor-redis
     ports:
-      - "6379:6379"
+      - "6380:6379"
     volumes:
       - redis_data:/data
     healthcheck:
@@ -40,9 +40,9 @@ services:
     environment:
       - DATABASE_URL=postgresql+asyncpg://postgres:postgres@db:5432/codetutor
       - REDIS_URL=redis://redis:6379/0
-      - JWT_SECRET_KEY=${JWT_SECRET_KEY:-dev-secret-key-change-in-prod}
-      - ENVIRONMENT=development
-      - DEBUG=true
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY:-docker-test-secret-key-min-32-chars}
+      - ENVIRONMENT=production
+      - DEBUG=false
     ports:
       - "8000:8000"
     depends_on:
@@ -50,9 +50,10 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
-    volumes:
-      - ./backend/src:/app/src:ro
-    command: uvicorn code_tutor.main:app --host 0.0.0.0 --port 8000 --reload
+    # Note: For development with hot-reload, add volume mount and --reload flag
+    # volumes:
+    #   - ./backend/src:/app/src:ro
+    # command: uvicorn code_tutor.main:app --host 0.0.0.0 --port 8000 --reload
 
   # Frontend
   frontend:

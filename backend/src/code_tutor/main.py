@@ -266,6 +266,14 @@ API 요청은 분당 60회로 제한됩니다.
     # Setup Prometheus metrics
     setup_prometheus(app)
 
+    # Manual metrics endpoint (fallback for compatibility)
+    from prometheus_client import generate_latest, CONTENT_TYPE_LATEST
+    from fastapi.responses import Response
+
+    @app.get("/metrics", include_in_schema=False)
+    async def metrics():
+        return Response(content=generate_latest(), media_type=CONTENT_TYPE_LATEST)
+
     return app
 
 

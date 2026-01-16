@@ -5,7 +5,8 @@ FROM python:3.11-slim
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     PIP_NO_CACHE_DIR=1 \
-    PIP_DISABLE_PIP_VERSION_CHECK=1
+    PIP_DISABLE_PIP_VERSION_CHECK=1 \
+    PYTHONPATH=/app/src
 
 # Set work directory
 WORKDIR /app
@@ -17,14 +18,14 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy project files
-COPY pyproject.toml ./
+COPY pyproject.toml README.md ./
+COPY src/ ./src/
 
 # Install Python dependencies
 RUN pip install --upgrade pip && \
-    pip install .
+    pip install -e .
 
-# Copy application code
-COPY src/ ./src/
+# Copy remaining files
 COPY alembic/ ./alembic/
 COPY alembic.ini ./
 

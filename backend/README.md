@@ -1,36 +1,26 @@
 # Code Tutor AI - Backend
 
-AI-based Python Algorithm Learning Platform Backend
+AI-based Python Algorithm Learning Platform Backend API.
 
 ## Tech Stack
 
-- FastAPI (Python 3.11+)
-- SQLAlchemy (Async PostgreSQL)
-- Redis (Caching/Session)
+- FastAPI
+- PostgreSQL + SQLAlchemy
+- Redis
 - JWT Authentication
-- Docker Sandbox (Code Execution)
+- Prometheus Metrics
 
-## Setup
+## Quick Start
 
 ```bash
 # Install dependencies
-uv sync --all-extras
+pip install -e .
 
-# Run tests
-uv run pytest
-
-# Start server
-uv run uvicorn code_tutor.main:app --reload
+# Run development server
+uvicorn code_tutor.main:app --reload
 ```
 
-## Project Structure
+## API Documentation
 
-```
-src/code_tutor/
-├── shared/          # Shared kernel (DB, Redis, Logging, DDD base classes)
-├── identity/        # User & Authentication (Bounded Context)
-├── learning/        # Problems & Submissions (Bounded Context)
-├── tutor/           # AI Tutor Conversations (Bounded Context)
-├── execution/       # Code Sandbox Execution (Bounded Context)
-└── main.py          # FastAPI application entry point
-```
+- Swagger UI: http://localhost:8000/docs
+- ReDoc: http://localhost:8000/redoc
