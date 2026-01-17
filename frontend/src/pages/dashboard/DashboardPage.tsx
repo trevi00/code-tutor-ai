@@ -32,6 +32,7 @@ import { LearningInsights } from '@/components/dashboard/LearningInsights';
 import { QualityRecommendations } from '@/components/dashboard/QualityRecommendations';
 import { QualityTrendChart } from '@/components/dashboard/QualityTrendChart';
 import { SkillPredictions } from '@/components/dashboard/SkillPredictions';
+import { StreakCalendar } from '@/components/dashboard/StreakCalendar';
 import { GamificationWidget } from '@/components/gamification';
 import type {
   DashboardData,
@@ -213,10 +214,24 @@ export default function DashboardPage() {
       </div>
 
       <div className="max-w-7xl mx-auto px-6 py-8 -mt-6">
-        {/* Activity Heatmap */}
+        {/* Activity Visualizations */}
         {heatmap && heatmap.length > 0 && (
-          <div className="mb-8 animate-fade-in">
-            <ActivityHeatmap data={heatmap} months={6} />
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+            <div className="animate-fade-in">
+              <ActivityHeatmap data={heatmap} months={6} />
+            </div>
+            <div className="animate-fade-in" style={{ animationDelay: '100ms' }}>
+              <StreakCalendar
+                data={heatmap.map((h: { date: string; count: number }) => ({
+                  date: h.date,
+                  count: h.count,
+                  has_activity: h.count > 0,
+                }))}
+                currentStreak={stats.streak.current_streak}
+                longestStreak={stats.streak.longest_streak}
+                weeks={12}
+              />
+            </div>
           </div>
         )}
 
