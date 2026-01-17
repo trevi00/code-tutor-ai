@@ -1,0 +1,232 @@
+name: CD
+
+on:
+  push:
+    branches: [master, main]
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Deployment environment'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+          - staging
+          - production
+
+env:
+  REGISTRY: ghcr.io
+  BACKEND_IMAGE: ${{ github.repository }}/backend
+  FRONTEND_IMAGE: ${{ github.repository }}/frontend
+
+jobs:
+  # Run tests first
+  test:
+    name: Run Tests
+    uses: ./.github/workflows/ci.yml
+
+  # Build and push Docker images
+  build-and-push:
+    name: Build & Push Images
+    runs-on: ubuntu-latest
+    needs: test
+    permissions:
+      contents: read
+      packages: write
+
+    outputs:
+      backend-tag: ${{ steps.meta-backend.outputs.tags }}
+      frontend-tag: ${{ steps.meta-frontend.outputs.tags }}
+      version: ${{ steps.version.outputs.version }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Determine version
+        id: version
+        run: |
+          if [[ "${{ github.ref }}" == refs/tags/v* ]]; then
+            VERSION=${GITHUB_REF#refs/tags/v}
+          else
+            VERSION=sha-${GITHUB_SHA::8}
+          fi
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Version: $VERSION"
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # Backend Image
+      - name: Extract metadata (backend)
+        id: meta-backend
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.BACKEND_IMAGE }}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=sha,prefix=sha-
+
+      - name: Build and push backend
+        uses: docker/build-push-action@v5
+        with:
+          context: ./backend
+          file: ./backend/Dockerfile
+          push: true
+          tags: ${{ steps.meta-backend.outputs.tags }}
+          labels: ${{ steps.meta-backend.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          build-args: |
+            VERSION=${{ steps.version.outputs.version }}
+
+      # Frontend Image
+      - name: Extract metadata (frontend)
+        id: meta-frontend
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.FRONTEND_IMAGE }}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=sha,prefix=sha-
+
+      - name: Build and push frontend
+        uses: docker/build-push-action@v5
+        with:
+          context: ./frontend
+          file: ./frontend/Dockerfile
+          push: true
+          tags: ${{ steps.meta-frontend.outputs.tags }}
+          labels: ${{ steps.meta-frontend.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # Create GitHub Release on tag
+  release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    needs: build-and-push
+    if: startsWith(github.ref, 'refs/tags/v')
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Generate changelog
+        id: changelog
+        run: |
+          # Get previous tag
+          PREV_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
+
+          if [ -n "$PREV_TAG" ]; then
+            CHANGELOG=$(git log $PREV_TAG..HEAD --pretty=format:"- %s (%h)" --no-merges)
+          else
+            CHANGELOG=$(git log --pretty=format:"- %s (%h)" --no-merges -20)
+          fi
+
+          echo "changelog<<EOF" >> $GITHUB_OUTPUT
+          echo "$CHANGELOG" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          name: Release ${{ github.ref_name }}
+          body: |
+            ## Changes
+            ${{ steps.changelog.outputs.changelog }}
+
+            ## Docker Images
+            - Backend: `${{ env.REGISTRY }}/${{ env.BACKEND_IMAGE }}:${{ needs.build-and-push.outputs.version }}`
+            - Frontend: `${{ env.REGISTRY }}/${{ env.FRONTEND_IMAGE }}:${{ needs.build-and-push.outputs.version }}`
+
+            ## Quick Start
+            ```bash
+            docker pull ${{ env.REGISTRY }}/${{ env.BACKEND_IMAGE }}:${{ needs.build-and-push.outputs.version }}
+            docker pull ${{ env.REGISTRY }}/${{ env.FRONTEND_IMAGE }}:${{ needs.build-and-push.outputs.version }}
+            ```
+          draft: false
+          prerelease: ${{ contains(github.ref, 'alpha') || contains(github.ref, 'beta') || contains(github.ref, 'rc') }}
+
+  # Deploy to staging (on push to main)
+  deploy-staging:
+    name: Deploy to Staging
+    runs-on: ubuntu-latest
+    needs: build-and-push
+    if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main'
+    environment:
+      name: staging
+      url: https://staging.codetutor.example.com
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Deploy to staging
+        run: |
+          echo "🚀 Deploying to staging environment..."
+          echo "Backend image: ${{ env.REGISTRY }}/${{ env.BACKEND_IMAGE }}:${{ needs.build-and-push.outputs.version }}"
+          echo "Frontend image: ${{ env.REGISTRY }}/${{ env.FRONTEND_IMAGE }}:${{ needs.build-and-push.outputs.version }}"
+          # Add your deployment commands here, e.g.:
+          # - SSH to server and docker-compose pull && docker-compose up -d
+          # - kubectl set image deployment/backend ...
+          # - AWS ECS update-service
+          echo "✅ Staging deployment placeholder - configure actual deployment"
+
+  # Deploy to production (on tag or manual trigger)
+  deploy-production:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    needs: build-and-push
+    if: startsWith(github.ref, 'refs/tags/v') || (github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'production')
+    environment:
+      name: production
+      url: https://codetutor.example.com
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Deploy to production
+        run: |
+          echo "🚀 Deploying to production environment..."
+          echo "Backend image: ${{ env.REGISTRY }}/${{ env.BACKEND_IMAGE }}:${{ needs.build-and-push.outputs.version }}"
+          echo "Frontend image: ${{ env.REGISTRY }}/${{ env.FRONTEND_IMAGE }}:${{ needs.build-and-push.outputs.version }}"
+          # Add your production deployment commands here
+          echo "✅ Production deployment placeholder - configure actual deployment"
+
+  # Notify on completion
+  notify:
+    name: Notify
+    runs-on: ubuntu-latest
+    needs: [build-and-push, deploy-staging]
+    if: always()
+
+    steps:
+      - name: Notify success
+        if: needs.build-and-push.result == 'success'
+        run: |
+          echo "✅ CI/CD Pipeline completed successfully!"
+          echo "Version: ${{ needs.build-and-push.outputs.version }}"
+          # Add Slack/Discord/Email notification here
+
+      - name: Notify failure
+        if: needs.build-and-push.result == 'failure'
+        run: |
+          echo "❌ CI/CD Pipeline failed!"
+          # Add failure notification here

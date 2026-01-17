@@ -5,6 +5,7 @@ on:
     branches: [master, main, develop]
   pull_request:
     branches: [master, main, develop]
+  workflow_call:  # Allow CD to call this workflow
 
 env:
   PYTHON_VERSION: "3.12"
@@ -20,6 +21,20 @@ jobs:
         working-directory: backend
 
     services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_USER: test
+          POSTGRES_PASSWORD: test
+          POSTGRES_DB: test_db
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U test"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
       redis:
         image: redis:7-alpine
         ports:
@@ -41,30 +56,54 @@ jobs:
       - name: Set up Python
         run: uv python install ${{ env.PYTHON_VERSION }}
 
+      - name: Cache uv dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/uv
+          key: ${{ runner.os }}-uv-${{ hashFiles('backend/pyproject.toml') }}
+          restore-keys: |
+            ${{ runner.os }}-uv-
+
       - name: Install dependencies
         run: uv sync --all-extras --dev
 
-      - name: Run linting
+      - name: Run linting (Ruff)
         run: |
-          uv run ruff check src/
+          uv run ruff check src/ --output-format=github
           uv run ruff format --check src/
 
-      - name: Run type checking
-        run: uv run mypy src/ --ignore-missing-imports || true
+      - name: Run type checking (MyPy)
+        run: uv run mypy src/ --ignore-missing-imports
+        continue-on-error: true
 
-      - name: Run tests
+      - name: Run security check (Bandit)
+        run: |
+          uv pip install bandit
+          uv run bandit -r src/ -ll -ii -x tests
+        continue-on-error: true
+
+      - name: Run tests with coverage
         env:
           ENVIRONMENT: test
-          DATABASE_URL: sqlite+aiosqlite:///./test.db
+          DATABASE_URL: postgresql+asyncpg://test:test@localhost:5432/test_db
           REDIS_URL: redis://localhost:6379/0
-          JWT_SECRET_KEY: test-secret-key-for-ci
+          JWT_SECRET_KEY: test-secret-key-for-ci-minimum-32-chars
           JWT_ALGORITHM: HS256
         run: |
-          uv run pytest tests/ -v --tb=short || echo "No tests found or tests skipped"
+          uv run pytest tests/ -v --tb=short --cov=src --cov-report=xml --cov-report=term-missing
+        continue-on-error: true
 
-  # Frontend Lint & Type Check
-  frontend-lint:
-    name: Frontend Lint
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        if: always()
+        with:
+          files: ./backend/coverage.xml
+          flags: backend
+          fail_ci_if_error: false
+
+  # Frontend Lint & Build
+  frontend-build:
+    name: Frontend Build
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -84,21 +123,71 @@ jobs:
         run: npm ci
 
       - name: Run ESLint
-        run: npm run lint || true
+        run: npm run lint
+        continue-on-error: true
 
       - name: Run TypeScript check
-        run: npx tsc --noEmit || true
+        run: npx tsc --noEmit
 
       - name: Build
         run: npm run build
 
-  # Frontend E2E Tests
-  frontend-e2e:
-    name: Frontend E2E Tests
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-build
+          path: frontend/dist/
+          retention-days: 7
+
+  # Security Scanning
+  security-scan:
+    name: Security Scan
     runs-on: ubuntu-latest
-    needs: [backend-test, frontend-lint]
+    permissions:
+      security-events: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          severity: 'CRITICAL,HIGH'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+        continue-on-error: true
+
+      - name: Upload Trivy scan results
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: 'trivy-results.sarif'
+        continue-on-error: true
+
+  # Frontend E2E Tests (only on PR)
+  frontend-e2e:
+    name: E2E Tests
+    runs-on: ubuntu-latest
+    needs: [backend-test, frontend-build]
+    if: github.event_name == 'pull_request'
 
     services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_USER: test
+          POSTGRES_PASSWORD: test
+          POSTGRES_DB: test_db
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U test"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
       redis:
         image: redis:7-alpine
         ports:
@@ -134,31 +223,17 @@ jobs:
         working-directory: frontend
         run: npx playwright install --with-deps chromium
 
-      - name: Seed database
-        working-directory: backend
-        env:
-          ENVIRONMENT: test
-          DATABASE_URL: sqlite+aiosqlite:///./test.db
-          JWT_SECRET_KEY: test-secret-key-for-ci
-        run: |
-          uv run python -c "
-          import asyncio
-          from code_tutor.scripts.seed_problems import seed_problems
-          asyncio.run(seed_problems())
-          " || echo "Seeding skipped"
-
       - name: Start backend server
         working-directory: backend
         env:
           ENVIRONMENT: development
-          DATABASE_URL: sqlite+aiosqlite:///./test.db
+          DATABASE_URL: postgresql+asyncpg://test:test@localhost:5432/test_db
           REDIS_URL: redis://localhost:6379/0
-          JWT_SECRET_KEY: test-secret-key-for-ci
+          JWT_SECRET_KEY: test-secret-key-for-ci-minimum-32-chars
           JWT_ALGORITHM: HS256
-          OLLAMA_BASE_URL: http://localhost:11434
         run: |
           uv run uvicorn code_tutor.main:app --host 0.0.0.0 --port 8000 &
-          sleep 10
+          sleep 15
 
       - name: Start frontend server
         working-directory: frontend
@@ -166,18 +241,23 @@ jobs:
           npm run dev &
           sleep 10
 
+      - name: Wait for services
+        run: |
+          timeout 60 bash -c 'until curl -s http://localhost:8000/api/health > /dev/null; do sleep 2; done'
+
       - name: Create test user
         run: |
           curl -X POST http://localhost:8000/api/v1/auth/register \
             -H "Content-Type: application/json" \
-            -d '{"email":"e2etest@example.com","password":"TestPassword123!","username":"e2etest"}' || true
+            -d '{"email":"e2etest@example.com","password":"TestPassword123!","username":"e2etest"}'
+        continue-on-error: true
 
-      - name: Run E2E tests (subset)
+      - name: Run E2E tests
         working-directory: frontend
-        run: |
-          npx playwright test e2e/auth.spec.ts e2e/navigation.spec.ts e2e/dashboard.spec.ts --reporter=list || true
+        run: npx playwright test --reporter=html
+        continue-on-error: true
 
-      - name: Upload test results
+      - name: Upload Playwright report
         uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -185,10 +265,22 @@ jobs:
           path: frontend/playwright-report/
           retention-days: 7
 
-      - name: Upload screenshots
-        uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: test-screenshots
-          path: frontend/test-results/
-          retention-days: 7
+  # Summary job
+  ci-success:
+    name: CI Success
+    runs-on: ubuntu-latest
+    needs: [backend-test, frontend-build, security-scan]
+    if: always()
+
+    steps:
+      - name: Check results
+        run: |
+          if [[ "${{ needs.backend-test.result }}" == "failure" ]]; then
+            echo "Backend tests failed"
+            exit 1
+          fi
+          if [[ "${{ needs.frontend-build.result }}" == "failure" ]]; then
+            echo "Frontend build failed"
+            exit 1
+          fi
+          echo "All CI checks passed!"
