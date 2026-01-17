@@ -6,3 +6,5 @@ export { CodeQualityCard } from './CodeQualityCard';
 export { SkillPredictions } from './SkillPredictions';
 export { LearningInsights } from './LearningInsights';
 export { QualityRecommendations } from './QualityRecommendations';
+export { StreakCalendar } from './StreakCalendar';
+export { CategoryProgressChart } from './CategoryProgressChart';
