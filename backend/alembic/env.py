@@ -12,9 +12,66 @@ from code_tutor.shared.config import get_settings
 from code_tutor.shared.infrastructure.database import Base
 
 # Import all models to ensure they're registered with Base.metadata
+# Identity
 from code_tutor.identity.infrastructure.models import UserModel
-from code_tutor.learning.infrastructure.models import ProblemModel, TestCaseModel, SubmissionModel
+
+# Learning
+from code_tutor.learning.infrastructure.models import (
+    ProblemModel,
+    TestCaseModel,
+    SubmissionModel,
+)
+
+# Tutor
 from code_tutor.tutor.infrastructure.models import ConversationModel, MessageModel
+
+# Gamification
+from code_tutor.gamification.infrastructure.models import (
+    BadgeModel,
+    UserBadgeModel,
+    UserStatsModel,
+    ChallengeModel,
+    UserChallengeModel,
+)
+
+# Typing Practice
+from code_tutor.typing_practice.infrastructure.models import (
+    TypingExerciseModel,
+    TypingAttemptModel,
+)
+
+# Roadmap
+from code_tutor.roadmap.infrastructure.models import (
+    LearningPathModel,
+    PathPrerequisiteModel,
+    ModuleModel,
+    LessonModel,
+    UserPathProgressModel,
+    UserLessonProgressModel,
+)
+
+# Collaboration
+from code_tutor.collaboration.infrastructure.models import (
+    CollaborationSessionModel,
+    SessionParticipantModel,
+    CodeChangeModel,
+)
+
+# Playground
+from code_tutor.playground.infrastructure.models import (
+    PlaygroundModel,
+    CodeTemplateModel,
+    ExecutionHistoryModel,
+)
+
+# ML Pipeline
+from code_tutor.ml.pipeline.models import (
+    DailyStatsModel,
+    UserInteractionModel,
+    ModelTrainingLogModel,
+    CodeQualityAnalysisModel,
+    QualityTrendModel,
+)
 
 # Alembic Config object
 config = context.config
