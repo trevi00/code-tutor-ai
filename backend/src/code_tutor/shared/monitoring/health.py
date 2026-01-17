@@ -79,9 +79,9 @@ class HealthChecker:
 
         start = time.perf_counter()
         try:
-            redis = get_redis_client()
-            if redis and redis._client:
-                await redis._client.ping()
+            redis_client = await get_redis_client()
+            if redis_client:
+                await redis_client.ping()
                 latency = (time.perf_counter() - start) * 1000
 
                 health = ServiceHealth(
