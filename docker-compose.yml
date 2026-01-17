@@ -41,8 +41,8 @@ services:
       - DATABASE_URL=postgresql+asyncpg://postgres:postgres@db:5432/codetutor
       - REDIS_URL=redis://redis:6379/0
       - JWT_SECRET_KEY=${JWT_SECRET_KEY:-docker-test-secret-key-min-32-chars}
-      - ENVIRONMENT=production
-      - DEBUG=false
+      - ENVIRONMENT=development
+      - DEBUG=true
     ports:
       - "8000:8000"
     depends_on:
