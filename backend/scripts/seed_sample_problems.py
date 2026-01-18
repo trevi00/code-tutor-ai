@@ -69,7 +69,7 @@ PROBLEMS_DATA = [
             {"input": "[2, 7, 11, 15]\n9", "output": "[0, 1]", "is_sample": True},
             {"input": "[3, 2, 4]\n6", "output": "[1, 2]", "is_sample": True},
             {"input": "[3, 3]\n6", "output": "[0, 1]", "is_sample": False},
-            {"input": "[1, 5, 3, 7, 2]\n9", "output": "[1, 3]", "is_sample": False},
+            {"input": "[1, 5, 3, 7, 2]\n9", "output": "[3, 4]", "is_sample": False},
         ]
     },
     # Easy - String
