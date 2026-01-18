@@ -57,7 +57,7 @@ export function LearningInsights({ insights }: LearningInsightsProps) {
               {velocityConfig[velocity.velocity]?.label || velocity.velocity}
             </p>
             <p className="text-sm text-gray-500 mt-1">
-              일 평균 {velocity.problems_per_day.toFixed(1)}문제
+              일 평균 {(velocity.problems_per_day ?? 0).toFixed(1)}문제
             </p>
           </div>
         )}
@@ -72,10 +72,10 @@ export function LearningInsights({ insights }: LearningInsightsProps) {
               </span>
             </div>
             <p className="text-lg font-bold text-gray-800">
-              {prediction.current_success_rate.toFixed(0)}% → {prediction.predicted_success_rate.toFixed(0)}%
+              {(prediction.current_success_rate ?? 0).toFixed(0)}% → {(prediction.predicted_success_rate ?? 0).toFixed(0)}%
             </p>
             <p className="text-sm text-gray-500 mt-1">
-              {prediction.days_ahead || 7}일 후 예측 (신뢰도 {(prediction.confidence * 100).toFixed(0)}%)
+              {prediction.days_ahead || 7}일 후 예측 (신뢰도 {((prediction.confidence ?? 0) * 100).toFixed(0)}%)
             </p>
           </div>
         )}
@@ -87,11 +87,11 @@ export function LearningInsights({ insights }: LearningInsightsProps) {
               <span className="text-sm text-gray-600">꾸준함 점수</span>
               <span className="text-xl">🎯</span>
             </div>
-            <p className="text-lg font-bold text-gray-800">{velocity.consistency_score}점</p>
+            <p className="text-lg font-bold text-gray-800">{velocity.consistency_score ?? 0}점</p>
             <div className="mt-2 w-full bg-gray-200 rounded-full h-2">
               <div
                 className="bg-purple-500 h-2 rounded-full transition-all duration-500"
-                style={{ width: `${Math.min(velocity.consistency_score, 100)}%` }}
+                style={{ width: `${Math.min(velocity.consistency_score ?? 0, 100)}%` }}
               />
             </div>
           </div>
@@ -104,8 +104,8 @@ export function LearningInsights({ insights }: LearningInsightsProps) {
               <span className="text-sm text-gray-600">성장률</span>
               <span className="text-xl">🚀</span>
             </div>
-            <p className={`text-lg font-bold ${velocity.improvement_rate >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-              {velocity.improvement_rate >= 0 ? '+' : ''}{velocity.improvement_rate.toFixed(1)}%
+            <p className={`text-lg font-bold ${(velocity.improvement_rate ?? 0) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+              {(velocity.improvement_rate ?? 0) >= 0 ? '+' : ''}{(velocity.improvement_rate ?? 0).toFixed(1)}%
             </p>
             <p className="text-sm text-gray-500 mt-1">지난 주 대비</p>
           </div>
@@ -142,7 +142,7 @@ export function LearningInsights({ insights }: LearningInsightsProps) {
               >
                 {categoryLabels[gap.category] || gap.category}
                 <span className="ml-1 text-red-500">
-                  ({gap.current_rate.toFixed(0)}% → {gap.target_rate.toFixed(0)}%)
+                  ({(gap.current_rate ?? 0).toFixed(0)}% → {(gap.target_rate ?? 0).toFixed(0)}%)
                 </span>
               </span>
             ))}
