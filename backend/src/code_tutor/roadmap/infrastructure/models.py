@@ -138,7 +138,7 @@ class UserPathProgressModel(Base):
     __tablename__ = "user_path_progress"
 
     id = Column(String(36), primary_key=True, default=generate_uuid)
-    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
+    user_id = Column(String(36), ForeignKey("users.id"), nullable=False)
     path_id = Column(String(36), ForeignKey("learning_paths.id"), nullable=False)
     status = Column(String(20), default=ProgressStatus.NOT_STARTED.value)
     started_at = Column(DateTime, nullable=True)
@@ -158,7 +158,7 @@ class UserLessonProgressModel(Base):
     __tablename__ = "user_lesson_progress"
 
     id = Column(String(36), primary_key=True, default=generate_uuid)
-    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
+    user_id = Column(String(36), ForeignKey("users.id"), nullable=False)
     lesson_id = Column(String(36), ForeignKey("roadmap_lessons.id"), nullable=False)
     status = Column(String(20), default=ProgressStatus.NOT_STARTED.value)
     started_at = Column(DateTime, nullable=True)
