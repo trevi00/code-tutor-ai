@@ -3,13 +3,13 @@
 Redis-based caching for ML model predictions and recommendations.
 """
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from uuid import UUID
 
 
 def utc_now() -> datetime:
     """Get current UTC time (timezone-aware)"""
-    return datetime.now(timezone.utc)
+    return datetime.now(UTC)
 
 from code_tutor.shared.infrastructure.logging import get_logger
 from code_tutor.shared.infrastructure.redis import RedisClient

@@ -4,18 +4,17 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, status
 
-from code_tutor.identity.interface.dependencies import get_current_user
-from code_tutor.identity.application.dto import UserResponse
 from code_tutor.collaboration.application.dto import (
     CreateSessionRequest,
     SessionDetailResponse,
     SessionListResponse,
-    SessionResponse,
 )
 from code_tutor.collaboration.application.services import CollaborationService
 from code_tutor.collaboration.infrastructure.repository import (
     SQLAlchemyCollaborationRepository,
 )
+from code_tutor.identity.application.dto import UserResponse
+from code_tutor.identity.interface.dependencies import get_current_user
 from code_tutor.shared.infrastructure.database import get_async_session
 
 router = APIRouter(prefix="/collaboration", tags=["Collaboration"])

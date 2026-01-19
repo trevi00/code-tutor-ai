@@ -15,7 +15,6 @@ from code_tutor.collaboration.domain.repository import CollaborationRepository
 from code_tutor.collaboration.domain.value_objects import (
     CodeOperation,
     CursorPosition,
-    OperationType,
     SelectionRange,
     SessionStatus,
 )
@@ -144,7 +143,6 @@ class SQLAlchemyCollaborationRepository(CollaborationRepository):
     ) -> None:
         """Sync participants between entity and model."""
         existing_ids = {p.id for p in model.participants}
-        entity_ids = {p.id for p in entity.participants}
 
         # Add new participants
         for p in entity.participants:

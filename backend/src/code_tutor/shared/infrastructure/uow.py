@@ -6,7 +6,7 @@ from types import TracebackType
 try:
     from typing import Self
 except ImportError:
-    from typing_extensions import Self
+    from typing import Self
 
 from sqlalchemy.ext.asyncio import AsyncSession
 

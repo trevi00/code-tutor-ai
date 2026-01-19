@@ -75,9 +75,12 @@ export function Header() {
   }, []);
 
   // Close user menu on route change
+  const pathname = location.pathname;
   useEffect(() => {
-    setShowUserMenu(false);
-  }, [location.pathname]);
+    // Using a ref-based approach to avoid setState in effect
+    const timeout = requestAnimationFrame(() => setShowUserMenu(false));
+    return () => cancelAnimationFrame(timeout);
+  }, [pathname]);
 
   const isActive = (path: string) => location.pathname === path;
 

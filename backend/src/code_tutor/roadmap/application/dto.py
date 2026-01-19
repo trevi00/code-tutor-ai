@@ -1,17 +1,15 @@
 """DTOs for Learning Roadmap application layer."""
 
 from datetime import datetime
-from typing import Optional
 from uuid import UUID
 
 from pydantic import BaseModel, Field
 
 from code_tutor.roadmap.domain.value_objects import (
-    PathLevel,
     LessonType,
+    PathLevel,
     ProgressStatus,
 )
-
 
 # ============== Lesson DTOs ==============
 
@@ -25,15 +23,15 @@ class LessonResponse(BaseModel):
     description: str
     lesson_type: LessonType
     content: str
-    content_id: Optional[UUID] = None
+    content_id: UUID | None = None
     order: int
     xp_reward: int
     estimated_minutes: int
 
     # Progress info (when user is logged in)
-    status: Optional[ProgressStatus] = None
-    completed_at: Optional[datetime] = None
-    score: Optional[int] = None
+    status: ProgressStatus | None = None
+    completed_at: datetime | None = None
+    score: int | None = None
 
     class Config:
         from_attributes = True
@@ -101,8 +99,8 @@ class LearningPathResponse(BaseModel):
     status: ProgressStatus = ProgressStatus.NOT_STARTED
     completed_lessons: int = 0
     completion_rate: float = 0.0
-    started_at: Optional[datetime] = None
-    completed_at: Optional[datetime] = None
+    started_at: datetime | None = None
+    completed_at: datetime | None = None
 
     class Config:
         from_attributes = True
@@ -127,8 +125,8 @@ class UserProgressResponse(BaseModel):
     total_lessons: int
     completed_lessons: int
     total_xp_earned: int
-    current_path: Optional[LearningPathResponse] = None
-    next_lesson: Optional[LessonResponse] = None
+    current_path: LearningPathResponse | None = None
+    next_lesson: LessonResponse | None = None
     paths: list[LearningPathResponse] = Field(default_factory=list)
 
 
@@ -137,8 +135,8 @@ class PathProgressResponse(BaseModel):
 
     path_id: UUID
     status: ProgressStatus
-    started_at: Optional[datetime] = None
-    completed_at: Optional[datetime] = None
+    started_at: datetime | None = None
+    completed_at: datetime | None = None
     completed_lessons: int
     total_lessons: int
     completion_rate: float
@@ -149,9 +147,9 @@ class LessonProgressResponse(BaseModel):
 
     lesson_id: UUID
     status: ProgressStatus
-    started_at: Optional[datetime] = None
-    completed_at: Optional[datetime] = None
-    score: Optional[int] = None
+    started_at: datetime | None = None
+    completed_at: datetime | None = None
+    score: int | None = None
     attempts: int
 
 
@@ -161,7 +159,7 @@ class LessonProgressResponse(BaseModel):
 class CompleteLessonRequest(BaseModel):
     """Request DTO for completing a lesson."""
 
-    score: Optional[int] = Field(None, ge=0, le=100)
+    score: int | None = Field(None, ge=0, le=100)
 
 
 class StartPathRequest(BaseModel):
@@ -177,4 +175,4 @@ class RoadmapSummaryResponse(BaseModel):
     """Response DTO for roadmap summary."""
 
     paths: list[LearningPathResponse]
-    user_progress: Optional[UserProgressResponse] = None
+    user_progress: UserProgressResponse | None = None

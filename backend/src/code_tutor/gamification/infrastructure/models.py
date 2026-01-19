@@ -4,25 +4,27 @@ from datetime import datetime
 from uuid import uuid4
 
 from sqlalchemy import (
+    Boolean,
     Column,
-    String,
-    Integer,
     DateTime,
     ForeignKey,
-    Enum as SQLEnum,
+    Integer,
+    String,
     Text,
-    Boolean,
+)
+from sqlalchemy import (
+    Enum as SQLEnum,
 )
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 
-from code_tutor.shared.infrastructure.database import Base
 from code_tutor.gamification.domain.value_objects import (
-    BadgeRarity,
     BadgeCategory,
-    ChallengeType,
+    BadgeRarity,
     ChallengeStatus,
+    ChallengeType,
 )
+from code_tutor.shared.infrastructure.database import Base
 
 
 class BadgeModel(Base):

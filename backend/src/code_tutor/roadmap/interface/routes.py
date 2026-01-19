@@ -6,33 +6,36 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from code_tutor.shared.infrastructure.database import get_async_session as get_db
-from code_tutor.identity.interface.dependencies import get_current_user, get_optional_user
-from code_tutor.identity.application.dto import UserResponse
-from code_tutor.roadmap.domain.value_objects import PathLevel
-from code_tutor.roadmap.application.dto import (
-    LearningPathResponse,
-    LearningPathListResponse,
-    ModuleResponse,
-    LessonResponse,
-    UserProgressResponse,
-    PathProgressResponse,
-    LessonProgressResponse,
-    CompleteLessonRequest,
-)
-from code_tutor.roadmap.application.services import RoadmapService
-from code_tutor.roadmap.infrastructure.repository import (
-    SQLAlchemyLearningPathRepository,
-    SQLAlchemyModuleRepository,
-    SQLAlchemyLessonRepository,
-    SQLAlchemyUserProgressRepository,
-)
 from code_tutor.gamification.application.services import BadgeService, XPService
 from code_tutor.gamification.infrastructure.repository import (
     SQLAlchemyBadgeRepository,
     SQLAlchemyUserBadgeRepository,
     SQLAlchemyUserStatsRepository,
 )
+from code_tutor.identity.application.dto import UserResponse
+from code_tutor.identity.interface.dependencies import (
+    get_current_user,
+    get_optional_user,
+)
+from code_tutor.roadmap.application.dto import (
+    CompleteLessonRequest,
+    LearningPathListResponse,
+    LearningPathResponse,
+    LessonProgressResponse,
+    LessonResponse,
+    ModuleResponse,
+    PathProgressResponse,
+    UserProgressResponse,
+)
+from code_tutor.roadmap.application.services import RoadmapService
+from code_tutor.roadmap.domain.value_objects import PathLevel
+from code_tutor.roadmap.infrastructure.repository import (
+    SQLAlchemyLearningPathRepository,
+    SQLAlchemyLessonRepository,
+    SQLAlchemyModuleRepository,
+    SQLAlchemyUserProgressRepository,
+)
+from code_tutor.shared.infrastructure.database import get_async_session as get_db
 
 router = APIRouter(prefix="/roadmap", tags=["Roadmap"])
 
@@ -71,7 +74,7 @@ def get_roadmap_service(
     },
 )
 async def list_paths(
-    current_user: Optional[UserResponse] = Depends(get_optional_user),
+    current_user: UserResponse | None = Depends(get_optional_user),
     service: RoadmapService = Depends(get_roadmap_service),
 ):
     """List all learning paths."""
@@ -91,7 +94,7 @@ async def list_paths(
 )
 async def get_path(
     path_id: UUID,
-    current_user: Optional[UserResponse] = Depends(get_optional_user),
+    current_user: UserResponse | None = Depends(get_optional_user),
     service: RoadmapService = Depends(get_roadmap_service),
 ):
     """Get a specific learning path with modules and lessons."""
@@ -117,7 +120,7 @@ async def get_path(
 )
 async def get_path_by_level(
     level: PathLevel,
-    current_user: Optional[UserResponse] = Depends(get_optional_user),
+    current_user: UserResponse | None = Depends(get_optional_user),
     service: RoadmapService = Depends(get_roadmap_service),
 ):
     """Get a learning path by level."""
@@ -142,7 +145,7 @@ async def get_path_by_level(
 )
 async def get_path_modules(
     path_id: UUID,
-    current_user: Optional[UserResponse] = Depends(get_optional_user),
+    current_user: UserResponse | None = Depends(get_optional_user),
     service: RoadmapService = Depends(get_roadmap_service),
 ):
     """Get all modules for a learning path."""
@@ -165,7 +168,7 @@ async def get_path_modules(
 )
 async def get_module(
     module_id: UUID,
-    current_user: Optional[UserResponse] = Depends(get_optional_user),
+    current_user: UserResponse | None = Depends(get_optional_user),
     service: RoadmapService = Depends(get_roadmap_service),
 ):
     """Get a specific module with lessons."""
@@ -190,7 +193,7 @@ async def get_module(
 )
 async def get_module_lessons(
     module_id: UUID,
-    current_user: Optional[UserResponse] = Depends(get_optional_user),
+    current_user: UserResponse | None = Depends(get_optional_user),
     service: RoadmapService = Depends(get_roadmap_service),
 ):
     """Get all lessons for a module."""
@@ -213,7 +216,7 @@ async def get_module_lessons(
 )
 async def get_lesson(
     lesson_id: UUID,
-    current_user: Optional[UserResponse] = Depends(get_optional_user),
+    current_user: UserResponse | None = Depends(get_optional_user),
     service: RoadmapService = Depends(get_roadmap_service),
 ):
     """Get a specific lesson."""
@@ -346,7 +349,7 @@ async def complete_lesson(
     },
 )
 async def get_next_lesson(
-    path_id: Optional[UUID] = None,
+    path_id: UUID | None = None,
     current_user: UserResponse = Depends(get_current_user),
     service: RoadmapService = Depends(get_roadmap_service),
 ):

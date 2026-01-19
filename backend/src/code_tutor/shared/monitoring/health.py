@@ -3,7 +3,7 @@
 import asyncio
 import time
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from enum import Enum
 from typing import Any
 
@@ -28,7 +28,7 @@ class ServiceHealth:
     status: HealthStatus
     latency_ms: float | None = None
     message: str | None = None
-    last_check: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
+    last_check: datetime = field(default_factory=lambda: datetime.now(UTC))
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -150,7 +150,7 @@ class HealthChecker:
             "status": overall_status.value,
             "version": settings.APP_VERSION,
             "environment": settings.ENVIRONMENT,
-            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "timestamp": datetime.now(UTC).isoformat(),
             "total_check_time_ms": round(total_latency, 2),
             "services": {
                 "database": db_health.to_dict(),

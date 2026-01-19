@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import clsx from 'clsx';
 
 interface SkeletonProps {
@@ -105,7 +106,12 @@ export function SkeletonTable({ rows = 5, cols = 4 }: { rows?: number; cols?: nu
   );
 }
 
+// Pre-generate heights for chart skeleton to avoid Math.random during render
+const CHART_HEIGHTS = [45, 78, 62, 91, 53, 82, 67, 95, 48, 73, 58, 87];
+
 export function SkeletonChart() {
+  const heights = useMemo(() => CHART_HEIGHTS, []);
+
   return (
     <div className="bg-white dark:bg-slate-800 rounded-xl p-6">
       <div className="flex items-center justify-between mb-6">
@@ -113,12 +119,12 @@ export function SkeletonChart() {
         <Skeleton width={80} height={24} variant="rectangular" />
       </div>
       <div className="h-64 flex items-end gap-2">
-        {Array.from({ length: 12 }).map((_, i) => (
+        {heights.map((height, i) => (
           <Skeleton
             key={i}
             variant="rectangular"
             width="100%"
-            height={`${30 + Math.random() * 70}%`}
+            height={`${height}%`}
           />
         ))}
       </div>

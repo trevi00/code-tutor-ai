@@ -63,15 +63,29 @@ interface IssueItemProps {
   issue: PerformanceIssue;
 }
 
+function SeverityIconDisplay({ severity }: { severity: IssueSeverity; className: string }) {
+  const iconClass = getSeverityStyles(severity).icon;
+  switch (severity) {
+    case 'critical':
+      return <XCircle className={`w-5 h-5 ${iconClass}`} />;
+    case 'error':
+      return <AlertCircle className={`w-5 h-5 ${iconClass}`} />;
+    case 'warning':
+      return <AlertTriangle className={`w-5 h-5 ${iconClass}`} />;
+    case 'info':
+    default:
+      return <Info className={`w-5 h-5 ${iconClass}`} />;
+  }
+}
+
 function IssueItem({ issue }: IssueItemProps) {
-  const SeverityIcon = getSeverityIcon(issue.severity);
   const severityStyles = getSeverityStyles(issue.severity);
 
   return (
     <div className="p-5 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
       <div className="flex items-start gap-4">
         <div className={`p-2 rounded-xl ${severityStyles.bg}`}>
-          <SeverityIcon className={`w-5 h-5 ${severityStyles.icon}`} />
+          <SeverityIconDisplay severity={issue.severity} className={severityStyles.icon} />
         </div>
 
         <div className="flex-1 min-w-0">
@@ -100,20 +114,6 @@ function IssueItem({ issue }: IssueItemProps) {
       </div>
     </div>
   );
-}
-
-function getSeverityIcon(severity: IssueSeverity) {
-  switch (severity) {
-    case 'critical':
-      return XCircle;
-    case 'error':
-      return AlertCircle;
-    case 'warning':
-      return AlertTriangle;
-    case 'info':
-    default:
-      return Info;
-  }
 }
 
 function getSeverityStyles(severity: IssueSeverity) {

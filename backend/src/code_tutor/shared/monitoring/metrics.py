@@ -1,6 +1,6 @@
 """Prometheus metrics for application monitoring"""
 
-from typing import Callable
+from collections.abc import Callable
 
 from fastapi import FastAPI
 from prometheus_fastapi_instrumentator import Instrumentator, metrics

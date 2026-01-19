@@ -5,10 +5,7 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, WebSocket, WebSocketDisconnect
 
-from code_tutor.identity.interface.dependencies import get_current_user_ws
-from code_tutor.shared.infrastructure.logging import get_logger
 from code_tutor.collaboration.application.dto import (
-    ChatMessageRequest,
     CodeChangeRequest,
     CursorUpdateRequest,
     SelectionUpdateRequest,
@@ -20,10 +17,12 @@ from code_tutor.collaboration.infrastructure.connection_manager import (
     connection_manager,
     create_error_message,
 )
-from code_tutor.shared.infrastructure.database import get_async_session
 from code_tutor.collaboration.infrastructure.repository import (
     SQLAlchemyCollaborationRepository,
 )
+from code_tutor.identity.interface.dependencies import get_current_user_ws
+from code_tutor.shared.infrastructure.database import get_async_session
+from code_tutor.shared.infrastructure.logging import get_logger
 
 logger = get_logger(__name__)
 

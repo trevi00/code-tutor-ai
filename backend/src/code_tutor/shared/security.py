@@ -1,6 +1,6 @@
 """Security utilities - password hashing and JWT handling"""
 
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from typing import Any
 from uuid import uuid4
 
@@ -14,7 +14,7 @@ from code_tutor.shared.exceptions import UnauthorizedError
 
 def utc_now() -> datetime:
     """Get current UTC time (timezone-aware)"""
-    return datetime.now(timezone.utc)
+    return datetime.now(UTC)
 
 
 def hash_password(password: str) -> str:
@@ -128,10 +128,10 @@ class TokenPayload:
         self.sub: str = payload.get("sub", "")
         # Use fromtimestamp with UTC timezone for timezone-aware datetimes
         self.exp: datetime = datetime.fromtimestamp(
-            payload.get("exp", 0), tz=timezone.utc
+            payload.get("exp", 0), tz=UTC
         )
         self.iat: datetime = datetime.fromtimestamp(
-            payload.get("iat", 0), tz=timezone.utc
+            payload.get("iat", 0), tz=UTC
         )
         self.jti: str = payload.get("jti", "")
         self.type: str = payload.get("type", "")

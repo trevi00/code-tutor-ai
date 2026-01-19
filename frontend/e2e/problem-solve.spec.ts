@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test } from '@playwright/test';
 
 // Run this test in isolation to avoid Monaco editor conflicts
 test.describe.configure({ mode: 'serial' });
@@ -53,7 +53,7 @@ if __name__ == "__main__":
       await editorArea.click();
       editorClicked = true;
       console.log(`Editor clicked on attempt ${attempt + 1}`);
-    } catch (e) {
+    } catch {
       console.log(`Attempt ${attempt + 1} failed, retrying...`);
       await page.waitForTimeout(2000);
     }

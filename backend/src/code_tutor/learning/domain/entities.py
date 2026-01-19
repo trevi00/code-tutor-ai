@@ -1,6 +1,6 @@
 """Learning domain entities"""
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from uuid import UUID
 
 from code_tutor.learning.domain.events import (
@@ -19,7 +19,7 @@ from code_tutor.shared.domain.base import AggregateRoot, Entity
 
 def utc_now() -> datetime:
     """Get current UTC time (timezone-aware)"""
-    return datetime.now(timezone.utc)
+    return datetime.now(UTC)
 
 
 class TestCase(Entity):

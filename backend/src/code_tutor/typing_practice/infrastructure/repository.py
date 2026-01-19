@@ -1,29 +1,28 @@
 """Repository implementations for typing practice."""
 
-from typing import Optional
 from uuid import UUID
 
-from sqlalchemy import select, func
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from code_tutor.shared.constants import TypingPractice as TypingConstants
 from code_tutor.typing_practice.domain.entities import (
-    TypingExercise,
     TypingAttempt,
+    TypingExercise,
     UserExerciseProgress,
 )
 from code_tutor.typing_practice.domain.repository import (
-    TypingExerciseRepository,
     TypingAttemptRepository,
+    TypingExerciseRepository,
 )
 from code_tutor.typing_practice.domain.value_objects import (
-    ExerciseCategory,
     AttemptStatus,
     Difficulty,
+    ExerciseCategory,
 )
 from code_tutor.typing_practice.infrastructure.models import (
-    TypingExerciseModel,
     TypingAttemptModel,
+    TypingExerciseModel,
 )
 
 
@@ -33,7 +32,7 @@ class SQLAlchemyTypingExerciseRepository(TypingExerciseRepository):
     def __init__(self, session: AsyncSession):
         self.session = session
 
-    async def get_by_id(self, exercise_id: UUID) -> Optional[TypingExercise]:
+    async def get_by_id(self, exercise_id: UUID) -> TypingExercise | None:
         """Get exercise by ID."""
         stmt = select(TypingExerciseModel).where(TypingExerciseModel.id == str(exercise_id))
         result = await self.session.execute(stmt)
@@ -42,7 +41,7 @@ class SQLAlchemyTypingExerciseRepository(TypingExerciseRepository):
 
     async def list_all(
         self,
-        category: Optional[ExerciseCategory] = None,
+        category: ExerciseCategory | None = None,
         limit: int = 50,
         offset: int = 0,
     ) -> list[TypingExercise]:
@@ -110,7 +109,7 @@ class SQLAlchemyTypingExerciseRepository(TypingExerciseRepository):
             return True
         return False
 
-    async def count(self, category: Optional[ExerciseCategory] = None) -> int:
+    async def count(self, category: ExerciseCategory | None = None) -> int:
         """Count exercises."""
         stmt = select(func.count(TypingExerciseModel.id)).where(
             TypingExerciseModel.is_published == True
@@ -145,7 +144,7 @@ class SQLAlchemyTypingAttemptRepository(TypingAttemptRepository):
     def __init__(self, session: AsyncSession):
         self.session = session
 
-    async def get_by_id(self, attempt_id: UUID) -> Optional[TypingAttempt]:
+    async def get_by_id(self, attempt_id: UUID) -> TypingAttempt | None:
         """Get attempt by ID."""
         stmt = select(TypingAttemptModel).where(TypingAttemptModel.id == str(attempt_id))
         result = await self.session.execute(stmt)
@@ -220,7 +219,7 @@ class SQLAlchemyTypingAttemptRepository(TypingAttemptRepository):
         self,
         user_id: UUID,
         exercise_id: UUID,
-    ) -> Optional[UserExerciseProgress]:
+    ) -> UserExerciseProgress | None:
         """Get user's progress on an exercise."""
         attempts = await self.list_by_user_and_exercise(user_id, exercise_id)
         if not attempts:

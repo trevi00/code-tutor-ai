@@ -59,8 +59,10 @@ export default function GraphVisualizer({
   // Auto-play logic
   useEffect(() => {
     if (!isPlaying || currentStep >= maxStep) {
-      if (currentStep >= maxStep) {
-        setIsPlaying(false);
+      if (currentStep >= maxStep && isPlaying) {
+        // Use requestAnimationFrame to avoid synchronous setState in effect
+        const frame = requestAnimationFrame(() => setIsPlaying(false));
+        return () => cancelAnimationFrame(frame);
       }
       return;
     }

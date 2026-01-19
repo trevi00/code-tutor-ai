@@ -1,17 +1,15 @@
 """Gamification repository interfaces."""
 
 from abc import ABC, abstractmethod
-from datetime import datetime
-from typing import Optional
 from uuid import UUID
 
 from .entities import (
     Badge,
-    UserBadge,
-    UserStats,
     Challenge,
-    UserChallenge,
     LeaderboardEntry,
+    UserBadge,
+    UserChallenge,
+    UserStats,
 )
 from .value_objects import BadgeCategory, ChallengeType
 
@@ -20,7 +18,7 @@ class BadgeRepository(ABC):
     """Badge repository interface."""
 
     @abstractmethod
-    async def get_by_id(self, badge_id: UUID) -> Optional[Badge]:
+    async def get_by_id(self, badge_id: UUID) -> Badge | None:
         """Get badge by ID."""
         pass
 
@@ -73,7 +71,7 @@ class UserStatsRepository(ABC):
     """User stats repository interface."""
 
     @abstractmethod
-    async def get_by_user(self, user_id: UUID) -> Optional[UserStats]:
+    async def get_by_user(self, user_id: UUID) -> UserStats | None:
         """Get user stats."""
         pass
 
@@ -97,7 +95,7 @@ class UserStatsRepository(ABC):
         self,
         limit: int = 100,
         offset: int = 0,
-        period: Optional[str] = None,  # "weekly", "monthly", "all"
+        period: str | None = None,  # "weekly", "monthly", "all"
     ) -> list[LeaderboardEntry]:
         """Get leaderboard entries."""
         pass
@@ -112,12 +110,12 @@ class ChallengeRepository(ABC):
     """Challenge repository interface."""
 
     @abstractmethod
-    async def get_by_id(self, challenge_id: UUID) -> Optional[Challenge]:
+    async def get_by_id(self, challenge_id: UUID) -> Challenge | None:
         """Get challenge by ID."""
         pass
 
     @abstractmethod
-    async def get_active(self, challenge_type: Optional[ChallengeType] = None) -> list[Challenge]:
+    async def get_active(self, challenge_type: ChallengeType | None = None) -> list[Challenge]:
         """Get active challenges."""
         pass
 
@@ -144,7 +142,7 @@ class UserChallengeRepository(ABC):
         self,
         user_id: UUID,
         challenge_id: UUID,
-    ) -> Optional[UserChallenge]:
+    ) -> UserChallenge | None:
         """Get specific user challenge."""
         pass
 

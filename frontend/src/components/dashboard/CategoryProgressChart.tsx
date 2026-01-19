@@ -61,6 +61,48 @@ function getProgressColor(percentage: number): string {
   return '#ef4444'; // red
 }
 
+// Custom tooltip component (defined outside to avoid recreation on each render)
+interface CategoryTooltipProps {
+  active?: boolean;
+  payload?: Array<{
+    payload: {
+      category: string;
+      solved: number;
+      total: number;
+      percentage: number;
+      icon: string;
+      color: string;
+    }
+  }>;
+}
+
+function CategoryTooltip({ active, payload }: CategoryTooltipProps) {
+  if (!active || !payload || payload.length === 0) return null;
+  const item = payload[0].payload;
+  return (
+    <div className="bg-white dark:bg-slate-700 rounded-lg shadow-xl border border-gray-200 dark:border-slate-600 px-4 py-3 min-w-[140px]">
+      <p className="text-sm font-bold text-gray-800 dark:text-gray-100 flex items-center gap-2 mb-2">
+        <span>{item.icon}</span>
+        {item.category}
+      </p>
+      <div className="space-y-1 text-sm">
+        <div className="flex justify-between">
+          <span className="text-gray-500 dark:text-gray-400">해결</span>
+          <span className="font-medium" style={{ color: item.color }}>
+            {item.solved} / {item.total}
+          </span>
+        </div>
+        <div className="flex justify-between">
+          <span className="text-gray-500 dark:text-gray-400">진행률</span>
+          <span className="font-bold" style={{ color: item.color }}>
+            {item.percentage}%
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function CategoryProgressChart({ data, maxItems = 8 }: CategoryProgressChartProps) {
   // Prepare chart data
   const chartData = useMemo(() => {
@@ -89,46 +131,6 @@ export function CategoryProgressChart({ data, maxItems = 8 }: CategoryProgressCh
       percentage: totalProblems > 0 ? Math.round((totalSolved / totalProblems) * 100) : 0,
     };
   }, [data]);
-
-  // Custom tooltip
-  const CustomTooltip = ({ active, payload }: {
-    active?: boolean;
-    payload?: Array<{
-      payload: {
-        category: string;
-        solved: number;
-        total: number;
-        percentage: number;
-        icon: string;
-        color: string;
-      }
-    }>
-  }) => {
-    if (!active || !payload || payload.length === 0) return null;
-    const item = payload[0].payload;
-    return (
-      <div className="bg-white dark:bg-slate-700 rounded-lg shadow-xl border border-gray-200 dark:border-slate-600 px-4 py-3 min-w-[140px]">
-        <p className="text-sm font-bold text-gray-800 dark:text-gray-100 flex items-center gap-2 mb-2">
-          <span>{item.icon}</span>
-          {item.category}
-        </p>
-        <div className="space-y-1 text-sm">
-          <div className="flex justify-between">
-            <span className="text-gray-500 dark:text-gray-400">해결</span>
-            <span className="font-medium" style={{ color: item.color }}>
-              {item.solved} / {item.total}
-            </span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-gray-500 dark:text-gray-400">진행률</span>
-            <span className="font-bold" style={{ color: item.color }}>
-              {item.percentage}%
-            </span>
-          </div>
-        </div>
-      </div>
-    );
-  };
 
   if (data.length === 0) {
     return (
@@ -189,7 +191,7 @@ export function CategoryProgressChart({ data, maxItems = 8 }: CategoryProgressCh
               tickLine={false}
               width={70}
             />
-            <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(107, 114, 128, 0.1)' }} />
+            <Tooltip content={<CategoryTooltip />} cursor={{ fill: 'rgba(107, 114, 128, 0.1)' }} />
             <Bar
               dataKey="solved"
               name="해결"

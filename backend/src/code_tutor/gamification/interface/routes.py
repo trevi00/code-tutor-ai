@@ -1,41 +1,31 @@
 """Gamification API routes."""
 
-from typing import Optional
 from uuid import UUID
+
 from fastapi import APIRouter, Depends, HTTPException, Query
 
-from code_tutor.shared.api_response import success_response
-from code_tutor.shared.infrastructure.database import get_async_session as get_db
-from code_tutor.identity.interface.dependencies import get_current_user, get_admin_user
-from code_tutor.identity.application.dto import UserResponse
 from code_tutor.gamification.application.dto import (
-    BadgeResponse,
-    UserBadgesResponse,
-    UserStatsResponse,
     AddXPRequest,
-    XPAddedResponse,
-    LeaderboardResponse,
-    ChallengeResponse,
-    UserChallengeResponse,
-    ChallengesResponse,
-    GamificationOverviewResponse,
 )
 from code_tutor.gamification.application.services import (
     BadgeService,
-    XPService,
-    LeaderboardService,
     ChallengeService,
     GamificationService,
-)
-from code_tutor.gamification.infrastructure.repository import (
-    SQLAlchemyBadgeRepository,
-    SQLAlchemyUserBadgeRepository,
-    SQLAlchemyUserStatsRepository,
-    SQLAlchemyChallengeRepository,
-    SQLAlchemyUserChallengeRepository,
+    LeaderboardService,
+    XPService,
 )
 from code_tutor.gamification.domain.value_objects import ChallengeType
-
+from code_tutor.gamification.infrastructure.repository import (
+    SQLAlchemyBadgeRepository,
+    SQLAlchemyChallengeRepository,
+    SQLAlchemyUserBadgeRepository,
+    SQLAlchemyUserChallengeRepository,
+    SQLAlchemyUserStatsRepository,
+)
+from code_tutor.identity.application.dto import UserResponse
+from code_tutor.identity.interface.dependencies import get_admin_user, get_current_user
+from code_tutor.shared.api_response import success_response
+from code_tutor.shared.infrastructure.database import get_async_session as get_db
 
 router = APIRouter(prefix="/gamification", tags=["Gamification"])
 
@@ -227,7 +217,7 @@ async def get_leaderboard(
     period: str = Query("all", pattern="^(all|weekly|monthly)$"),
     limit: int = Query(100, ge=1, le=500),
     offset: int = Query(0, ge=0),
-    current_user: Optional[UserResponse] = Depends(get_current_user),
+    current_user: UserResponse | None = Depends(get_current_user),
     leaderboard_service: LeaderboardService = Depends(get_leaderboard_service),
 ):
     """Get leaderboard."""

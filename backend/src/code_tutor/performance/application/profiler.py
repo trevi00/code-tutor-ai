@@ -3,16 +3,13 @@
 import cProfile
 import io
 import pstats
-import sys
 import time
 import tracemalloc
 from contextlib import redirect_stdout
-from typing import Optional
 
 from ..domain import (
     FunctionProfile,
     HotspotAnalysis,
-    LineProfile,
     MemoryMetrics,
     RuntimeMetrics,
 )
@@ -21,7 +18,7 @@ from ..domain import (
 class RuntimeProfiler:
     """Profiles code execution for performance metrics."""
 
-    def __init__(self, code: str, input_data: Optional[str] = None):
+    def __init__(self, code: str, input_data: str | None = None):
         self.code = code
         self.input_data = input_data
         self.lines = code.split("\n")
@@ -172,7 +169,7 @@ class RuntimeProfiler:
 class MemoryProfiler:
     """Profiles memory usage during code execution."""
 
-    def __init__(self, code: str, input_data: Optional[str] = None):
+    def __init__(self, code: str, input_data: str | None = None):
         self.code = code
         self.input_data = input_data
 
@@ -236,7 +233,7 @@ class MemoryProfiler:
 
 
 def profile_code(
-    code: str, input_data: Optional[str] = None
+    code: str, input_data: str | None = None
 ) -> tuple[RuntimeMetrics, MemoryMetrics, HotspotAnalysis]:
     """Profile code and return all metrics."""
     runtime_profiler = RuntimeProfiler(code, input_data)

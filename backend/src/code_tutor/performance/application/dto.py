@@ -1,6 +1,5 @@
 """Performance analysis DTOs."""
 
-from typing import Optional
 
 from pydantic import BaseModel, Field
 
@@ -17,7 +16,7 @@ class AnalyzeRequest(BaseModel):
     """Request for code analysis."""
 
     code: str = Field(..., min_length=1, description="Python code to analyze")
-    input_data: Optional[str] = Field(None, description="Optional input data")
+    input_data: str | None = Field(None, description="Optional input data")
     include_runtime: bool = Field(True, description="Include runtime profiling")
     include_memory: bool = Field(True, description="Include memory profiling")
 
@@ -35,9 +34,9 @@ class LoopInfoResponse(BaseModel):
     line_number: int
     loop_type: str
     nesting_level: int
-    iteration_variable: Optional[str] = None
-    iterable: Optional[str] = None
-    estimated_iterations: Optional[str] = None
+    iteration_variable: str | None = None
+    iterable: str | None = None
+    estimated_iterations: str | None = None
 
 
 class FunctionInfoResponse(BaseModel):
@@ -59,7 +58,7 @@ class PerformanceIssueResponse(BaseModel):
     line_number: int
     message: str
     suggestion: str
-    code_snippet: Optional[str] = None
+    code_snippet: str | None = None
 
 
 class ComplexityResponse(BaseModel):
@@ -93,7 +92,7 @@ class MemoryMetricsResponse(BaseModel):
     allocations_count: int
     deallocations_count: int
     largest_object_mb: float
-    largest_object_type: Optional[str] = None
+    largest_object_type: str | None = None
 
 
 class FunctionProfileResponse(BaseModel):
@@ -112,21 +111,21 @@ class HotspotResponse(BaseModel):
 
     hotspot_functions: list[FunctionProfileResponse]
     total_execution_time_ms: float
-    bottleneck_function: Optional[str] = None
-    bottleneck_line: Optional[int] = None
+    bottleneck_function: str | None = None
+    bottleneck_line: int | None = None
 
 
 class PerformanceResponse(BaseModel):
     """Complete performance analysis response."""
 
     status: AnalysisStatus
-    complexity: Optional[ComplexityResponse] = None
-    runtime: Optional[RuntimeMetricsResponse] = None
-    memory: Optional[MemoryMetricsResponse] = None
-    hotspots: Optional[HotspotResponse] = None
+    complexity: ComplexityResponse | None = None
+    runtime: RuntimeMetricsResponse | None = None
+    memory: MemoryMetricsResponse | None = None
+    hotspots: HotspotResponse | None = None
     issues: list[PerformanceIssueResponse] = []
     optimization_score: int = 100
-    error: Optional[str] = None
+    error: str | None = None
 
 
 class QuickAnalyzeResponse(BaseModel):
@@ -139,4 +138,4 @@ class QuickAnalyzeResponse(BaseModel):
     space_explanation: str
     max_nesting_depth: int
     issues_count: int
-    error: Optional[str] = None
+    error: str | None = None

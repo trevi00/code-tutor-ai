@@ -1,35 +1,34 @@
 """Application services for Learning Roadmap."""
 
-from typing import Optional, Protocol
+from typing import Protocol
 from uuid import UUID
 
+from code_tutor.roadmap.application.dto import (
+    CompleteLessonRequest,
+    LearningPathListResponse,
+    LearningPathResponse,
+    LessonProgressResponse,
+    LessonResponse,
+    ModuleResponse,
+    PathProgressResponse,
+    UserProgressResponse,
+)
 from code_tutor.roadmap.domain.entities import (
     LearningPath,
-    Module,
     Lesson,
-    UserPathProgress,
+    Module,
     UserLessonProgress,
-)
-from code_tutor.roadmap.domain.value_objects import (
-    PathLevel,
-    LessonType,
-    ProgressStatus,
+    UserPathProgress,
 )
 from code_tutor.roadmap.domain.repository import (
     LearningPathRepository,
-    ModuleRepository,
     LessonRepository,
+    ModuleRepository,
     UserProgressRepository,
 )
-from code_tutor.roadmap.application.dto import (
-    LearningPathResponse,
-    LearningPathListResponse,
-    ModuleResponse,
-    LessonResponse,
-    UserProgressResponse,
-    PathProgressResponse,
-    LessonProgressResponse,
-    CompleteLessonRequest,
+from code_tutor.roadmap.domain.value_objects import (
+    PathLevel,
+    ProgressStatus,
 )
 
 
@@ -37,7 +36,7 @@ class XPServiceProtocol(Protocol):
     """Protocol for XP service integration."""
 
     async def add_xp(
-        self, user_id: UUID, action: str, custom_amount: Optional[int] = None
+        self, user_id: UUID, action: str, custom_amount: int | None = None
     ) -> None:
         """Add XP for an action."""
         ...
@@ -56,7 +55,7 @@ class RoadmapService:
         module_repo: ModuleRepository,
         lesson_repo: LessonRepository,
         progress_repo: UserProgressRepository,
-        xp_service: Optional[XPServiceProtocol] = None,
+        xp_service: XPServiceProtocol | None = None,
     ) -> None:
         self.path_repo = path_repo
         self.module_repo = module_repo
@@ -67,7 +66,7 @@ class RoadmapService:
     # ============== Path Methods ==============
 
     async def list_paths(
-        self, user_id: Optional[UUID] = None
+        self, user_id: UUID | None = None
     ) -> LearningPathListResponse:
         """List all learning paths with optional user progress."""
         paths = await self.path_repo.list_all()
@@ -80,8 +79,8 @@ class RoadmapService:
         return LearningPathListResponse(items=items, total=len(items))
 
     async def get_path(
-        self, path_id: UUID, user_id: Optional[UUID] = None
-    ) -> Optional[LearningPathResponse]:
+        self, path_id: UUID, user_id: UUID | None = None
+    ) -> LearningPathResponse | None:
         """Get a learning path by ID with modules and lessons."""
         path = await self.path_repo.get_by_id(path_id)
         if not path:
@@ -89,8 +88,8 @@ class RoadmapService:
         return await self._path_to_response(path, user_id, include_modules=True)
 
     async def get_path_by_level(
-        self, level: PathLevel, user_id: Optional[UUID] = None
-    ) -> Optional[LearningPathResponse]:
+        self, level: PathLevel, user_id: UUID | None = None
+    ) -> LearningPathResponse | None:
         """Get a learning path by level."""
         path = await self.path_repo.get_by_level(level)
         if not path:
@@ -100,8 +99,8 @@ class RoadmapService:
     # ============== Module Methods ==============
 
     async def get_module(
-        self, module_id: UUID, user_id: Optional[UUID] = None
-    ) -> Optional[ModuleResponse]:
+        self, module_id: UUID, user_id: UUID | None = None
+    ) -> ModuleResponse | None:
         """Get a module by ID with lessons."""
         module = await self.module_repo.get_by_id(module_id)
         if not module:
@@ -109,7 +108,7 @@ class RoadmapService:
         return await self._module_to_response(module, user_id, include_lessons=True)
 
     async def get_path_modules(
-        self, path_id: UUID, user_id: Optional[UUID] = None
+        self, path_id: UUID, user_id: UUID | None = None
     ) -> list[ModuleResponse]:
         """Get all modules for a path."""
         modules = await self.module_repo.get_by_path_id(path_id)
@@ -121,8 +120,8 @@ class RoadmapService:
     # ============== Lesson Methods ==============
 
     async def get_lesson(
-        self, lesson_id: UUID, user_id: Optional[UUID] = None
-    ) -> Optional[LessonResponse]:
+        self, lesson_id: UUID, user_id: UUID | None = None
+    ) -> LessonResponse | None:
         """Get a lesson by ID."""
         lesson = await self.lesson_repo.get_by_id(lesson_id)
         if not lesson:
@@ -130,11 +129,11 @@ class RoadmapService:
         return await self._lesson_to_response(lesson, user_id)
 
     async def get_module_lessons(
-        self, module_id: UUID, user_id: Optional[UUID] = None
+        self, module_id: UUID, user_id: UUID | None = None
     ) -> list[LessonResponse]:
         """Get all lessons for a module."""
         lessons = await self.lesson_repo.get_by_module_id(module_id)
-        return [await self._lesson_to_response(l, user_id) for l in lessons]
+        return [await self._lesson_to_response(lesson, user_id) for lesson in lessons]
 
     # ============== Progress Methods ==============
 
@@ -185,7 +184,7 @@ class RoadmapService:
 
     async def get_path_progress(
         self, user_id: UUID, path_id: UUID
-    ) -> Optional[PathProgressResponse]:
+    ) -> PathProgressResponse | None:
         """Get user's progress on a specific path."""
         progress = await self.progress_repo.get_path_progress(user_id, path_id)
         if not progress:
@@ -327,8 +326,8 @@ class RoadmapService:
         )
 
     async def get_next_lesson(
-        self, user_id: UUID, path_id: Optional[UUID] = None
-    ) -> Optional[LessonResponse]:
+        self, user_id: UUID, path_id: UUID | None = None
+    ) -> LessonResponse | None:
         """Get the next lesson for user to complete."""
         lesson = await self.progress_repo.get_next_lesson(user_id, path_id)
         if not lesson:
@@ -340,7 +339,7 @@ class RoadmapService:
     async def _path_to_response(
         self,
         path: LearningPath,
-        user_id: Optional[UUID] = None,
+        user_id: UUID | None = None,
         include_modules: bool = False,
     ) -> LearningPathResponse:
         """Convert path entity to response DTO."""
@@ -391,7 +390,7 @@ class RoadmapService:
     async def _module_to_response(
         self,
         module: Module,
-        user_id: Optional[UUID] = None,
+        user_id: UUID | None = None,
         include_lessons: bool = False,
     ) -> ModuleResponse:
         """Convert module entity to response DTO."""
@@ -424,7 +423,7 @@ class RoadmapService:
         )
 
     async def _lesson_to_response(
-        self, lesson: Lesson, user_id: Optional[UUID] = None
+        self, lesson: Lesson, user_id: UUID | None = None
     ) -> LessonResponse:
         """Convert lesson entity to response DTO."""
         status = None

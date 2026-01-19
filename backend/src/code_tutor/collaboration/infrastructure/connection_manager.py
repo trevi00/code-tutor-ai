@@ -1,16 +1,15 @@
 """WebSocket connection manager for collaboration sessions."""
 
 import asyncio
-import json
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any
 from uuid import UUID
 
 
 def utc_now() -> datetime:
     """Get current UTC time (timezone-aware)"""
-    return datetime.now(timezone.utc)
+    return datetime.now(UTC)
 
 from fastapi import WebSocket
 

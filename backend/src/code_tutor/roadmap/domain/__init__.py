@@ -2,14 +2,14 @@
 
 from code_tutor.roadmap.domain.entities import (
     LearningPath,
-    Module,
     Lesson,
-    UserPathProgress,
+    Module,
     UserLessonProgress,
+    UserPathProgress,
 )
 from code_tutor.roadmap.domain.value_objects import (
-    PathLevel,
     LessonType,
+    PathLevel,
     ProgressStatus,
 )
 

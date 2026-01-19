@@ -4,13 +4,13 @@ Integrates code analysis, classification, and persistence.
 Provides comprehensive code quality tracking and trend analysis.
 """
 
-from datetime import date, datetime, timedelta, timezone
+from datetime import UTC, date, datetime, timedelta
 from uuid import UUID
 
 
 def utc_now() -> datetime:
     """Get current UTC time (timezone-aware)"""
-    return datetime.now(timezone.utc)
+    return datetime.now(UTC)
 
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession

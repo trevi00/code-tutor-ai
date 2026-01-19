@@ -1,50 +1,47 @@
 """Gamification services."""
 
-from datetime import datetime, timedelta, timezone
-from typing import Optional
+from datetime import UTC, datetime, timedelta
 from uuid import UUID
 
 
 def utc_now() -> datetime:
     """Get current UTC time (timezone-aware)"""
-    return datetime.now(timezone.utc)
+    return datetime.now(UTC)
 
 from code_tutor.gamification.domain.entities import (
-    Badge,
-    UserBadge,
-    UserStats,
-    Challenge,
-    UserChallenge,
-    LeaderboardEntry,
     PREDEFINED_BADGES,
+    Badge,
+    Challenge,
+    LeaderboardEntry,
+    UserBadge,
+    UserChallenge,
+    UserStats,
 )
 from code_tutor.gamification.domain.repository import (
     BadgeRepository,
-    UserBadgeRepository,
-    UserStatsRepository,
     ChallengeRepository,
+    UserBadgeRepository,
     UserChallengeRepository,
+    UserStatsRepository,
 )
 from code_tutor.gamification.domain.value_objects import (
     XP_REWARDS,
-    ChallengeType,
     ChallengeStatus,
-    calculate_level,
-    get_level_title,
-    xp_for_next_level,
+    ChallengeType,
 )
+
 from .dto import (
     BadgeResponse,
-    UserBadgeResponse,
-    UserBadgesResponse,
-    UserStatsResponse,
-    XPAddedResponse,
-    LeaderboardEntryResponse,
-    LeaderboardResponse,
     ChallengeResponse,
-    UserChallengeResponse,
     ChallengesResponse,
     GamificationOverviewResponse,
+    LeaderboardEntryResponse,
+    LeaderboardResponse,
+    UserBadgeResponse,
+    UserBadgesResponse,
+    UserChallengeResponse,
+    UserStatsResponse,
+    XPAddedResponse,
 )
 
 
@@ -187,7 +184,7 @@ class XPService:
         self,
         user_id: UUID,
         action: str,
-        custom_amount: Optional[int] = None,
+        custom_amount: int | None = None,
     ) -> XPAddedResponse:
         """Add XP for an action."""
         stats = await self.user_stats_repo.get_or_create(user_id)
@@ -278,7 +275,7 @@ class LeaderboardService:
         period: str = "all",
         limit: int = 100,
         offset: int = 0,
-        user_id: Optional[UUID] = None,
+        user_id: UUID | None = None,
     ) -> LeaderboardResponse:
         """Get leaderboard."""
         entries = await self.user_stats_repo.get_leaderboard(
@@ -433,7 +430,7 @@ class ChallengeService:
         if challenge.is_active:
             now = utc_now()
             # Ensure timezone-aware comparison
-            end_date = challenge.end_date.replace(tzinfo=timezone.utc) if challenge.end_date.tzinfo is None else challenge.end_date
+            end_date = challenge.end_date.replace(tzinfo=UTC) if challenge.end_date.tzinfo is None else challenge.end_date
             delta = end_date - now
             if delta.days > 0:
                 time_remaining = f"{delta.days}일 남음"

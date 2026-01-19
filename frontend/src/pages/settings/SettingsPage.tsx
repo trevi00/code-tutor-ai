@@ -77,8 +77,11 @@ export default function SettingsPage() {
       setOldPassword('');
       setNewPassword('');
       setConfirmPassword('');
-    } catch (err: any) {
-      setError(err.response?.data?.detail || '비밀번호 변경에 실패했습니다.');
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error && 'response' in err
+        ? (err as { response?: { data?: { detail?: string } } }).response?.data?.detail
+        : null;
+      setError(errorMessage || '비밀번호 변경에 실패했습니다.');
     } finally {
       setLoading(false);
     }

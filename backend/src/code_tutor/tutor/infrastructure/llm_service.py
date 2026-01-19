@@ -887,6 +887,11 @@ class RAGBasedLLMService(LLMService):
         conversation_history: list[dict[str, str]] | None = None,
     ) -> str:
         """Generate response using RAG with algorithm patterns"""
+        # Check for conversational messages (greetings, help requests) first
+        lower_msg = user_message.lower()
+        if any(word in lower_msg for word in ["안녕", "hello", "hi", "처음"]):
+            return await self._generate_fallback_response(user_message, context)
+
         rag = self._ensure_rag_engine()
 
         if rag is None:

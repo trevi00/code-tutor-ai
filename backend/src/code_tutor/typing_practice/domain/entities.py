@@ -1,19 +1,18 @@
 """Domain entities for typing practice."""
 
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
-from typing import Optional
+from datetime import UTC, datetime
 from uuid import UUID, uuid4
 
 
 def utc_now() -> datetime:
     """Get current UTC time (timezone-aware)"""
-    return datetime.now(timezone.utc)
+    return datetime.now(UTC)
 
 from code_tutor.typing_practice.domain.value_objects import (
-    ExerciseCategory,
     AttemptStatus,
     Difficulty,
+    ExerciseCategory,
 )
 
 
@@ -61,10 +60,10 @@ class TypingExercise:
 
     def update(
         self,
-        title: Optional[str] = None,
-        source_code: Optional[str] = None,
-        description: Optional[str] = None,
-        difficulty: Optional[Difficulty] = None,
+        title: str | None = None,
+        source_code: str | None = None,
+        description: str | None = None,
+        difficulty: Difficulty | None = None,
     ) -> None:
         """Update exercise properties."""
         if title is not None:
@@ -102,7 +101,7 @@ class TypingAttempt:
     time_seconds: float = 0.0
     status: AttemptStatus = AttemptStatus.IN_PROGRESS
     started_at: datetime = field(default_factory=datetime.utcnow)
-    completed_at: Optional[datetime] = None
+    completed_at: datetime | None = None
 
     @classmethod
     def create(

@@ -2,15 +2,15 @@
 
 from code_tutor.roadmap.infrastructure.models import (
     LearningPathModel,
-    ModuleModel,
     LessonModel,
-    UserPathProgressModel,
+    ModuleModel,
     UserLessonProgressModel,
+    UserPathProgressModel,
 )
 from code_tutor.roadmap.infrastructure.repository import (
     SQLAlchemyLearningPathRepository,
-    SQLAlchemyModuleRepository,
     SQLAlchemyLessonRepository,
+    SQLAlchemyModuleRepository,
     SQLAlchemyUserProgressRepository,
 )
 

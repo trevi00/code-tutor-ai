@@ -69,8 +69,11 @@ export default function ProfilePage() {
       setUser(updatedUser);
       setSuccess('프로필이 업데이트되었습니다.');
       setIsEditing(false);
-    } catch (err: any) {
-      setError(err.response?.data?.detail || '프로필 업데이트에 실패했습니다.');
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error && 'response' in err
+        ? (err as { response?: { data?: { detail?: string } } }).response?.data?.detail
+        : null;
+      setError(errorMessage || '프로필 업데이트에 실패했습니다.');
     } finally {
       setLoading(false);
     }
@@ -105,8 +108,11 @@ export default function ProfilePage() {
       setOldPassword('');
       setNewPassword('');
       setConfirmPassword('');
-    } catch (err: any) {
-      setError(err.response?.data?.detail || '비밀번호 변경에 실패했습니다.');
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error && 'response' in err
+        ? (err as { response?: { data?: { detail?: string } } }).response?.data?.detail
+        : null;
+      setError(errorMessage || '비밀번호 변경에 실패했습니다.');
     } finally {
       setLoading(false);
     }

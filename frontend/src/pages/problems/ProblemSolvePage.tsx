@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, useRef } from 'react';
+import { useState, useCallback, useEffect, useRef, useMemo } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import Editor from '@monaco-editor/react';
 import {
@@ -64,10 +64,10 @@ interface SubmissionResult {
   }>;
 }
 
-// Confetti component for success celebration
-function Confetti() {
+// Generate confetti pieces once (stable across renders)
+function generateConfettiPieces() {
   const colors = ['#22c55e', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'];
-  const confettiPieces = Array.from({ length: 50 }, (_, i) => ({
+  return Array.from({ length: 50 }, (_, i) => ({
     id: i,
     left: Math.random() * 100,
     delay: Math.random() * 0.5,
@@ -75,6 +75,11 @@ function Confetti() {
     color: colors[Math.floor(Math.random() * colors.length)],
     rotation: Math.random() * 360,
   }));
+}
+
+// Confetti component for success celebration
+function Confetti() {
+  const confettiPieces = useMemo(() => generateConfettiPieces(), []);
 
   return (
     <div className="fixed inset-0 pointer-events-none z-50 overflow-hidden">

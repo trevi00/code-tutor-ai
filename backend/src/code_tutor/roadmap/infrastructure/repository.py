@@ -1,36 +1,35 @@
 """Repository implementations for Learning Roadmap."""
 
-from typing import Optional
 from uuid import UUID
 
-from sqlalchemy import select, func
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from code_tutor.roadmap.domain.entities import (
     LearningPath,
-    Module,
     Lesson,
-    UserPathProgress,
+    Module,
     UserLessonProgress,
-)
-from code_tutor.roadmap.domain.value_objects import (
-    PathLevel,
-    LessonType,
-    ProgressStatus,
+    UserPathProgress,
 )
 from code_tutor.roadmap.domain.repository import (
     LearningPathRepository,
-    ModuleRepository,
     LessonRepository,
+    ModuleRepository,
     UserProgressRepository,
+)
+from code_tutor.roadmap.domain.value_objects import (
+    LessonType,
+    PathLevel,
+    ProgressStatus,
 )
 from code_tutor.roadmap.infrastructure.models import (
     LearningPathModel,
-    ModuleModel,
     LessonModel,
-    UserPathProgressModel,
+    ModuleModel,
     UserLessonProgressModel,
+    UserPathProgressModel,
 )
 
 
@@ -51,18 +50,18 @@ class SQLAlchemyLearningPathRepository(LearningPathRepository):
                 order=m.order,
                 lessons=[
                     Lesson(
-                        id=UUID(l.id),
-                        module_id=UUID(l.module_id),
-                        title=l.title,
-                        description=l.description,
-                        lesson_type=LessonType(l.lesson_type),
-                        content=l.content,
-                        content_id=UUID(l.content_id) if l.content_id else None,
-                        order=l.order,
-                        xp_reward=l.xp_reward,
-                        estimated_minutes=l.estimated_minutes,
+                        id=UUID(lsn.id),
+                        module_id=UUID(lsn.module_id),
+                        title=lsn.title,
+                        description=lsn.description,
+                        lesson_type=LessonType(lsn.lesson_type),
+                        content=lsn.content,
+                        content_id=UUID(lsn.content_id) if lsn.content_id else None,
+                        order=lsn.order,
+                        xp_reward=lsn.xp_reward,
+                        estimated_minutes=lsn.estimated_minutes,
                     )
-                    for l in m.lessons
+                    for lsn in m.lessons
                 ],
             )
             for m in model.modules
@@ -86,7 +85,7 @@ class SQLAlchemyLearningPathRepository(LearningPathRepository):
         path._updated_at = model.updated_at
         return path
 
-    async def get_by_id(self, path_id: UUID) -> Optional[LearningPath]:
+    async def get_by_id(self, path_id: UUID) -> LearningPath | None:
         """Get a learning path by ID."""
         result = await self.session.execute(
             select(LearningPathModel)
@@ -99,7 +98,7 @@ class SQLAlchemyLearningPathRepository(LearningPathRepository):
         model = result.scalar_one_or_none()
         return self._to_entity(model) if model else None
 
-    async def get_by_level(self, level: PathLevel) -> Optional[LearningPath]:
+    async def get_by_level(self, level: PathLevel) -> LearningPath | None:
         """Get a learning path by level."""
         result = await self.session.execute(
             select(LearningPathModel)
@@ -171,22 +170,22 @@ class SQLAlchemyModuleRepository(ModuleRepository):
             order=model.order,
             lessons=[
                 Lesson(
-                    id=UUID(l.id),
-                    module_id=UUID(l.module_id),
-                    title=l.title,
-                    description=l.description,
-                    lesson_type=LessonType(l.lesson_type),
-                    content=l.content,
-                    content_id=UUID(l.content_id) if l.content_id else None,
-                    order=l.order,
-                    xp_reward=l.xp_reward,
-                    estimated_minutes=l.estimated_minutes,
+                    id=UUID(lsn.id),
+                    module_id=UUID(lsn.module_id),
+                    title=lsn.title,
+                    description=lsn.description,
+                    lesson_type=LessonType(lsn.lesson_type),
+                    content=lsn.content,
+                    content_id=UUID(lsn.content_id) if lsn.content_id else None,
+                    order=lsn.order,
+                    xp_reward=lsn.xp_reward,
+                    estimated_minutes=lsn.estimated_minutes,
                 )
-                for l in model.lessons
+                for lsn in model.lessons
             ],
         )
 
-    async def get_by_id(self, module_id: UUID) -> Optional[Module]:
+    async def get_by_id(self, module_id: UUID) -> Module | None:
         """Get a module by ID."""
         result = await self.session.execute(
             select(ModuleModel)
@@ -241,7 +240,7 @@ class SQLAlchemyLessonRepository(LessonRepository):
             estimated_minutes=model.estimated_minutes,
         )
 
-    async def get_by_id(self, lesson_id: UUID) -> Optional[Lesson]:
+    async def get_by_id(self, lesson_id: UUID) -> Lesson | None:
         """Get a lesson by ID."""
         result = await self.session.execute(
             select(LessonModel).where(LessonModel.id == str(lesson_id))
@@ -327,7 +326,7 @@ class SQLAlchemyUserProgressRepository(UserProgressRepository):
 
     async def get_path_progress(
         self, user_id: UUID, path_id: UUID
-    ) -> Optional[UserPathProgress]:
+    ) -> UserPathProgress | None:
         """Get user's progress on a path."""
         result = await self.session.execute(
             select(UserPathProgressModel).where(
@@ -386,7 +385,7 @@ class SQLAlchemyUserProgressRepository(UserProgressRepository):
 
     async def get_lesson_progress(
         self, user_id: UUID, lesson_id: UUID
-    ) -> Optional[UserLessonProgress]:
+    ) -> UserLessonProgress | None:
         """Get user's progress on a lesson."""
         result = await self.session.execute(
             select(UserLessonProgressModel).where(
@@ -481,7 +480,7 @@ class SQLAlchemyUserProgressRepository(UserProgressRepository):
 
     async def get_next_lesson(
         self, user_id: UUID, path_id: UUID | None = None
-    ) -> Optional[Lesson]:
+    ) -> Lesson | None:
         """Get the next incomplete lesson for user."""
         # Get completed lesson IDs
         completed_query = (

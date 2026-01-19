@@ -1,12 +1,11 @@
 """Repository interfaces for typing practice domain."""
 
 from abc import ABC, abstractmethod
-from typing import Optional
 from uuid import UUID
 
 from code_tutor.typing_practice.domain.entities import (
-    TypingExercise,
     TypingAttempt,
+    TypingExercise,
     UserExerciseProgress,
 )
 from code_tutor.typing_practice.domain.value_objects import ExerciseCategory
@@ -16,14 +15,14 @@ class TypingExerciseRepository(ABC):
     """Repository interface for typing exercises."""
 
     @abstractmethod
-    async def get_by_id(self, exercise_id: UUID) -> Optional[TypingExercise]:
+    async def get_by_id(self, exercise_id: UUID) -> TypingExercise | None:
         """Get exercise by ID."""
         pass
 
     @abstractmethod
     async def list_all(
         self,
-        category: Optional[ExerciseCategory] = None,
+        category: ExerciseCategory | None = None,
         limit: int = 50,
         offset: int = 0,
     ) -> list[TypingExercise]:
@@ -41,7 +40,7 @@ class TypingExerciseRepository(ABC):
         pass
 
     @abstractmethod
-    async def count(self, category: Optional[ExerciseCategory] = None) -> int:
+    async def count(self, category: ExerciseCategory | None = None) -> int:
         """Count exercises."""
         pass
 
@@ -50,7 +49,7 @@ class TypingAttemptRepository(ABC):
     """Repository interface for typing attempts."""
 
     @abstractmethod
-    async def get_by_id(self, attempt_id: UUID) -> Optional[TypingAttempt]:
+    async def get_by_id(self, attempt_id: UUID) -> TypingAttempt | None:
         """Get attempt by ID."""
         pass
 
@@ -83,7 +82,7 @@ class TypingAttemptRepository(ABC):
         self,
         user_id: UUID,
         exercise_id: UUID,
-    ) -> Optional[UserExerciseProgress]:
+    ) -> UserExerciseProgress | None:
         """Get user's progress on an exercise."""
         pass
 

@@ -2,7 +2,7 @@
 
 from typing import Annotated, Any
 
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Depends
 
 from code_tutor.execution.application.dto import ExecuteCodeRequest
 from code_tutor.execution.application.services import ExecutionService

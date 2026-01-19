@@ -4,7 +4,7 @@ import { test, expect } from '@playwright/test';
 test.describe.configure({ mode: 'serial' });
 
 // Helper function to solve a problem
-async function solveProblem(page: any, context: any, problemId: string, code: string) {
+async function solveProblem(page: import('@playwright/test').Page, context: import('@playwright/test').BrowserContext, problemId: string, code: string) {
   await context.grantPermissions(['clipboard-read', 'clipboard-write']);
 
   // Go to problem solve page
@@ -22,7 +22,7 @@ async function solveProblem(page: any, context: any, problemId: string, code: st
       await editorArea.waitFor({ state: 'visible', timeout: 10000 });
       await editorArea.click();
       editorClicked = true;
-    } catch (e) {
+    } catch {
       console.log(`Editor click attempt ${attempt + 1} failed, retrying...`);
       await page.waitForTimeout(2000);
     }

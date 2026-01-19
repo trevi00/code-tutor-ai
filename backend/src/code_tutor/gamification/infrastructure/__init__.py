@@ -2,17 +2,17 @@
 
 from .models import (
     BadgeModel,
-    UserBadgeModel,
-    UserStatsModel,
     ChallengeModel,
+    UserBadgeModel,
     UserChallengeModel,
+    UserStatsModel,
 )
 from .repository import (
     SQLAlchemyBadgeRepository,
-    SQLAlchemyUserBadgeRepository,
-    SQLAlchemyUserStatsRepository,
     SQLAlchemyChallengeRepository,
+    SQLAlchemyUserBadgeRepository,
     SQLAlchemyUserChallengeRepository,
+    SQLAlchemyUserStatsRepository,
 )
 
 __all__ = [

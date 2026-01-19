@@ -3,7 +3,7 @@
 from typing import Annotated
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from code_tutor.identity.application.dto import UserResponse
@@ -54,7 +54,7 @@ async def chat(
 ) -> ChatResponse:
     """
     Send a message and get AI tutor response.
-    
+
     Rate limited to 10 messages per minute.
     """
     try:
@@ -130,7 +130,7 @@ async def review_code(
     - Potential bugs and issues
     - Performance suggestions
     - Best practices
-    
+
     Rate limited to 5 reviews per minute (expensive operation).
     """
     return await service.review_code(current_user.id, request)

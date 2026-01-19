@@ -1,13 +1,13 @@
 """Collaboration service for managing real-time coding sessions."""
 
 import random
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from uuid import UUID, uuid4
 
 
 def utc_now() -> datetime:
     """Get current UTC time (timezone-aware)"""
-    return datetime.now(timezone.utc)
+    return datetime.now(UTC)
 
 from code_tutor.collaboration.application.dto import (
     CodeChangeRequest,
@@ -25,9 +25,7 @@ from code_tutor.collaboration.domain.entities import (
 from code_tutor.collaboration.domain.repository import CollaborationRepository
 from code_tutor.collaboration.domain.value_objects import (
     CodeOperation,
-    CursorPosition,
     OperationType,
-    SelectionRange,
     SessionStatus,
 )
 from code_tutor.collaboration.infrastructure.connection_manager import (

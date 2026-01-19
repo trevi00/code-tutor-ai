@@ -13,9 +13,9 @@ from .entities import (
     RuntimeMetrics,
 )
 from .value_objects import (
-    AnalysisStatus,
     COMPLEXITY_DESCRIPTIONS,
     COMPLEXITY_RANK,
+    AnalysisStatus,
     ComplexityClass,
     IssueSeverity,
     PerformanceIssueType,

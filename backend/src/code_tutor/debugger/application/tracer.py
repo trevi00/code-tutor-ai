@@ -1,23 +1,22 @@
 """Python code tracer for step-by-step debugging."""
 
-import sys
-import io
 import copy
+import io
+import sys
 import time
 import traceback
-from typing import Any, Optional
-from contextlib import redirect_stdout, redirect_stderr
+from contextlib import redirect_stderr, redirect_stdout
 
 from code_tutor.debugger.domain import (
+    MAX_EXECUTION_TIME,
+    MAX_STEPS,
+    DebugResult,
+    DebugSession,
+    DebugStatus,
+    ExecutionStep,
+    StackFrame,
     StepType,
     Variable,
-    StackFrame,
-    ExecutionStep,
-    DebugSession,
-    DebugResult,
-    DebugStatus,
-    MAX_STEPS,
-    MAX_EXECUTION_TIME,
 )
 
 
@@ -42,7 +41,7 @@ class CodeTracer:
         self.step_count = 0
         self.start_time: float = 0
         self.output_buffer = io.StringIO()
-        self.error: Optional[str] = None
+        self.error: str | None = None
         self.lines: list[str] = []
         self.call_stack: list[StackFrame] = []
         self.user_module_name = "<user_code>"

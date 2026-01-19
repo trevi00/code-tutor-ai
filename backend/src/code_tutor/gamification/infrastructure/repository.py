@@ -1,47 +1,46 @@
 """Gamification repository implementations."""
 
-from datetime import datetime, timedelta, timezone
-from typing import Optional
+from datetime import UTC, datetime, timedelta
 from uuid import UUID
 
 
 def utc_now() -> datetime:
     """Get current UTC time (timezone-aware)"""
-    return datetime.now(timezone.utc)
+    return datetime.now(UTC)
 
-from sqlalchemy import select, func, desc
+from sqlalchemy import desc, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from code_tutor.gamification.domain.entities import (
     Badge,
-    UserBadge,
-    UserStats,
     Challenge,
-    UserChallenge,
     LeaderboardEntry,
+    UserBadge,
+    UserChallenge,
+    UserStats,
 )
 from code_tutor.gamification.domain.repository import (
     BadgeRepository,
-    UserBadgeRepository,
-    UserStatsRepository,
     ChallengeRepository,
+    UserBadgeRepository,
     UserChallengeRepository,
+    UserStatsRepository,
 )
 from code_tutor.gamification.domain.value_objects import (
     BadgeCategory,
-    BadgeRarity,
-    ChallengeType,
     ChallengeStatus,
+    ChallengeType,
     calculate_level,
     get_level_title,
 )
+
 from .models import (
     BadgeModel,
-    UserBadgeModel,
-    UserStatsModel,
     ChallengeModel,
+    UserBadgeModel,
     UserChallengeModel,
+    UserStatsModel,
 )
 
 
@@ -138,7 +137,7 @@ class SQLAlchemyBadgeRepository(BadgeRepository):
     def __init__(self, session: AsyncSession):
         self.session = session
 
-    async def get_by_id(self, badge_id: UUID) -> Optional[Badge]:
+    async def get_by_id(self, badge_id: UUID) -> Badge | None:
         result = await self.session.execute(
             select(BadgeModel).where(BadgeModel.id == badge_id)
         )
@@ -234,7 +233,7 @@ class SQLAlchemyUserStatsRepository(UserStatsRepository):
     def __init__(self, session: AsyncSession):
         self.session = session
 
-    async def get_by_user(self, user_id: UUID) -> Optional[UserStats]:
+    async def get_by_user(self, user_id: UUID) -> UserStats | None:
         result = await self.session.execute(
             select(UserStatsModel).where(UserStatsModel.user_id == user_id)
         )
@@ -305,7 +304,7 @@ class SQLAlchemyUserStatsRepository(UserStatsRepository):
         self,
         limit: int = 100,
         offset: int = 0,
-        period: Optional[str] = None,
+        period: str | None = None,
     ) -> list[LeaderboardEntry]:
         # Import here to avoid circular import
         from code_tutor.identity.infrastructure.models import UserModel
@@ -369,7 +368,7 @@ class SQLAlchemyChallengeRepository(ChallengeRepository):
     def __init__(self, session: AsyncSession):
         self.session = session
 
-    async def get_by_id(self, challenge_id: UUID) -> Optional[Challenge]:
+    async def get_by_id(self, challenge_id: UUID) -> Challenge | None:
         result = await self.session.execute(
             select(ChallengeModel).where(ChallengeModel.id == challenge_id)
         )
@@ -378,7 +377,7 @@ class SQLAlchemyChallengeRepository(ChallengeRepository):
 
     async def get_active(
         self,
-        challenge_type: Optional[ChallengeType] = None,
+        challenge_type: ChallengeType | None = None,
     ) -> list[Challenge]:
         now = utc_now()
         query = select(ChallengeModel).where(
@@ -437,7 +436,7 @@ class SQLAlchemyUserChallengeRepository(UserChallengeRepository):
         self,
         user_id: UUID,
         challenge_id: UUID,
-    ) -> Optional[UserChallenge]:
+    ) -> UserChallenge | None:
         result = await self.session.execute(
             select(UserChallengeModel)
             .options(selectinload(UserChallengeModel.challenge))

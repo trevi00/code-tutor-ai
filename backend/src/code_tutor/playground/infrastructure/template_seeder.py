@@ -12,7 +12,6 @@ from code_tutor.playground.domain import (
 )
 from code_tutor.playground.infrastructure.models import CodeTemplateModel
 
-
 TEMPLATES = [
     # Python Templates
     {

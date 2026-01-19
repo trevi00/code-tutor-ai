@@ -1,14 +1,14 @@
 """Base domain classes for DDD implementation"""
 
 from abc import ABC
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any
 from uuid import UUID, uuid4
 
 
 def utc_now() -> datetime:
     """Get current UTC time (timezone-aware)"""
-    return datetime.now(timezone.utc)
+    return datetime.now(UTC)
 
 
 class ValueObject(ABC):

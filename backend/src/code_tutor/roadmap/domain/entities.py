@@ -1,20 +1,19 @@
 """Domain entities for Learning Roadmap."""
 
-from datetime import datetime, timezone
-from typing import Optional
+from datetime import UTC, datetime
 from uuid import UUID
 
-from code_tutor.shared.domain.base import AggregateRoot, Entity
 from code_tutor.roadmap.domain.value_objects import (
-    PathLevel,
     LessonType,
+    PathLevel,
     ProgressStatus,
 )
+from code_tutor.shared.domain.base import AggregateRoot, Entity
 
 
 def utc_now() -> datetime:
     """Get current UTC time (timezone-aware)"""
-    return datetime.now(timezone.utc)
+    return datetime.now(UTC)
 
 
 class Lesson(Entity):

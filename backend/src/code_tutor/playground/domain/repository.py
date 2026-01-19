@@ -10,7 +10,6 @@ from code_tutor.playground.domain.entities import (
 )
 from code_tutor.playground.domain.value_objects import (
     PlaygroundLanguage,
-    PlaygroundVisibility,
     TemplateCategory,
 )
 

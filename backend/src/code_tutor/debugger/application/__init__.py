@@ -3,11 +3,11 @@
 from .dto import (
     DebugRequest,
     DebugResponse,
-    VariableResponse,
-    StackFrameResponse,
-    ExecutionStepResponse,
-    StepInfoResponse,
     DebugSummaryResponse,
+    ExecutionStepResponse,
+    StackFrameResponse,
+    StepInfoResponse,
+    VariableResponse,
 )
 from .services import DebugService, debug_service
 from .tracer import CodeTracer, trace_code

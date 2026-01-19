@@ -1,15 +1,15 @@
 """Gamification DTOs."""
 
 from datetime import datetime
-from typing import Optional
 from uuid import UUID
+
 from pydantic import BaseModel, Field
 
 from code_tutor.gamification.domain.value_objects import (
-    BadgeRarity,
     BadgeCategory,
-    ChallengeType,
+    BadgeRarity,
     ChallengeStatus,
+    ChallengeType,
 )
 
 
@@ -88,7 +88,7 @@ class AddXPRequest(BaseModel):
     """Request to add XP."""
 
     action: str = Field(description="Action that earned XP")
-    custom_amount: Optional[int] = Field(
+    custom_amount: int | None = Field(
         None, description="Custom XP amount (overrides action default)"
     )
 
@@ -124,7 +124,7 @@ class LeaderboardResponse(BaseModel):
     entries: list[LeaderboardEntryResponse]
     period: str
     total_users: int
-    user_rank: Optional[int] = None
+    user_rank: int | None = None
 
 
 # Challenge DTOs
@@ -140,7 +140,7 @@ class ChallengeResponse(BaseModel):
     xp_reward: int
     start_date: datetime
     end_date: datetime
-    time_remaining: Optional[str] = None
+    time_remaining: str | None = None
 
     class Config:
         from_attributes = True
@@ -150,12 +150,12 @@ class UserChallengeResponse(BaseModel):
     """User challenge response."""
 
     id: UUID
-    challenge: Optional[ChallengeResponse] = None
+    challenge: ChallengeResponse | None = None
     current_progress: int
     status: ChallengeStatus
     progress_percentage: float
     started_at: datetime
-    completed_at: Optional[datetime] = None
+    completed_at: datetime | None = None
 
 
 class ChallengesResponse(BaseModel):
@@ -174,4 +174,4 @@ class GamificationOverviewResponse(BaseModel):
     recent_badges: list[UserBadgeResponse]
     active_challenges: list[UserChallengeResponse]
     leaderboard_rank: int
-    next_badge_progress: Optional[dict] = None
+    next_badge_progress: dict | None = None

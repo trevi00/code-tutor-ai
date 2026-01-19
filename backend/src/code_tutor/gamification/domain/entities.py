@@ -1,20 +1,19 @@
 """Gamification domain entities."""
 
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
-from typing import Optional
+from datetime import UTC, datetime
 from uuid import UUID, uuid4
 
 
 def utc_now() -> datetime:
     """Get current UTC time (timezone-aware)"""
-    return datetime.now(timezone.utc)
+    return datetime.now(UTC)
 
 from .value_objects import (
-    BadgeRarity,
     BadgeCategory,
-    ChallengeType,
+    BadgeRarity,
     ChallengeStatus,
+    ChallengeType,
     calculate_level,
     get_level_title,
     xp_for_next_level,
@@ -70,7 +69,7 @@ class UserBadge:
     user_id: UUID
     badge_id: UUID
     earned_at: datetime = field(default_factory=datetime.utcnow)
-    badge: Optional[Badge] = None
+    badge: Badge | None = None
 
     @classmethod
     def create(cls, user_id: UUID, badge_id: UUID) -> "UserBadge":
@@ -105,7 +104,7 @@ class UserStats:
     elementary_path_completed: bool = False
     intermediate_path_completed: bool = False
     advanced_path_completed: bool = False
-    last_activity_date: Optional[datetime] = None
+    last_activity_date: datetime | None = None
     created_at: datetime = field(default_factory=datetime.utcnow)
     updated_at: datetime = field(default_factory=datetime.utcnow)
 
@@ -253,8 +252,8 @@ class Challenge:
         """Check if challenge is currently active."""
         now = utc_now()
         # Ensure timezone-aware comparison
-        start = self.start_date.replace(tzinfo=timezone.utc) if self.start_date.tzinfo is None else self.start_date
-        end = self.end_date.replace(tzinfo=timezone.utc) if self.end_date.tzinfo is None else self.end_date
+        start = self.start_date.replace(tzinfo=UTC) if self.start_date.tzinfo is None else self.start_date
+        end = self.end_date.replace(tzinfo=UTC) if self.end_date.tzinfo is None else self.end_date
         return start <= now <= end
 
 
@@ -268,8 +267,8 @@ class UserChallenge:
     current_progress: int = 0
     status: ChallengeStatus = ChallengeStatus.ACTIVE
     started_at: datetime = field(default_factory=datetime.utcnow)
-    completed_at: Optional[datetime] = None
-    challenge: Optional[Challenge] = None
+    completed_at: datetime | None = None
+    challenge: Challenge | None = None
 
     @classmethod
     def create(cls, user_id: UUID, challenge_id: UUID) -> "UserChallenge":

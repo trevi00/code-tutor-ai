@@ -4,8 +4,8 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 
-from code_tutor.identity.interface.dependencies import get_current_user
 from code_tutor.identity.application.dto import UserResponse
+from code_tutor.identity.interface.dependencies import get_current_user
 from code_tutor.playground.application.dto import (
     CreatePlaygroundRequest,
     ExecutePlaygroundRequest,

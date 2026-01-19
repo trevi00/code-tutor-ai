@@ -4,24 +4,22 @@ from datetime import datetime
 from uuid import uuid4
 
 from sqlalchemy import (
-    Column,
-    String,
-    Text,
-    Integer,
-    Float,
     Boolean,
+    Column,
     DateTime,
     ForeignKey,
+    Integer,
+    String,
+    Text,
 )
-from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 
-from code_tutor.shared.infrastructure.database import Base
 from code_tutor.roadmap.domain.value_objects import (
-    PathLevel,
     LessonType,
+    PathLevel,
     ProgressStatus,
 )
+from code_tutor.shared.infrastructure.database import Base
 
 
 def generate_uuid() -> str:

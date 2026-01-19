@@ -6,7 +6,7 @@ Identifies weak quality dimensions and suggests problems to improve them.
 
 from uuid import UUID
 
-from sqlalchemy import func, select
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from code_tutor.learning.infrastructure.models import ProblemModel

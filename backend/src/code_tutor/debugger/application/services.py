@@ -1,25 +1,23 @@
 """Debugger application services."""
 
-from typing import Optional
-from uuid import UUID
 
 from code_tutor.debugger.domain import (
     DebugResult,
-    DebugStatus,
     ExecutionStep,
-    Variable,
     StackFrame,
+    Variable,
 )
-from .tracer import trace_code
+
 from .dto import (
     DebugRequest,
     DebugResponse,
+    DebugSummaryResponse,
     ExecutionStepResponse,
-    VariableResponse,
     StackFrameResponse,
     StepInfoResponse,
-    DebugSummaryResponse,
+    VariableResponse,
 )
+from .tracer import trace_code
 
 
 class DebugService:
@@ -42,7 +40,7 @@ class DebugService:
 
         return self._to_debug_response(result)
 
-    async def get_session(self, session_id: str) -> Optional[DebugResponse]:
+    async def get_session(self, session_id: str) -> DebugResponse | None:
         """Get a debug session by ID."""
         result = self._sessions.get(session_id)
         if result:
@@ -54,7 +52,7 @@ class DebugService:
         session_id: str,
         step_number: int,
         breakpoints: list[int] = None,
-    ) -> Optional[StepInfoResponse]:
+    ) -> StepInfoResponse | None:
         """Get information about a specific step."""
         result = self._sessions.get(session_id)
         if not result or step_number < 1 or step_number > len(result.steps):
@@ -70,7 +68,7 @@ class DebugService:
             is_breakpoint=is_breakpoint,
         )
 
-    async def get_summary(self, session_id: str) -> Optional[DebugSummaryResponse]:
+    async def get_summary(self, session_id: str) -> DebugSummaryResponse | None:
         """Get a summary of the debug session."""
         result = self._sessions.get(session_id)
         if not result:

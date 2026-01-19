@@ -9,10 +9,9 @@ import VariableInspector from './VariableInspector';
 
 interface CallStackProps {
   frames: StackFrame[];
-  currentLine?: number;
 }
 
-export default function CallStack({ frames, currentLine: _currentLine }: CallStackProps) {
+export default function CallStack({ frames }: CallStackProps) {
   const [expandedFrame, setExpandedFrame] = useState<number | null>(
     frames.length > 0 ? frames.length - 1 : null
   );

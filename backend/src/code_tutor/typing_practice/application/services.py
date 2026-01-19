@@ -1,29 +1,27 @@
 """Application services for typing practice."""
 
-from typing import Optional
 from uuid import UUID
 
+from code_tutor.typing_practice.application.dto import (
+    CompleteAttemptRequest,
+    CreateExerciseRequest,
+    TypingAttemptResponse,
+    TypingExerciseListResponse,
+    TypingExerciseResponse,
+    UserProgressResponse,
+    UserTypingStatsResponse,
+)
 from code_tutor.typing_practice.domain.entities import (
-    TypingExercise,
     TypingAttempt,
+    TypingExercise,
     UserExerciseProgress,
 )
 from code_tutor.typing_practice.domain.repository import (
-    TypingExerciseRepository,
     TypingAttemptRepository,
+    TypingExerciseRepository,
 )
 from code_tutor.typing_practice.domain.value_objects import (
     ExerciseCategory,
-    Difficulty,
-)
-from code_tutor.typing_practice.application.dto import (
-    CreateExerciseRequest,
-    CompleteAttemptRequest,
-    TypingExerciseResponse,
-    TypingExerciseListResponse,
-    TypingAttemptResponse,
-    UserProgressResponse,
-    UserTypingStatsResponse,
 )
 
 
@@ -60,7 +58,7 @@ class TypingPracticeService:
     async def get_exercise(
         self,
         exercise_id: UUID,
-    ) -> Optional[TypingExerciseResponse]:
+    ) -> TypingExerciseResponse | None:
         """Get a typing exercise by ID."""
         exercise = await self.exercise_repo.get_by_id(exercise_id)
         if not exercise:
@@ -69,7 +67,7 @@ class TypingPracticeService:
 
     async def list_exercises(
         self,
-        category: Optional[ExerciseCategory] = None,
+        category: ExerciseCategory | None = None,
         page: int = 1,
         page_size: int = 20,
     ) -> TypingExerciseListResponse:
@@ -117,7 +115,7 @@ class TypingPracticeService:
         self,
         attempt_id: UUID,
         request: CompleteAttemptRequest,
-    ) -> Optional[TypingAttemptResponse]:
+    ) -> TypingAttemptResponse | None:
         """Complete a typing attempt."""
         attempt = await self.attempt_repo.get_by_id(attempt_id)
         if not attempt:
@@ -136,7 +134,7 @@ class TypingPracticeService:
         self,
         user_id: UUID,
         exercise_id: UUID,
-    ) -> Optional[UserProgressResponse]:
+    ) -> UserProgressResponse | None:
         """Get user's progress on an exercise."""
         exercise = await self.exercise_repo.get_by_id(exercise_id)
         if not exercise:

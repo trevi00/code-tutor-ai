@@ -28,6 +28,50 @@ interface TooltipPayloadItem {
   payload: QualityTrendPoint & { fullDate: string };
 }
 
+// Custom tooltip (defined outside to avoid recreation on each render)
+interface TrendTooltipProps {
+  active?: boolean;
+  payload?: TooltipPayloadItem[];
+}
+
+function TrendTooltip({ active, payload }: TrendTooltipProps) {
+  if (!active || !payload || payload.length === 0) return null;
+
+  const data = payload[0].payload;
+
+  return (
+    <div className="bg-white dark:bg-slate-700 rounded-lg shadow-xl border border-gray-200 dark:border-slate-600 p-4 min-w-[180px]">
+      <p className="text-sm font-medium text-gray-800 dark:text-gray-100 mb-2 pb-2 border-b border-gray-100 dark:border-slate-600">
+        {new Date(data.fullDate).toLocaleDateString('ko-KR', {
+          year: 'numeric', month: 'long', day: 'numeric'
+        })}
+      </p>
+      <div className="space-y-1.5">
+        {payload.map((entry, index) => {
+          const config = Object.values(dimensionConfig).find(c => c.key === entry.dataKey);
+          return (
+            <div key={index} className="flex items-center justify-between text-sm">
+              <span className="flex items-center gap-2 text-gray-600 dark:text-gray-300">
+                <span
+                  className="w-2.5 h-2.5 rounded-full"
+                  style={{ backgroundColor: entry.color }}
+                />
+                {config?.name}
+              </span>
+              <span className="font-medium text-gray-800 dark:text-gray-100">
+                {entry.value.toFixed(1)}점
+              </span>
+            </div>
+          );
+        })}
+      </div>
+      <div className="mt-2 pt-2 border-t border-gray-100 dark:border-slate-600 text-xs text-gray-500 dark:text-gray-400">
+        제출 {data.submissions_analyzed}건
+      </div>
+    </div>
+  );
+}
+
 export function QualityTrendChart({ trends, days }: QualityTrendChartProps) {
   const [selectedDimensions, setSelectedDimensions] = useState<DimensionKey[]>(['overall']);
 
@@ -71,45 +115,6 @@ export function QualityTrendChart({ trends, days }: QualityTrendChartProps) {
       }
       return [...prev, dim];
     });
-  };
-
-  // Custom tooltip
-  const CustomTooltip = ({ active, payload }: { active?: boolean; payload?: TooltipPayloadItem[] }) => {
-    if (!active || !payload || payload.length === 0) return null;
-
-    const data = payload[0].payload;
-
-    return (
-      <div className="bg-white dark:bg-slate-700 rounded-lg shadow-xl border border-gray-200 dark:border-slate-600 p-4 min-w-[180px]">
-        <p className="text-sm font-medium text-gray-800 dark:text-gray-100 mb-2 pb-2 border-b border-gray-100 dark:border-slate-600">
-          {new Date(data.fullDate).toLocaleDateString('ko-KR', {
-            year: 'numeric', month: 'long', day: 'numeric'
-          })}
-        </p>
-        <div className="space-y-1.5">
-          {payload.map((entry, index) => {
-            const config = Object.values(dimensionConfig).find(c => c.key === entry.dataKey);
-            return (
-              <div key={index} className="flex items-center justify-between text-sm">
-                <span className="flex items-center gap-2 text-gray-600 dark:text-gray-300">
-                  <span
-                    className="w-2.5 h-2.5 rounded-full"
-                    style={{ backgroundColor: entry.color }}
-                  />
-                  {config?.name}
-                </span>
-                <span className="font-medium text-gray-800 dark:text-gray-100">
-                  {entry.value.toFixed(1)}점
-                </span>
-              </div>
-            );
-          })}
-        </div>
-        <div className="mt-2 pt-2 border-t border-gray-100 dark:border-slate-600 text-xs text-gray-500 dark:text-gray-400">
-          제출 {data.submissions_analyzed}건
-        </div>
-      </div>
-    );
   };
 
   return (
@@ -187,7 +192,7 @@ export function QualityTrendChart({ trends, days }: QualityTrendChartProps) {
               tickLine={false}
               axisLine={false}
             />
-            <Tooltip content={<CustomTooltip />} />
+            <Tooltip content={<TrendTooltip />} />
             {selectedDimensions.map((dim) => {
               const config = dimensionConfig[dim];
               return (

@@ -1,9 +1,9 @@
 """Debugger DTOs."""
 
-from typing import Optional
+
 from pydantic import BaseModel, Field
 
-from code_tutor.debugger.domain import StepType, VariableType, DebugStatus
+from code_tutor.debugger.domain import DebugStatus, StepType, VariableType
 
 
 class DebugRequest(BaseModel):
@@ -44,8 +44,8 @@ class ExecutionStepResponse(BaseModel):
     variables: list[VariableResponse]
     call_stack: list[StackFrameResponse]
     output: str
-    return_value: Optional[str] = None
-    exception: Optional[str] = None
+    return_value: str | None = None
+    exception: str | None = None
 
 
 class DebugResponse(BaseModel):
@@ -55,7 +55,7 @@ class DebugResponse(BaseModel):
     status: DebugStatus
     total_steps: int
     output: str
-    error: Optional[str] = None
+    error: str | None = None
     execution_time_ms: float
     steps: list[ExecutionStepResponse]
 
@@ -79,5 +79,5 @@ class DebugSummaryResponse(BaseModel):
     functions_called: list[str]
     variables_used: list[str]
     has_error: bool
-    error_line: Optional[int] = None
+    error_line: int | None = None
     execution_time_ms: float

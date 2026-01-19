@@ -2,7 +2,7 @@
 
 from pydantic import BaseModel, Field
 
-from code_tutor.visualization.domain import AlgorithmCategory, AlgorithmType
+from code_tutor.visualization.domain import AlgorithmType
 
 
 class AlgorithmInfoResponse(BaseModel):

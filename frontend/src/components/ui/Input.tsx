@@ -1,4 +1,4 @@
-import { forwardRef, useState } from 'react';
+import { forwardRef, useId, useState } from 'react';
 import clsx from 'clsx';
 import { Eye, EyeOff, AlertCircle, CheckCircle } from 'lucide-react';
 
@@ -39,7 +39,8 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
     ref
   ) => {
     const [showPassword, setShowPassword] = useState(false);
-    const inputId = id || props.name || `input-${Math.random().toString(36).substr(2, 9)}`;
+    const generatedId = useId();
+    const inputId = id || props.name || generatedId;
     const isPassword = type === 'password';
     const currentType = isPassword && showPassword ? 'text' : type;
 
@@ -135,7 +136,8 @@ interface TextareaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement
 
 export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
   ({ className, label, error, hint, fullWidth = true, disabled, id, ...props }, ref) => {
-    const inputId = id || props.name || `textarea-${Math.random().toString(36).substr(2, 9)}`;
+    const generatedId = useId();
+    const inputId = id || props.name || generatedId;
 
     return (
       <div className={clsx(fullWidth && 'w-full')}>

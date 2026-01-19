@@ -1,26 +1,26 @@
 """Gamification application layer."""
 
 from .dto import (
-    BadgeResponse,
-    UserBadgeResponse,
-    BadgesListResponse,
-    UserBadgesResponse,
-    UserStatsResponse,
     AddXPRequest,
-    XPAddedResponse,
-    LeaderboardEntryResponse,
-    LeaderboardResponse,
+    BadgeResponse,
+    BadgesListResponse,
     ChallengeResponse,
-    UserChallengeResponse,
     ChallengesResponse,
     GamificationOverviewResponse,
+    LeaderboardEntryResponse,
+    LeaderboardResponse,
+    UserBadgeResponse,
+    UserBadgesResponse,
+    UserChallengeResponse,
+    UserStatsResponse,
+    XPAddedResponse,
 )
 from .services import (
     BadgeService,
-    XPService,
-    LeaderboardService,
     ChallengeService,
     GamificationService,
+    LeaderboardService,
+    XPService,
 )
 
 __all__ = [

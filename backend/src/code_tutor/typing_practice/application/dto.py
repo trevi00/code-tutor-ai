@@ -1,17 +1,15 @@
 """DTOs for typing practice application layer."""
 
 from datetime import datetime
-from typing import Optional
 from uuid import UUID
 
 from pydantic import BaseModel, Field
 
 from code_tutor.typing_practice.domain.value_objects import (
-    ExerciseCategory,
     AttemptStatus,
     Difficulty,
+    ExerciseCategory,
 )
-
 
 # ============== Request DTOs ==============
 
@@ -78,7 +76,7 @@ class TypingAttemptResponse(BaseModel):
     time_seconds: float
     status: AttemptStatus
     started_at: datetime
-    completed_at: Optional[datetime]
+    completed_at: datetime | None
 
     class Config:
         from_attributes = True

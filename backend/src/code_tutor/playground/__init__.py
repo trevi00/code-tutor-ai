@@ -11,10 +11,10 @@ from code_tutor.playground.application import (
     TemplateService,
 )
 from code_tutor.playground.domain import (
-    CodeTemplate,
     DEFAULT_CODE,
-    ExecutionHistory,
     LANGUAGE_CONFIG,
+    CodeTemplate,
+    ExecutionHistory,
     Playground,
     PlaygroundLanguage,
     PlaygroundVisibility,

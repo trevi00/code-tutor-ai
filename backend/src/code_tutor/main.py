@@ -6,46 +6,60 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-# Import ML pipeline models for database table creation
-import code_tutor.ml.pipeline.models  # noqa: F401
 # Import collaboration models for database table creation
 import code_tutor.collaboration.infrastructure.models  # noqa: F401
-# Import playground models for database table creation
-import code_tutor.playground.infrastructure.models  # noqa: F401
+
 # Import gamification models for database table creation
 import code_tutor.gamification.infrastructure.models  # noqa: F401
-# Import typing_practice models for database table creation
-import code_tutor.typing_practice.infrastructure.models  # noqa: F401
+
+# Import ML pipeline models for database table creation
+import code_tutor.ml.pipeline.models  # noqa: F401
+
+# Import playground models for database table creation
+import code_tutor.playground.infrastructure.models  # noqa: F401
+
 # Import roadmap models for database table creation
 import code_tutor.roadmap.infrastructure.models  # noqa: F401
-from code_tutor.playground.infrastructure.template_seeder import seed_templates
-from code_tutor.gamification.infrastructure.repository import SQLAlchemyBadgeRepository, SQLAlchemyUserBadgeRepository, SQLAlchemyUserStatsRepository
-from code_tutor.gamification.application.services import BadgeService
 
+# Import typing_practice models for database table creation
+import code_tutor.typing_practice.infrastructure.models  # noqa: F401
+from code_tutor.collaboration.interface import http_router as collaboration_router
+from code_tutor.collaboration.interface import (
+    websocket_router as collaboration_ws_router,
+)
+from code_tutor.debugger.interface import router as debugger_router
 from code_tutor.execution.interface.routes import router as execution_router
+from code_tutor.gamification.application.services import BadgeService
+from code_tutor.gamification.infrastructure.repository import (
+    SQLAlchemyBadgeRepository,
+    SQLAlchemyUserBadgeRepository,
+    SQLAlchemyUserStatsRepository,
+)
+from code_tutor.gamification.interface import router as gamification_router
 
 # Import routers
 from code_tutor.identity.interface.routes import router as auth_router
 from code_tutor.learning.interface.routes import router as learning_router
-from code_tutor.collaboration.interface import http_router as collaboration_router
-from code_tutor.collaboration.interface import websocket_router as collaboration_ws_router
-from code_tutor.playground.interface import router as playground_router
-from code_tutor.visualization.interface import router as visualization_router
-from code_tutor.gamification.interface import router as gamification_router
-from code_tutor.debugger.interface import router as debugger_router
 from code_tutor.performance.interface import router as performance_router
+from code_tutor.playground.infrastructure.template_seeder import seed_templates
+from code_tutor.playground.interface import router as playground_router
+from code_tutor.roadmap.interface.routes import router as roadmap_router
 from code_tutor.shared.api_response import success_response
 from code_tutor.shared.config import get_settings
 from code_tutor.shared.constants import RateLimiting
 from code_tutor.shared.exception_handlers import register_exception_handlers
-from code_tutor.shared.infrastructure.database import close_db, get_session_context, init_db
+from code_tutor.shared.infrastructure.database import (
+    close_db,
+    get_session_context,
+    init_db,
+)
 from code_tutor.shared.infrastructure.logging import configure_logging, get_logger
-from code_tutor.shared.infrastructure.redis import close_redis, get_redis_client
+from code_tutor.shared.infrastructure.redis import close_redis
 from code_tutor.shared.middleware import RateLimitMiddleware
-from code_tutor.shared.monitoring import setup_prometheus, get_health_checker
+from code_tutor.shared.monitoring import get_health_checker, setup_prometheus
 from code_tutor.tutor.interface.routes import router as tutor_router
 from code_tutor.typing_practice.interface.routes import router as typing_practice_router
-from code_tutor.roadmap.interface.routes import router as roadmap_router
+from code_tutor.visualization.interface import router as visualization_router
 
 logger = get_logger(__name__)
 
@@ -267,8 +281,8 @@ API 요청은 분당 60회로 제한됩니다.
     setup_prometheus(app)
 
     # Manual metrics endpoint (fallback for compatibility)
-    from prometheus_client import generate_latest, CONTENT_TYPE_LATEST
     from fastapi.responses import Response
+    from prometheus_client import CONTENT_TYPE_LATEST, generate_latest
 
     @app.get("/metrics", include_in_schema=False)
     async def metrics():

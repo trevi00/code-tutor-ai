@@ -27,8 +27,8 @@ from code_tutor.shared.exceptions import AppException
 from code_tutor.shared.infrastructure.redis import RedisClient
 from code_tutor.shared.middleware.rate_limiter import (
     login_rate_limit,
-    register_rate_limit,
     refresh_rate_limit,
+    register_rate_limit,
 )
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])

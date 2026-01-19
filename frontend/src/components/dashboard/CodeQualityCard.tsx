@@ -26,6 +26,25 @@ const dimensionConfig = [
   { key: 'best_practices', label: '모범사례', color: '#f97316', icon: '⭐' },
 ];
 
+// Custom tooltip for grade chart (defined outside to avoid recreation on each render)
+interface GradeTooltipProps {
+  active?: boolean;
+  payload?: Array<{ payload: { grade: string; count: number } }>;
+}
+
+function GradeTooltip({ active, payload }: GradeTooltipProps) {
+  if (!active || !payload || payload.length === 0) return null;
+  const data = payload[0].payload;
+  return (
+    <div className="bg-white dark:bg-slate-700 rounded-lg shadow-xl border border-gray-200 dark:border-slate-600 px-3 py-2">
+      <p className="text-sm font-bold" style={{ color: gradeConfig[data.grade].color }}>
+        {data.grade}등급
+      </p>
+      <p className="text-sm text-gray-600 dark:text-gray-300">{data.count}회</p>
+    </div>
+  );
+}
+
 export function CodeQualityCard({ stats }: CodeQualityCardProps) {
   const [animatedScores, setAnimatedScores] = useState({
     correctness: 0,
@@ -71,20 +90,6 @@ export function CodeQualityCard({ stats }: CodeQualityCardProps) {
     count: grade_distribution[grade] || 0,
     color: gradeConfig[grade].color,
   }));
-
-  // Custom tooltip for grade chart
-  const GradeTooltip = ({ active, payload }: { active?: boolean; payload?: Array<{ payload: { grade: string; count: number } }> }) => {
-    if (!active || !payload || payload.length === 0) return null;
-    const data = payload[0].payload;
-    return (
-      <div className="bg-white dark:bg-slate-700 rounded-lg shadow-xl border border-gray-200 dark:border-slate-600 px-3 py-2">
-        <p className="text-sm font-bold" style={{ color: gradeConfig[data.grade].color }}>
-          {data.grade}등급
-        </p>
-        <p className="text-sm text-gray-600 dark:text-gray-300">{data.count}회</p>
-      </div>
-    );
-  };
 
   if (total_analyses === 0) {
     return (

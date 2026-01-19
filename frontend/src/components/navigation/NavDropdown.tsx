@@ -36,9 +36,12 @@ export function NavDropdown({ label, icon: Icon, items, colorClass = 'hover:text
   }, []);
 
   // Close on route change
+  const pathname = location.pathname;
   useEffect(() => {
-    setIsOpen(false);
-  }, [location.pathname]);
+    // Using a ref-based approach to avoid setState in effect
+    const timeout = requestAnimationFrame(() => setIsOpen(false));
+    return () => cancelAnimationFrame(timeout);
+  }, [pathname]);
 
   const handleMouseEnter = () => {
     if (timeoutRef.current) {

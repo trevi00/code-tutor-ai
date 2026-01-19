@@ -10,6 +10,27 @@ interface SkillData {
   fullMark?: number;
 }
 
+// Custom tooltip component (defined outside to avoid recreation on each render)
+interface RadarTooltipProps {
+  active?: boolean;
+  payload?: Array<{ payload: SkillData }>;
+  color?: string;
+}
+
+function RadarTooltip({ active, payload, color = '#6366f1' }: RadarTooltipProps) {
+  if (!active || !payload || payload.length === 0) return null;
+  const item = payload[0].payload;
+  return (
+    <div className="bg-white dark:bg-slate-700 rounded-lg shadow-xl border border-gray-200 dark:border-slate-600 px-3 py-2">
+      <p className="text-sm font-medium text-gray-800 dark:text-gray-100">{item.skill}</p>
+      <p className="text-sm text-gray-600 dark:text-gray-300">
+        <span className="font-bold" style={{ color }}>{item.value}</span>
+        <span className="text-gray-400 dark:text-gray-500"> / {item.fullMark || 100}</span>
+      </p>
+    </div>
+  );
+}
+
 interface SkillRadarProps {
   data: SkillData[];
   title?: string;
@@ -49,21 +70,6 @@ export function SkillRadar({
 
   // Calculate average
   const average = Math.round(chartData.reduce((sum, d) => sum + d.value, 0) / chartData.length);
-
-  // Custom tooltip
-  const CustomTooltip = ({ active, payload }: { active?: boolean; payload?: Array<{ payload: SkillData }> }) => {
-    if (!active || !payload || payload.length === 0) return null;
-    const item = payload[0].payload;
-    return (
-      <div className="bg-white dark:bg-slate-700 rounded-lg shadow-xl border border-gray-200 dark:border-slate-600 px-3 py-2">
-        <p className="text-sm font-medium text-gray-800 dark:text-gray-100">{item.skill}</p>
-        <p className="text-sm text-gray-600 dark:text-gray-300">
-          <span className="font-bold" style={{ color }}>{item.value}</span>
-          <span className="text-gray-400 dark:text-gray-500"> / {item.fullMark || 100}</span>
-        </p>
-      </div>
-    );
-  };
 
   return (
     <div className={clsx('bg-white dark:bg-slate-800 rounded-xl shadow-lg p-6', className)}>
@@ -107,7 +113,7 @@ export function SkillRadar({
               fillOpacity={0.3}
               animationDuration={1000}
             />
-            <Tooltip content={<CustomTooltip />} />
+            <Tooltip content={<RadarTooltip color={color} />} />
           </RadarChart>
         </ResponsiveContainer>
       </div>

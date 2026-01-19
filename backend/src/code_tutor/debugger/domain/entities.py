@@ -1,21 +1,21 @@
 """Debugger domain entities."""
 
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
-from typing import Any, Optional
+from datetime import UTC, datetime
+from typing import Any
 from uuid import UUID, uuid4
 
 
 def utc_now() -> datetime:
     """Get current UTC time (timezone-aware)"""
-    return datetime.now(timezone.utc)
+    return datetime.now(UTC)
 
 from .value_objects import (
+    DebugStatus,
     StepType,
     VariableType,
-    DebugStatus,
-    get_variable_type,
     format_variable_value,
+    get_variable_type,
 )
 
 
@@ -73,8 +73,8 @@ class ExecutionStep:
     variables: list[Variable] = field(default_factory=list)
     call_stack: list[StackFrame] = field(default_factory=list)
     output: str = ""
-    return_value: Optional[str] = None
-    exception: Optional[str] = None
+    return_value: str | None = None
+    exception: str | None = None
 
     def to_dict(self) -> dict:
         """Convert to dictionary."""
@@ -107,10 +107,10 @@ class DebugSession:
     current_step: int = 0
     total_steps: int = 0
     output: str = ""
-    error: Optional[str] = None
+    error: str | None = None
     breakpoints: list[int] = field(default_factory=list)
     created_at: datetime = field(default_factory=datetime.utcnow)
-    completed_at: Optional[datetime] = None
+    completed_at: datetime | None = None
 
     @classmethod
     def create(
@@ -168,7 +168,7 @@ class DebugResult:
     steps: list[ExecutionStep]
     total_steps: int
     output: str
-    error: Optional[str] = None
+    error: str | None = None
     execution_time_ms: float = 0
 
     def to_dict(self) -> dict:

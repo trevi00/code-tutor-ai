@@ -8,6 +8,65 @@ interface SkillPredictionsProps {
   predictions: SkillPrediction[];
 }
 
+// Custom tooltip component (defined outside to avoid recreation on each render)
+interface SkillTooltipData {
+  category: string;
+  current: number;
+  predicted: number;
+  confidence: number;
+  icon: string;
+}
+
+interface SkillTooltipProps {
+  active?: boolean;
+  payload?: Array<{ payload: SkillTooltipData }>;
+}
+
+function SkillTooltip({ active, payload }: SkillTooltipProps) {
+  if (!active || !payload || payload.length === 0) return null;
+  const data = payload[0].payload;
+  const improvement = data.predicted - data.current;
+  return (
+    <div className="bg-white dark:bg-slate-700 rounded-lg shadow-xl border border-gray-200 dark:border-slate-600 px-4 py-3 min-w-[160px]">
+      <p className="text-sm font-bold text-gray-800 dark:text-gray-100 flex items-center gap-2 mb-2">
+        <span>{data.icon}</span>
+        {data.category}
+      </p>
+      <div className="space-y-1 text-sm">
+        <div className="flex justify-between">
+          <span className="text-gray-500 dark:text-gray-400">현재</span>
+          <span className="font-medium text-blue-600 dark:text-blue-400">{data.current.toFixed(0)}%</span>
+        </div>
+        <div className="flex justify-between">
+          <span className="text-gray-500 dark:text-gray-400">예측</span>
+          <span className="font-medium text-green-600 dark:text-green-400">{data.predicted.toFixed(0)}%</span>
+        </div>
+        {improvement > 0 && (
+          <div className="flex justify-between pt-1 border-t border-gray-100 dark:border-slate-600">
+            <span className="text-gray-500 dark:text-gray-400">성장</span>
+            <span className="font-medium text-emerald-500">+{improvement.toFixed(0)}%</span>
+          </div>
+        )}
+      </div>
+      <div className="mt-2 pt-2 border-t border-gray-100 dark:border-slate-600">
+        <div className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400">
+          <span>신뢰도:</span>
+          <div className="flex gap-0.5">
+            {[0.25, 0.5, 0.75, 1].map((threshold, i) => (
+              <div
+                key={i}
+                className={`w-1.5 h-1.5 rounded-full ${
+                  data.confidence >= threshold ? 'bg-indigo-500' : 'bg-gray-300 dark:bg-slate-500'
+                }`}
+              />
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 const categoryLabels: Record<string, string> = {
   array: '배열',
   string: '문자열',
@@ -83,63 +142,6 @@ export function SkillPredictions({ predictions }: SkillPredictionsProps) {
     icon: categoryIcons[p.category] || '📌',
   }));
 
-  // Custom tooltip
-  const CustomTooltip = ({ active, payload }: {
-    active?: boolean;
-    payload?: Array<{
-      payload: {
-        category: string;
-        current: number;
-        predicted: number;
-        confidence: number;
-        icon: string;
-      }
-    }>
-  }) => {
-    if (!active || !payload || payload.length === 0) return null;
-    const data = payload[0].payload;
-    const improvement = data.predicted - data.current;
-    return (
-      <div className="bg-white dark:bg-slate-700 rounded-lg shadow-xl border border-gray-200 dark:border-slate-600 px-4 py-3 min-w-[160px]">
-        <p className="text-sm font-bold text-gray-800 dark:text-gray-100 flex items-center gap-2 mb-2">
-          <span>{data.icon}</span>
-          {data.category}
-        </p>
-        <div className="space-y-1 text-sm">
-          <div className="flex justify-between">
-            <span className="text-gray-500 dark:text-gray-400">현재</span>
-            <span className="font-medium text-blue-600 dark:text-blue-400">{data.current.toFixed(0)}%</span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-gray-500 dark:text-gray-400">예측</span>
-            <span className="font-medium text-green-600 dark:text-green-400">{data.predicted.toFixed(0)}%</span>
-          </div>
-          {improvement > 0 && (
-            <div className="flex justify-between pt-1 border-t border-gray-100 dark:border-slate-600">
-              <span className="text-gray-500 dark:text-gray-400">성장</span>
-              <span className="font-medium text-emerald-500">+{improvement.toFixed(0)}%</span>
-            </div>
-          )}
-        </div>
-        <div className="mt-2 pt-2 border-t border-gray-100 dark:border-slate-600">
-          <div className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400">
-            <span>신뢰도:</span>
-            <div className="flex gap-0.5">
-              {[0.25, 0.5, 0.75, 1].map((threshold, i) => (
-                <div
-                  key={i}
-                  className={`w-1.5 h-1.5 rounded-full ${
-                    data.confidence >= threshold ? 'bg-indigo-500' : 'bg-gray-300 dark:bg-slate-500'
-                  }`}
-                />
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  };
-
   return (
     <div className="bg-white dark:bg-slate-800 rounded-xl shadow-lg p-6">
       <div className="flex justify-between items-center mb-6">
@@ -182,7 +184,7 @@ export function SkillPredictions({ predictions }: SkillPredictionsProps) {
               tickLine={false}
               width={60}
             />
-            <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(107, 114, 128, 0.1)' }} />
+            <Tooltip content={<SkillTooltip />} cursor={{ fill: 'rgba(107, 114, 128, 0.1)' }} />
             <ReferenceLine x={50} stroke="#e5e7eb" strokeDasharray="3 3" />
             <Bar
               dataKey="current"

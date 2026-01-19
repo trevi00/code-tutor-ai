@@ -16,7 +16,11 @@ if TYPE_CHECKING:
     from sqlalchemy.ext.asyncio import AsyncSession
 
     from code_tutor.ml.analysis import CodeAnalyzer, CodeQualityClassifier
-    from code_tutor.ml.pipeline import DataAggregator, DailyStatsService, RecommendationCache
+    from code_tutor.ml.pipeline import (
+        DailyStatsService,
+        DataAggregator,
+        RecommendationCache,
+    )
     from code_tutor.ml.prediction import LearningPredictor
     from code_tutor.ml.rag import RAGEngine
     from code_tutor.ml.recommendation import ProblemRecommender

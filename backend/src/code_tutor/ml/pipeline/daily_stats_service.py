@@ -4,13 +4,13 @@ Aggregates user learning statistics from submissions for ML models.
 """
 
 from collections import defaultdict
-from datetime import date, datetime, timedelta, timezone
+from datetime import UTC, date, datetime, timedelta
 from uuid import UUID
 
 
 def utc_now() -> datetime:
     """Get current UTC time (timezone-aware)"""
-    return datetime.now(timezone.utc)
+    return datetime.now(UTC)
 
 from sqlalchemy import select
 from sqlalchemy.dialects.postgresql import insert as pg_insert

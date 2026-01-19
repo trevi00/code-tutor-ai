@@ -1,29 +1,28 @@
 """Repository interfaces for Learning Roadmap domain."""
 
 from abc import ABC, abstractmethod
-from typing import Optional
 from uuid import UUID
 
 from code_tutor.roadmap.domain.entities import (
     LearningPath,
-    Module,
     Lesson,
-    UserPathProgress,
+    Module,
     UserLessonProgress,
+    UserPathProgress,
 )
-from code_tutor.roadmap.domain.value_objects import PathLevel, ProgressStatus
+from code_tutor.roadmap.domain.value_objects import PathLevel
 
 
 class LearningPathRepository(ABC):
     """Repository interface for LearningPath aggregate."""
 
     @abstractmethod
-    async def get_by_id(self, path_id: UUID) -> Optional[LearningPath]:
+    async def get_by_id(self, path_id: UUID) -> LearningPath | None:
         """Get a learning path by ID."""
         pass
 
     @abstractmethod
-    async def get_by_level(self, level: PathLevel) -> Optional[LearningPath]:
+    async def get_by_level(self, level: PathLevel) -> LearningPath | None:
         """Get a learning path by level."""
         pass
 
@@ -47,7 +46,7 @@ class ModuleRepository(ABC):
     """Repository interface for Module entity."""
 
     @abstractmethod
-    async def get_by_id(self, module_id: UUID) -> Optional[Module]:
+    async def get_by_id(self, module_id: UUID) -> Module | None:
         """Get a module by ID."""
         pass
 
@@ -66,7 +65,7 @@ class LessonRepository(ABC):
     """Repository interface for Lesson entity."""
 
     @abstractmethod
-    async def get_by_id(self, lesson_id: UUID) -> Optional[Lesson]:
+    async def get_by_id(self, lesson_id: UUID) -> Lesson | None:
         """Get a lesson by ID."""
         pass
 
@@ -92,7 +91,7 @@ class UserProgressRepository(ABC):
     @abstractmethod
     async def get_path_progress(
         self, user_id: UUID, path_id: UUID
-    ) -> Optional[UserPathProgress]:
+    ) -> UserPathProgress | None:
         """Get user's progress on a path."""
         pass
 
@@ -111,7 +110,7 @@ class UserProgressRepository(ABC):
     @abstractmethod
     async def get_lesson_progress(
         self, user_id: UUID, lesson_id: UUID
-    ) -> Optional[UserLessonProgress]:
+    ) -> UserLessonProgress | None:
         """Get user's progress on a lesson."""
         pass
 
@@ -146,6 +145,6 @@ class UserProgressRepository(ABC):
     @abstractmethod
     async def get_next_lesson(
         self, user_id: UUID, path_id: UUID | None = None
-    ) -> Optional[Lesson]:
+    ) -> Lesson | None:
         """Get the next incomplete lesson for user."""
         pass

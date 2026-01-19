@@ -7,8 +7,17 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from code_tutor.execution.application.services import SubmissionEvaluator
+from code_tutor.gamification.application.services import BadgeService, XPService
+from code_tutor.gamification.infrastructure.repository import (
+    SQLAlchemyBadgeRepository,
+    SQLAlchemyUserBadgeRepository,
+    SQLAlchemyUserStatsRepository,
+)
 from code_tutor.identity.application.dto import UserResponse
-from code_tutor.identity.interface.dependencies import get_current_active_user, get_admin_user
+from code_tutor.identity.interface.dependencies import (
+    get_admin_user,
+    get_current_active_user,
+)
 from code_tutor.learning.application.dashboard_service import DashboardService
 from code_tutor.learning.application.dto import (
     CreateProblemRequest,
@@ -34,12 +43,6 @@ from code_tutor.learning.infrastructure.repository import (
 from code_tutor.ml.analysis import CodeQualityService, QualityRecommender
 from code_tutor.ml.prediction import InsightsService
 from code_tutor.ml.recommendation import RecommenderService
-from code_tutor.gamification.application.services import BadgeService, XPService
-from code_tutor.gamification.infrastructure.repository import (
-    SQLAlchemyBadgeRepository,
-    SQLAlchemyUserBadgeRepository,
-    SQLAlchemyUserStatsRepository,
-)
 from code_tutor.shared.api_response import success_response
 from code_tutor.shared.config import get_settings
 from code_tutor.shared.infrastructure.logging import get_logger

@@ -41,7 +41,7 @@ export function ActivityHeatmap({ data, months = 6 }: ActivityHeatmapProps) {
     const weeks: (HeatmapData | null)[][] = [];
     const monthLabels: { month: string; weekIndex: number }[] = [];
 
-    let currentDate = new Date(startDate);
+    const currentDate = new Date(startDate);
     let currentWeek: (HeatmapData | null)[] = [];
     let lastMonth = -1;
     let weekIndex = 0;
@@ -90,8 +90,9 @@ export function ActivityHeatmap({ data, months = 6 }: ActivityHeatmapProps) {
     let current = 0;
     let streak = 0;
 
-    const today = new Date().toISOString().split('T')[0];
-    const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
+    const now = new Date();
+    const today = now.toISOString().split('T')[0];
+    const yesterday = new Date(now.getTime() - 86400000).toISOString().split('T')[0];
 
     for (let i = 0; i < sortedDates.length; i++) {
       if (i === 0) {

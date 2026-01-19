@@ -1,10 +1,9 @@
 """Performance analysis service."""
 
-from typing import Optional
 
 from ..domain import (
-    AnalysisStatus,
     COMPLEXITY_RANK,
+    AnalysisStatus,
     IssueSeverity,
     PerformanceIssue,
     PerformanceIssueType,
@@ -116,14 +115,14 @@ class PerformanceService:
                 max_nesting_depth=complexity_result.max_nesting_depth,
                 loops=[
                     LoopInfoResponse(
-                        line_number=l.line_number,
-                        loop_type=l.loop_type,
-                        nesting_level=l.nesting_level,
-                        iteration_variable=l.iteration_variable,
-                        iterable=l.iterable,
-                        estimated_iterations=l.estimated_iterations,
+                        line_number=loop.line_number,
+                        loop_type=loop.loop_type,
+                        nesting_level=loop.nesting_level,
+                        iteration_variable=loop.iteration_variable,
+                        iterable=loop.iterable,
+                        estimated_iterations=loop.estimated_iterations,
                     )
-                    for l in complexity_result.loops
+                    for loop in complexity_result.loops
                 ],
                 functions=[
                     FunctionInfoResponse(

@@ -1,16 +1,13 @@
 """Debugger API routes."""
 
-from typing import Optional
+
 from fastapi import APIRouter, HTTPException, Query
 
-from code_tutor.shared.api_response import success_response
 from code_tutor.debugger.application import (
     DebugRequest,
-    DebugResponse,
-    StepInfoResponse,
-    DebugSummaryResponse,
     debug_service,
 )
+from code_tutor.shared.api_response import success_response
 
 router = APIRouter(prefix="/debugger", tags=["Debugger"])
 
@@ -69,7 +66,7 @@ async def get_debug_session(session_id: str):
 async def get_step(
     session_id: str,
     step_number: int,
-    breakpoints: Optional[str] = Query(None, description="Comma-separated line numbers"),
+    breakpoints: str | None = Query(None, description="Comma-separated line numbers"),
 ):
     """Get information about a specific step."""
     bp_list = []

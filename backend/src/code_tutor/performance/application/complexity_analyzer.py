@@ -1,7 +1,6 @@
 """Static complexity analyzer using AST."""
 
 import ast
-from typing import Optional
 
 from ..domain import (
     ComplexityAnalysis,
@@ -27,7 +26,7 @@ class ComplexityAnalyzer(ast.NodeVisitor):
         # Tracking state
         self._current_nesting = 0
         self._max_nesting = 0
-        self._current_function: Optional[str] = None
+        self._current_function: str | None = None
         self._function_calls: dict[str, set[str]] = {}  # caller -> callees
         self._defined_functions: set[str] = set()
 
@@ -306,7 +305,7 @@ class ComplexityAnalyzer(ast.NodeVisitor):
 
         return "공간 복잡도 분석 결과"
 
-    def _get_line(self, line_number: int) -> Optional[str]:
+    def _get_line(self, line_number: int) -> str | None:
         """Get a specific line from the code."""
         if 1 <= line_number <= len(self.lines):
             return self.lines[line_number - 1].strip()

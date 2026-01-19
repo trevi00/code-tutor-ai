@@ -60,45 +60,7 @@ export function useCollaboration({
   const [participants, setParticipants] = useState<CollaborationParticipant[]>([]);
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
 
-  // Connect to WebSocket
-  useEffect(() => {
-    const token = localStorage.getItem('access_token');
-    if (!token || !sessionId) return;
-
-    const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const wsHost = import.meta.env.VITE_WS_URL || `${wsProtocol}//${window.location.host}`;
-    const wsUrl = `${wsHost}/api/v1/collaboration/ws/${sessionId}?token=${token}`;
-
-    const ws = new WebSocket(wsUrl);
-    wsRef.current = ws;
-
-    ws.onopen = () => {
-      setIsConnected(true);
-    };
-
-    ws.onclose = () => {
-      setIsConnected(false);
-    };
-
-    ws.onerror = () => {
-      onError?.('WebSocket connection error');
-    };
-
-    ws.onmessage = (event) => {
-      try {
-        const message: WebSocketMessage = JSON.parse(event.data);
-        handleMessage(message);
-      } catch (e) {
-        console.error('Failed to parse WebSocket message:', e);
-      }
-    };
-
-    return () => {
-      ws.close();
-    };
-  }, [sessionId]);
-
-  // Handle incoming messages
+  // Handle incoming messages - defined before useEffect that uses it
   const handleMessage = useCallback(
     (message: WebSocketMessage) => {
       switch (message.type) {
@@ -254,6 +216,44 @@ export function useCollaboration({
     },
     [onCodeChange, onParticipantsChange, onChatMessage, onError]
   );
+
+  // Connect to WebSocket
+  useEffect(() => {
+    const token = localStorage.getItem('access_token');
+    if (!token || !sessionId) return;
+
+    const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    const wsHost = import.meta.env.VITE_WS_URL || `${wsProtocol}//${window.location.host}`;
+    const wsUrl = `${wsHost}/api/v1/collaboration/ws/${sessionId}?token=${token}`;
+
+    const ws = new WebSocket(wsUrl);
+    wsRef.current = ws;
+
+    ws.onopen = () => {
+      setIsConnected(true);
+    };
+
+    ws.onclose = () => {
+      setIsConnected(false);
+    };
+
+    ws.onerror = () => {
+      onError?.('WebSocket connection error');
+    };
+
+    ws.onmessage = (event) => {
+      try {
+        const message: WebSocketMessage = JSON.parse(event.data);
+        handleMessage(message);
+      } catch {
+        onError?.('Failed to parse WebSocket message');
+      }
+    };
+
+    return () => {
+      ws.close();
+    };
+  }, [sessionId, handleMessage, onError]);
 
   // Send code change
   const sendCodeChange = useCallback(

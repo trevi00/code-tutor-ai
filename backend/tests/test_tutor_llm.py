@@ -1381,7 +1381,7 @@ class TestTutorRoutesUnit:
         )
         mock_tutor_service.chat = AsyncMock(return_value=mock_response)
 
-        result = await chat(request, mock_tutor_service, mock_user)
+        result = await chat(request, mock_tutor_service, mock_user, None)
 
         assert result.is_new_conversation is True
         mock_tutor_service.chat.assert_called_once_with(mock_user.id, request)
@@ -1398,7 +1398,7 @@ class TestTutorRoutesUnit:
         mock_tutor_service.chat = AsyncMock(side_effect=AppException("Test error"))
 
         with pytest.raises(HTTPException) as exc_info:
-            await chat(request, mock_tutor_service, mock_user)
+            await chat(request, mock_tutor_service, mock_user, None)
 
         assert exc_info.value.status_code == 400
 
@@ -1514,7 +1514,7 @@ class TestTutorRoutesUnit:
         )
         mock_tutor_service.review_code = AsyncMock(return_value=mock_response)
 
-        result = await review_code(request, mock_tutor_service, mock_user)
+        result = await review_code(request, mock_tutor_service, mock_user, None)
 
         assert result.overall_score == 80
         mock_tutor_service.review_code.assert_called_once_with(mock_user.id, request)

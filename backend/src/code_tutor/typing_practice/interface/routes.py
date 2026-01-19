@@ -1,37 +1,37 @@
 """FastAPI routes for typing practice."""
 
-from typing import Optional
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from code_tutor.shared.constants import Pagination, TypingPractice as TypingConstants
-from code_tutor.shared.infrastructure.database import get_async_session as get_db
-from code_tutor.identity.interface.dependencies import get_current_user, get_admin_user
-from code_tutor.identity.application.dto import UserResponse
-from code_tutor.typing_practice.domain.value_objects import ExerciseCategory
-from code_tutor.typing_practice.application.dto import (
-    CreateExerciseRequest,
-    StartAttemptRequest,
-    CompleteAttemptRequest,
-    TypingExerciseResponse,
-    TypingExerciseListResponse,
-    TypingAttemptResponse,
-    UserProgressResponse,
-    UserTypingStatsResponse,
-    LeaderboardResponse,
-)
-from code_tutor.typing_practice.application.services import TypingPracticeService
-from code_tutor.typing_practice.infrastructure.repository import (
-    SQLAlchemyTypingExerciseRepository,
-    SQLAlchemyTypingAttemptRepository,
-)
-from code_tutor.gamification.application.services import XPService, BadgeService
+from code_tutor.gamification.application.services import BadgeService, XPService
 from code_tutor.gamification.infrastructure.repository import (
     SQLAlchemyBadgeRepository,
     SQLAlchemyUserBadgeRepository,
     SQLAlchemyUserStatsRepository,
+)
+from code_tutor.identity.application.dto import UserResponse
+from code_tutor.identity.interface.dependencies import get_admin_user, get_current_user
+from code_tutor.shared.constants import Pagination
+from code_tutor.shared.constants import TypingPractice as TypingConstants
+from code_tutor.shared.infrastructure.database import get_async_session as get_db
+from code_tutor.typing_practice.application.dto import (
+    CompleteAttemptRequest,
+    CreateExerciseRequest,
+    LeaderboardResponse,
+    StartAttemptRequest,
+    TypingAttemptResponse,
+    TypingExerciseListResponse,
+    TypingExerciseResponse,
+    UserProgressResponse,
+    UserTypingStatsResponse,
+)
+from code_tutor.typing_practice.application.services import TypingPracticeService
+from code_tutor.typing_practice.domain.value_objects import ExerciseCategory
+from code_tutor.typing_practice.infrastructure.repository import (
+    SQLAlchemyTypingAttemptRepository,
+    SQLAlchemyTypingExerciseRepository,
 )
 
 router = APIRouter(prefix="/typing-practice", tags=["Typing Practice"])
@@ -65,7 +65,7 @@ def get_xp_service(db: AsyncSession = Depends(get_db)) -> XPService:
     },
 )
 async def list_exercises(
-    category: Optional[ExerciseCategory] = Query(None, description="카테고리 필터 (algorithm, pattern, syntax, typing)"),
+    category: ExerciseCategory | None = Query(None, description="카테고리 필터 (algorithm, pattern, syntax, typing)"),
     page: int = Query(Pagination.DEFAULT_PAGE, ge=1, description="페이지 번호"),
     page_size: int = Query(Pagination.DEFAULT_PAGE_SIZE, ge=1, le=Pagination.MAX_PAGE_SIZE, description="페이지당 항목 수"),
     service: TypingPracticeService = Depends(get_typing_service),

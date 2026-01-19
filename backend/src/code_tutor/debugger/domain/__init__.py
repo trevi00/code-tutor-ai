@@ -1,22 +1,22 @@
 """Debugger domain layer."""
 
+from .entities import (
+    DebugResult,
+    DebugSession,
+    ExecutionStep,
+    StackFrame,
+    Variable,
+)
 from .value_objects import (
+    MAX_COLLECTION_SIZE,
+    MAX_EXECUTION_TIME,
+    MAX_STEPS,
+    MAX_STRING_LENGTH,
+    DebugStatus,
     StepType,
     VariableType,
-    DebugStatus,
-    get_variable_type,
     format_variable_value,
-    MAX_STEPS,
-    MAX_EXECUTION_TIME,
-    MAX_STRING_LENGTH,
-    MAX_COLLECTION_SIZE,
-)
-from .entities import (
-    Variable,
-    StackFrame,
-    ExecutionStep,
-    DebugSession,
-    DebugResult,
+    get_variable_type,
 )
 
 __all__ = [

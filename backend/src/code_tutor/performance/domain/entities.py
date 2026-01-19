@@ -1,7 +1,6 @@
 """Performance analysis entities."""
 
 from dataclasses import dataclass, field
-from typing import Optional
 
 from .value_objects import (
     AnalysisStatus,
@@ -18,9 +17,9 @@ class LoopInfo:
     line_number: int
     loop_type: str  # "for", "while"
     nesting_level: int
-    iteration_variable: Optional[str] = None
-    iterable: Optional[str] = None
-    estimated_iterations: Optional[str] = None
+    iteration_variable: str | None = None
+    iterable: str | None = None
+    estimated_iterations: str | None = None
 
 
 @dataclass
@@ -44,7 +43,7 @@ class PerformanceIssue:
     line_number: int
     message: str
     suggestion: str
-    code_snippet: Optional[str] = None
+    code_snippet: str | None = None
 
 
 @dataclass
@@ -56,7 +55,7 @@ class MemoryMetrics:
     allocations_count: int
     deallocations_count: int
     largest_object_mb: float
-    largest_object_type: Optional[str] = None
+    largest_object_type: str | None = None
 
 
 @dataclass
@@ -89,12 +88,12 @@ class PerformanceProfile:
     """Complete performance profile of code."""
 
     status: AnalysisStatus
-    complexity: Optional[ComplexityAnalysis] = None
-    runtime: Optional[RuntimeMetrics] = None
-    memory: Optional[MemoryMetrics] = None
+    complexity: ComplexityAnalysis | None = None
+    runtime: RuntimeMetrics | None = None
+    memory: MemoryMetrics | None = None
     issues: list[PerformanceIssue] = field(default_factory=list)
     optimization_score: int = 100  # 0-100
-    error: Optional[str] = None
+    error: str | None = None
 
 
 @dataclass
@@ -128,5 +127,5 @@ class HotspotAnalysis:
     hotspot_functions: list[FunctionProfile] = field(default_factory=list)
     hotspot_lines: list[LineProfile] = field(default_factory=list)
     total_execution_time_ms: float = 0.0
-    bottleneck_function: Optional[str] = None
-    bottleneck_line: Optional[int] = None
+    bottleneck_function: str | None = None
+    bottleneck_line: int | None = None
