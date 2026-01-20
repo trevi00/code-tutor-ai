@@ -155,6 +155,40 @@
 
 ---
 
+## 스크린샷
+
+### 대시보드
+사용자의 학습 통계, 연속 학습 스트릭, 365일 히트맵을 확인할 수 있습니다.
+![대시보드](./docs/screenshots/03-dashboard.png)
+
+### 문제 풀이
+Monaco Editor를 사용한 코드 작성 및 Docker 샌드박스에서 안전한 실행
+![문제 풀이](./docs/screenshots/solve-1-initial.png)
+![실행 결과](./docs/screenshots/solve-3-run-result.png)
+
+### AI 튜터 채팅
+한국어 자연어로 알고리즘 개념 질문 및 7단계 힌트 시스템
+![AI 튜터](./docs/screenshots/07-chat.png)
+
+### 패턴 학습
+45개 알고리즘 패턴 학습 및 상세 설명
+![패턴 목록](./docs/screenshots/patterns.png)
+![패턴 상세](./docs/screenshots/pattern-detail.png)
+
+### 받아쓰기 연습
+코드 타이핑 연습으로 알고리즘 템플릿 암기
+![받아쓰기](./docs/screenshots/typing-page.png)
+
+### 알고리즘 시각화
+정렬, 그래프 탐색, 트리 순회 등 알고리즘 동작 시각화
+![시각화](./docs/screenshots/visualization.png)
+
+### 리더보드
+전체/주간/월간 랭킹 시스템
+![리더보드](./docs/screenshots/leaderboard.png)
+
+---
+
 ## 빠른 시작
 
 ### 1. 저장소 클론
