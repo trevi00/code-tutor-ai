@@ -13,6 +13,7 @@ from sqlalchemy import (
     String,
     Text,
 )
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 
 from code_tutor.shared.infrastructure.database import Base
@@ -55,7 +56,7 @@ class TypingAttemptModel(Base):
     __tablename__ = "typing_attempts"
 
     id = Column(String(36), primary_key=True, default=generate_uuid)
-    user_id = Column(String(36), ForeignKey("users.id"), nullable=False)
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
     exercise_id = Column(String(36), ForeignKey("typing_exercises.id"), nullable=False)
     attempt_number = Column(Integer, nullable=False)
     user_code = Column(Text, default="")
