@@ -351,7 +351,11 @@ class WeaknessAnalyzer:
             # 패턴 통계
             for pattern in problem.pattern_ids or []:
                 if pattern not in pattern_stats:
-                    pattern_stats[pattern] = {"attempts": 0, "solved": 0, "problems": set()}
+                    pattern_stats[pattern] = {
+                        "attempts": 0,
+                        "solved": 0,
+                        "problems": set(),
+                    }
                 pattern_stats[pattern]["attempts"] += 1
                 pattern_stats[pattern]["problems"].add(sub.problem_id)
                 if sub.status == SubmissionStatus.ACCEPTED:
@@ -364,30 +368,34 @@ class WeaknessAnalyzer:
             if stats["attempts"] >= 2:  # 최소 2번 시도
                 success_rate = stats["solved"] / stats["attempts"]
                 if success_rate < 0.5:
-                    weaknesses.append({
-                        "type": "category",
-                        "name": category,
-                        "success_rate": success_rate,
-                        "attempts": stats["attempts"],
-                        "solved": stats["solved"],
-                        "severity": "high" if success_rate < 0.3 else "medium",
-                        "recommendation": f"{category} 카테고리의 기초 문제부터 다시 연습해보세요.",
-                    })
+                    weaknesses.append(
+                        {
+                            "type": "category",
+                            "name": category,
+                            "success_rate": success_rate,
+                            "attempts": stats["attempts"],
+                            "solved": stats["solved"],
+                            "severity": "high" if success_rate < 0.3 else "medium",
+                            "recommendation": f"{category} 카테고리의 기초 문제부터 다시 연습해보세요.",
+                        }
+                    )
 
         for pattern, stats in pattern_stats.items():
             if stats["attempts"] >= 2:
                 success_rate = stats["solved"] / stats["attempts"]
                 if success_rate < 0.5:
-                    weaknesses.append({
-                        "type": "pattern",
-                        "name": pattern,
-                        "success_rate": success_rate,
-                        "attempts": stats["attempts"],
-                        "solved": stats["solved"],
-                        "problem_count": len(stats["problems"]),
-                        "severity": "high" if success_rate < 0.3 else "medium",
-                        "recommendation": f"{pattern} 패턴을 집중적으로 연습해보세요.",
-                    })
+                    weaknesses.append(
+                        {
+                            "type": "pattern",
+                            "name": pattern,
+                            "success_rate": success_rate,
+                            "attempts": stats["attempts"],
+                            "solved": stats["solved"],
+                            "problem_count": len(stats["problems"]),
+                            "severity": "high" if success_rate < 0.3 else "medium",
+                            "recommendation": f"{pattern} 패턴을 집중적으로 연습해보세요.",
+                        }
+                    )
 
         # 성공률 오름차순 정렬 (가장 약한 것 먼저)
         weaknesses.sort(key=lambda x: x["success_rate"])
@@ -420,8 +428,7 @@ class WeaknessAnalyzer:
         # 가장 약한 패턴/카테고리 선택
         if focus_weakness:
             target = next(
-                (w for w in weaknesses if w["name"] == focus_weakness),
-                weaknesses[0]
+                (w for w in weaknesses if w["name"] == focus_weakness), weaknesses[0]
             )
         else:
             target = weaknesses[0]
@@ -429,6 +436,7 @@ class WeaknessAnalyzer:
         # 해당 카테고리/패턴의 문제 조회
         if target["type"] == "category":
             from code_tutor.learning.domain.value_objects import ProblemCategory
+
             try:
                 category_enum = ProblemCategory(target["name"])
                 problems_query = select(ProblemModel).where(
@@ -449,10 +457,14 @@ class WeaknessAnalyzer:
         problems = result.scalars().all()
 
         # 사용자가 이미 풀었던 문제 조회
-        solved_query = select(SubmissionModel.problem_id).where(
-            SubmissionModel.user_id == user_id,
-            SubmissionModel.status == SubmissionStatus.ACCEPTED,
-        ).distinct()
+        solved_query = (
+            select(SubmissionModel.problem_id)
+            .where(
+                SubmissionModel.user_id == user_id,
+                SubmissionModel.status == SubmissionStatus.ACCEPTED,
+            )
+            .distinct()
+        )
         solved_result = await self.session.execute(solved_query)
         solved_ids = set(r[0] for r in solved_result.all())
 
@@ -469,23 +481,23 @@ class WeaknessAnalyzer:
                 if target["name"] not in (p.pattern_ids or []):
                     continue
 
-            recommendations.append({
-                "id": str(p.id),
-                "title": p.title,
-                "difficulty": p.difficulty.value,
-                "category": p.category.value,
-                "pattern_ids": p.pattern_ids or [],
-                "reason": f"약점 보강: {target['name']} ({target['type']})",
-                "weakness_info": {
-                    "success_rate": target["success_rate"],
-                    "attempts": target["attempts"],
-                },
-            })
+            recommendations.append(
+                {
+                    "id": str(p.id),
+                    "title": p.title,
+                    "difficulty": p.difficulty.value,
+                    "category": p.category.value,
+                    "pattern_ids": p.pattern_ids or [],
+                    "reason": f"약점 보강: {target['name']} ({target['type']})",
+                    "weakness_info": {
+                        "success_rate": target["success_rate"],
+                        "attempts": target["attempts"],
+                    },
+                }
+            )
 
         # 난이도순 정렬 (쉬운 것부터)
-        recommendations.sort(
-            key=lambda x: difficulty_order.get(x["difficulty"], 1)
-        )
+        recommendations.sort(key=lambda x: difficulty_order.get(x["difficulty"], 1))
 
         return recommendations[:limit]
 
@@ -542,12 +554,16 @@ class WeaknessAnalyzer:
             "stage_description": stage_description,
             "total_submissions": total_submissions,
             "problems_solved": solved_count,
-            "success_rate": solved_count / total_submissions if total_submissions > 0 else 0,
+            "success_rate": solved_count / total_submissions
+            if total_submissions > 0
+            else 0,
             "next_milestone": next_milestone,
             "weaknesses": weaknesses[:5],
             "priority_focus": priority_focus,
             "recommended_next_steps": [
-                f"약점 보강: {weaknesses[0]['name']}" if weaknesses else "기초 문제 연습",
+                f"약점 보강: {weaknesses[0]['name']}"
+                if weaknesses
+                else "기초 문제 연습",
                 "일일 1문제 풀이 도전",
                 "풀이 시간 단축 연습",
             ],

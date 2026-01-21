@@ -115,7 +115,9 @@ class ChallengeRepository(ABC):
         pass
 
     @abstractmethod
-    async def get_active(self, challenge_type: ChallengeType | None = None) -> list[Challenge]:
+    async def get_active(
+        self, challenge_type: ChallengeType | None = None
+    ) -> list[Challenge]:
         """Get active challenges."""
         pass
 

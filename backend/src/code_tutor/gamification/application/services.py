@@ -3,11 +3,6 @@
 from datetime import UTC, datetime, timedelta
 from uuid import UUID
 
-
-def utc_now() -> datetime:
-    """Get current UTC time (timezone-aware)"""
-    return datetime.now(UTC)
-
 from code_tutor.gamification.domain.entities import (
     PREDEFINED_BADGES,
     Badge,
@@ -43,6 +38,11 @@ from .dto import (
     UserStatsResponse,
     XPAddedResponse,
 )
+
+
+def utc_now() -> datetime:
+    """Get current UTC time (timezone-aware)"""
+    return datetime.now(UTC)
 
 
 class BadgeService:
@@ -430,7 +430,11 @@ class ChallengeService:
         if challenge.is_active:
             now = utc_now()
             # Ensure timezone-aware comparison
-            end_date = challenge.end_date.replace(tzinfo=UTC) if challenge.end_date.tzinfo is None else challenge.end_date
+            end_date = (
+                challenge.end_date.replace(tzinfo=UTC)
+                if challenge.end_date.tzinfo is None
+                else challenge.end_date
+            )
             delta = end_date - now
             if delta.days > 0:
                 time_remaining = f"{delta.days}일 남음"
@@ -497,15 +501,15 @@ class GamificationService:
         next_badge_progress = None
         if user_badges.available:
             # Find closest badge to achieve
-            closest = min(
-                user_badges.available, key=lambda b: b.requirement_value
-            )
+            closest = min(user_badges.available, key=lambda b: b.requirement_value)
             current_value = self._get_stat_value(stats, closest.requirement)
             next_badge_progress = {
                 "badge": closest.name,
                 "current": current_value,
                 "required": closest.requirement_value,
-                "percentage": min(100, (current_value / closest.requirement_value) * 100),
+                "percentage": min(
+                    100, (current_value / closest.requirement_value) * 100
+                ),
             }
 
         return GamificationOverviewResponse(

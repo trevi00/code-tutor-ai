@@ -7,9 +7,9 @@ from typing import Any
 class StepType(str, Enum):
     """Types of execution steps."""
 
-    CALL = "call"          # Function call
-    LINE = "line"          # Line execution
-    RETURN = "return"      # Function return
+    CALL = "call"  # Function call
+    LINE = "line"  # Line execution
+    RETURN = "return"  # Function return
     EXCEPTION = "exception"  # Exception raised
 
 

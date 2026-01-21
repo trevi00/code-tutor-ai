@@ -118,7 +118,9 @@ async def get_admin_user(
 
 
 async def get_optional_user(
-    credentials: Annotated[HTTPAuthorizationCredentials | None, Depends(HTTPBearer(auto_error=False))],
+    credentials: Annotated[
+        HTTPAuthorizationCredentials | None, Depends(HTTPBearer(auto_error=False))
+    ],
     user_repo: Annotated[UserRepository, Depends(get_user_repository)],
     redis: Annotated[RedisClient | None, Depends(get_redis)],
 ) -> UserResponse | None:

@@ -46,8 +46,7 @@ class InMemoryRateLimiter:
 
         # Find stale keys
         stale_keys = [
-            key for key, last_time in self.last_update.items()
-            if last_time < cutoff
+            key for key, last_time in self.last_update.items() if last_time < cutoff
         ]
 
         # Remove stale entries
@@ -345,7 +344,9 @@ def reset_execution_rate_limiters() -> None:
     """Reset execution rate limiters (for testing)"""
     global _code_execution_limiter, _playground_execution_limiter
     _code_execution_limiter = InMemoryRateLimiter(requests_per_minute=20, burst_size=5)
-    _playground_execution_limiter = InMemoryRateLimiter(requests_per_minute=30, burst_size=10)
+    _playground_execution_limiter = InMemoryRateLimiter(
+        requests_per_minute=30, burst_size=10
+    )
 
 
 def reset_ai_rate_limiters() -> None:

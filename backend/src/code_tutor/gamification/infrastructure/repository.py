@@ -3,11 +3,6 @@
 from datetime import UTC, datetime, timedelta
 from uuid import UUID
 
-
-def utc_now() -> datetime:
-    """Get current UTC time (timezone-aware)"""
-    return datetime.now(UTC)
-
 from sqlalchemy import desc, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
@@ -42,6 +37,11 @@ from .models import (
     UserChallengeModel,
     UserStatsModel,
 )
+
+
+def utc_now() -> datetime:
+    """Get current UTC time (timezone-aware)"""
+    return datetime.now(UTC)
 
 
 def _model_to_badge(model: BadgeModel) -> Badge:
@@ -464,9 +464,7 @@ class SQLAlchemyUserChallengeRepository(UserChallengeRepository):
 
     async def update(self, user_challenge: UserChallenge) -> UserChallenge:
         result = await self.session.execute(
-            select(UserChallengeModel).where(
-                UserChallengeModel.id == user_challenge.id
-            )
+            select(UserChallengeModel).where(UserChallengeModel.id == user_challenge.id)
         )
         model = result.scalar_one_or_none()
         if model:

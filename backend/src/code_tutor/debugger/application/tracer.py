@@ -88,7 +88,10 @@ class CodeTracer:
             compiled = compile(self.code, self.user_module_name, "exec")
 
             # Execute with tracing
-            with redirect_stdout(self.output_buffer), redirect_stderr(self.output_buffer):
+            with (
+                redirect_stdout(self.output_buffer),
+                redirect_stderr(self.output_buffer),
+            ):
                 sys.settrace(self._trace_callback)
                 try:
                     exec(compiled, namespace)

@@ -70,7 +70,9 @@ class PathPrerequisiteModel(Base):
 
     id = Column(String(36), primary_key=True, default=generate_uuid)
     path_id = Column(String(36), ForeignKey("learning_paths.id"), nullable=False)
-    prerequisite_id = Column(String(36), ForeignKey("learning_paths.id"), nullable=False)
+    prerequisite_id = Column(
+        String(36), ForeignKey("learning_paths.id"), nullable=False
+    )
 
     # Relationships
     path = relationship(

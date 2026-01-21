@@ -98,9 +98,7 @@ class CodeTemplateModel(Base):
 
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
-    __table_args__ = (
-        Index("ix_templates_category_usage", "category", "usage_count"),
-    )
+    __table_args__ = (Index("ix_templates_category_usage", "category", "usage_count"),)
 
 
 class ExecutionHistoryModel(Base):

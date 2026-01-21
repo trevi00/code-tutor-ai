@@ -1,6 +1,5 @@
 """Performance analysis service."""
 
-
 from ..domain import (
     COMPLEXITY_RANK,
     AnalysisStatus,
@@ -199,9 +198,7 @@ class PerformanceService:
                 error=str(e),
             )
 
-    def _calculate_score(
-        self, complexity, issues: list[PerformanceIssue]
-    ) -> int:
+    def _calculate_score(self, complexity, issues: list[PerformanceIssue]) -> int:
         """Calculate optimization score (0-100)."""
         score = 100
 

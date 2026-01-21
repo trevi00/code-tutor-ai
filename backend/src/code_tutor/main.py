@@ -258,7 +258,7 @@ API 요청은 분당 60회로 제한됩니다.
     async def health_check() -> dict:
         """
         Health check endpoint with detailed service status.
-        
+
         Returns latency metrics for each service and overall health status.
         """
         health_checker = get_health_checker()

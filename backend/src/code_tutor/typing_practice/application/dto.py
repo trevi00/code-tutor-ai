@@ -13,8 +13,10 @@ from code_tutor.typing_practice.domain.value_objects import (
 
 # ============== Request DTOs ==============
 
+
 class CreateExerciseRequest(BaseModel):
     """Request to create a new typing exercise."""
+
     title: str = Field(..., min_length=1, max_length=255)
     source_code: str = Field(..., min_length=1)
     language: str = "python"
@@ -26,11 +28,13 @@ class CreateExerciseRequest(BaseModel):
 
 class StartAttemptRequest(BaseModel):
     """Request to start a new typing attempt."""
+
     exercise_id: UUID
 
 
 class CompleteAttemptRequest(BaseModel):
     """Request to complete a typing attempt."""
+
     user_code: str
     accuracy: float = Field(..., ge=0, le=100)
     wpm: float = Field(..., ge=0)
@@ -39,8 +43,10 @@ class CompleteAttemptRequest(BaseModel):
 
 # ============== Response DTOs ==============
 
+
 class TypingExerciseResponse(BaseModel):
     """Response for a typing exercise."""
+
     id: UUID
     title: str
     source_code: str
@@ -59,6 +65,7 @@ class TypingExerciseResponse(BaseModel):
 
 class TypingExerciseListResponse(BaseModel):
     """Response for listing typing exercises."""
+
     exercises: list[TypingExerciseResponse]
     total: int
     page: int
@@ -67,6 +74,7 @@ class TypingExerciseListResponse(BaseModel):
 
 class TypingAttemptResponse(BaseModel):
     """Response for a typing attempt."""
+
     id: UUID
     user_id: UUID
     exercise_id: UUID
@@ -84,6 +92,7 @@ class TypingAttemptResponse(BaseModel):
 
 class UserProgressResponse(BaseModel):
     """Response for user's progress on an exercise."""
+
     user_id: UUID
     exercise_id: UUID
     completed_attempts: int
@@ -97,6 +106,7 @@ class UserProgressResponse(BaseModel):
 
 class UserTypingStatsResponse(BaseModel):
     """Response for user's overall typing statistics."""
+
     total_exercises_attempted: int
     total_exercises_mastered: int
     total_attempts: int
@@ -108,6 +118,7 @@ class UserTypingStatsResponse(BaseModel):
 
 class LeaderboardEntryResponse(BaseModel):
     """Response for a leaderboard entry."""
+
     rank: int
     user_id: UUID
     username: str
@@ -118,4 +129,5 @@ class LeaderboardEntryResponse(BaseModel):
 
 class LeaderboardResponse(BaseModel):
     """Response for leaderboard."""
+
     entries: list[LeaderboardEntryResponse]

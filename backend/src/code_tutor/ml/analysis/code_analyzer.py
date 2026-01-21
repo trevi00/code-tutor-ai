@@ -678,7 +678,9 @@ class CodeAnalyzer:
             "description": "세제곱 시간 - 삼중 루프",
         },
         "O(2^n)": {
-            "indicators": [r"def\s+\w+.*\n.*return.*\w+\(.*-\s*1\).*\+.*\w+\(.*-\s*1\)"],
+            "indicators": [
+                r"def\s+\w+.*\n.*return.*\w+\(.*-\s*1\).*\+.*\w+\(.*-\s*1\)"
+            ],
             "description": "지수 시간 - 재귀적 분기",
         },
     }
@@ -750,7 +752,9 @@ class CodeAnalyzer:
         },
     }
 
-    def estimate_complexity(self, code: str, language: str = "python") -> dict[str, Any]:
+    def estimate_complexity(
+        self, code: str, language: str = "python"
+    ) -> dict[str, Any]:
         """
         코드의 시간/공간 복잡도를 추정합니다.
 
@@ -788,12 +792,24 @@ class CodeAnalyzer:
 
         if time_scores:
             # 가장 높은 복잡도 선택 (보수적 추정)
-            complexity_order = ["O(2^n)", "O(n³)", "O(n²)", "O(n log n)", "O(n)", "O(log n)", "O(1)"]
+            complexity_order = [
+                "O(2^n)",
+                "O(n³)",
+                "O(n²)",
+                "O(n log n)",
+                "O(n)",
+                "O(log n)",
+                "O(1)",
+            ]
             for comp in complexity_order:
                 if comp in time_scores:
                     result["time_complexity"]["estimate"] = comp
-                    result["time_complexity"]["confidence"] = min(0.9, time_scores[comp] * 0.3)
-                    result["time_complexity"]["explanation"] = self.COMPLEXITY_PATTERNS[comp]["description"]
+                    result["time_complexity"]["confidence"] = min(
+                        0.9, time_scores[comp] * 0.3
+                    )
+                    result["time_complexity"]["explanation"] = self.COMPLEXITY_PATTERNS[
+                        comp
+                    ]["description"]
                     break
 
         # 추가 분석: 루프 중첩 깊이
@@ -802,7 +818,11 @@ class CodeAnalyzer:
             result["time_complexity"]["estimate"] = "O(n³) 이상"
             result["time_complexity"]["factors"].append(f"루프 중첩 깊이: {loop_depth}")
         elif loop_depth == 2:
-            if result["time_complexity"]["estimate"] not in ["O(n²)", "O(n³)", "O(2^n)"]:
+            if result["time_complexity"]["estimate"] not in [
+                "O(n²)",
+                "O(n³)",
+                "O(2^n)",
+            ]:
                 result["time_complexity"]["estimate"] = "O(n²)"
             result["time_complexity"]["factors"].append("이중 루프 감지")
 
@@ -821,13 +841,19 @@ class CodeAnalyzer:
             for comp in space_order:
                 if comp in space_scores:
                     result["space_complexity"]["estimate"] = comp
-                    result["space_complexity"]["confidence"] = min(0.9, space_scores[comp] * 0.3)
-                    result["space_complexity"]["explanation"] = self.SPACE_PATTERNS[comp]["description"]
+                    result["space_complexity"]["confidence"] = min(
+                        0.9, space_scores[comp] * 0.3
+                    )
+                    result["space_complexity"]["explanation"] = self.SPACE_PATTERNS[
+                        comp
+                    ]["description"]
                     break
 
         # 재귀 함수 검사 (스택 공간)
         if re.search(r"def\s+(\w+).*:\s*\n.*return.*\1\s*\(", code, re.DOTALL):
-            result["space_complexity"]["factors"].append("재귀 함수 - 호출 스택 O(n) 또는 O(log n)")
+            result["space_complexity"]["factors"].append(
+                "재귀 함수 - 호출 스택 O(n) 또는 O(log n)"
+            )
 
         return result
 
@@ -859,36 +885,40 @@ class CodeAnalyzer:
         """
         suggestions = []
 
-        # 감지된 패턴 기반 최적화
-        detected_patterns = self._detect_patterns(code, language)
+        # 감지된 패턴 기반 최적화 (TODO: use detected_patterns for optimization)
+        self._detect_patterns(code, language)
         complexity = self.estimate_complexity(code, language)
 
         # 시간 복잡도 기반 제안
         time_est = complexity["time_complexity"]["estimate"]
         if "n²" in time_est:
-            suggestions.append({
-                "type": "time_optimization",
-                "priority": "high",
-                "current": time_est,
-                "message": "O(n²) 복잡도가 감지되었습니다.",
-                "suggestions": [
-                    "해시맵을 사용하여 검색을 O(1)로 개선",
-                    "정렬 + 투 포인터로 O(n log n) 가능 여부 확인",
-                    "이분 탐색 적용 가능 여부 확인",
-                ],
-            })
+            suggestions.append(
+                {
+                    "type": "time_optimization",
+                    "priority": "high",
+                    "current": time_est,
+                    "message": "O(n²) 복잡도가 감지되었습니다.",
+                    "suggestions": [
+                        "해시맵을 사용하여 검색을 O(1)로 개선",
+                        "정렬 + 투 포인터로 O(n log n) 가능 여부 확인",
+                        "이분 탐색 적용 가능 여부 확인",
+                    ],
+                }
+            )
         elif "n³" in time_est:
-            suggestions.append({
-                "type": "time_optimization",
-                "priority": "critical",
-                "current": time_est,
-                "message": "O(n³) 복잡도가 감지되었습니다. 심각한 성능 문제가 예상됩니다.",
-                "suggestions": [
-                    "알고리즘 접근법 자체를 재검토하세요",
-                    "동적 프로그래밍 적용 가능 여부 확인",
-                    "삼중 루프 중 하나를 해시맵으로 대체",
-                ],
-            })
+            suggestions.append(
+                {
+                    "type": "time_optimization",
+                    "priority": "critical",
+                    "current": time_est,
+                    "message": "O(n³) 복잡도가 감지되었습니다. 심각한 성능 문제가 예상됩니다.",
+                    "suggestions": [
+                        "알고리즘 접근법 자체를 재검토하세요",
+                        "동적 프로그래밍 적용 가능 여부 확인",
+                        "삼중 루프 중 하나를 해시맵으로 대체",
+                    ],
+                }
+            )
 
         # 패턴별 최적화 제안
         pattern_optimizations = {
@@ -911,32 +941,43 @@ class CodeAnalyzer:
 
         for pattern_name, opt_info in pattern_optimizations.items():
             if re.search(opt_info["check"], code, re.MULTILINE | re.IGNORECASE):
-                suggestions.append({
-                    "type": "pattern_specific",
-                    "pattern": pattern_name,
-                    "priority": "medium",
-                    "message": opt_info["message"],
-                    "suggestion": opt_info["suggestion"],
-                })
+                suggestions.append(
+                    {
+                        "type": "pattern_specific",
+                        "pattern": pattern_name,
+                        "priority": "medium",
+                        "message": opt_info["message"],
+                        "suggestion": opt_info["suggestion"],
+                    }
+                )
 
         # 일반적인 최적화 제안
         if re.search(r"for.*range\s*\(\s*len\s*\(", code):
-            suggestions.append({
-                "type": "pythonic",
-                "priority": "low",
-                "message": "range(len(x)) 대신 enumerate()를 사용하세요.",
-                "suggestion": "for i, item in enumerate(items): 형태가 더 Pythonic합니다.",
-            })
+            suggestions.append(
+                {
+                    "type": "pythonic",
+                    "priority": "low",
+                    "message": "range(len(x)) 대신 enumerate()를 사용하세요.",
+                    "suggestion": "for i, item in enumerate(items): 형태가 더 Pythonic합니다.",
+                }
+            )
 
         if re.search(r"\+\s*=\s*\[", code):
-            suggestions.append({
-                "type": "performance",
-                "priority": "low",
-                "message": "리스트 += 보다 extend()가 더 효율적입니다.",
-                "suggestion": "list1 += list2 대신 list1.extend(list2)를 사용하세요.",
-            })
+            suggestions.append(
+                {
+                    "type": "performance",
+                    "priority": "low",
+                    "message": "리스트 += 보다 extend()가 더 효율적입니다.",
+                    "suggestion": "list1 += list2 대신 list1.extend(list2)를 사용하세요.",
+                }
+            )
 
-        return sorted(suggestions, key=lambda x: {"critical": 0, "high": 1, "medium": 2, "low": 3}.get(x["priority"], 4))
+        return sorted(
+            suggestions,
+            key=lambda x: {"critical": 0, "high": 1, "medium": 2, "low": 3}.get(
+                x["priority"], 4
+            ),
+        )
 
     def detect_antipatterns(self, code: str, language: str = "python") -> list[dict]:
         """
@@ -953,12 +994,14 @@ class CodeAnalyzer:
 
         for name, info in self.ALGORITHM_ANTIPATTERNS.items():
             if re.search(info["pattern"], code, re.MULTILINE | re.DOTALL):
-                detected.append({
-                    "antipattern": name,
-                    "message": info["message"],
-                    "suggestion": info["suggestion"],
-                    "severity": info["severity"],
-                })
+                detected.append(
+                    {
+                        "antipattern": name,
+                        "message": info["message"],
+                        "suggestion": info["suggestion"],
+                        "severity": info["severity"],
+                    }
+                )
 
         # 정렬 후 반환
         severity_order = {"error": 0, "warning": 1, "info": 2}
@@ -1034,7 +1077,9 @@ class CodeAnalyzer:
         # 복잡도
         time_comp = analysis.get("complexity_estimate", {}).get("time_complexity", {})
         space_comp = analysis.get("complexity_estimate", {}).get("space_complexity", {})
-        parts.append(f"**복잡도**: 시간 {time_comp.get('estimate', 'O(?)')}, 공간 {space_comp.get('estimate', 'O(?)')}")
+        parts.append(
+            f"**복잡도**: 시간 {time_comp.get('estimate', 'O(?)')}, 공간 {space_comp.get('estimate', 'O(?)')}"
+        )
 
         # 점수
         score = analysis.get("overall_score", 0)
@@ -1044,18 +1089,24 @@ class CodeAnalyzer:
         # 패턴
         patterns = analysis.get("patterns", [])
         if patterns:
-            pattern_names = [p.get("pattern_ko", p.get("pattern", "")) for p in patterns[:2]]
+            pattern_names = [
+                p.get("pattern_ko", p.get("pattern", "")) for p in patterns[:2]
+            ]
             parts.append(f"**감지된 패턴**: {', '.join(pattern_names)}")
 
         # 주요 문제
         antipatterns = analysis.get("antipatterns", [])
-        critical_issues = [ap for ap in antipatterns if ap["severity"] in ["error", "warning"]]
+        critical_issues = [
+            ap for ap in antipatterns if ap["severity"] in ["error", "warning"]
+        ]
         if critical_issues:
             parts.append(f"**주요 문제**: {len(critical_issues)}개 발견")
 
         # 최적화
         optimizations = analysis.get("optimizations", [])
-        high_priority = [o for o in optimizations if o.get("priority") in ["critical", "high"]]
+        high_priority = [
+            o for o in optimizations if o.get("priority") in ["critical", "high"]
+        ]
         if high_priority:
             parts.append(f"**최적화 필요**: {len(high_priority)}개 항목")
 
@@ -1063,6 +1114,7 @@ class CodeAnalyzer:
 
 
 # ============== Debugging Assistant ==============
+
 
 class DebuggingAssistant:
     """
@@ -1377,7 +1429,7 @@ class DebuggingAssistant:
         error_type: str,
         error_message: str = "",
         test_case: dict | None = None,
-        language: str = "python"
+        language: str = "python",
     ) -> dict:
         """
         에러를 분석하고 디버깅 가이드를 제공합니다.
@@ -1443,12 +1495,16 @@ class DebuggingAssistant:
         # 일반적인 실수 패턴 검사
         for mistake_name, mistake_info in self.COMMON_MISTAKES.items():
             if re.search(mistake_info["pattern"], code, re.MULTILINE):
-                issues.append({
-                    "type": mistake_name,
-                    "description": mistake_info["description"],
-                    "check_points": mistake_info["check_points"],
-                    "relevance": self._calculate_relevance(mistake_name, error_type),
-                })
+                issues.append(
+                    {
+                        "type": mistake_name,
+                        "description": mistake_info["description"],
+                        "check_points": mistake_info["check_points"],
+                        "relevance": self._calculate_relevance(
+                            mistake_name, error_type
+                        ),
+                    }
+                )
 
         # 에러 타입별 특정 검사
         if error_type == "IndexError":
@@ -1456,15 +1512,17 @@ class DebuggingAssistant:
             array_accesses = re.findall(r"\w+\s*\[\s*([^]]+)\s*\]", code)
             for access in array_accesses:
                 if re.search(r"\+\s*1|len\s*\(", access):
-                    issues.append({
-                        "type": "suspicious_index",
-                        "description": f"의심스러운 인덱스 접근: [{access}]",
-                        "check_points": [
-                            "인덱스가 배열 범위 내인지 확인",
-                            "+1 이 필요한지 재검토",
-                        ],
-                        "relevance": "high",
-                    })
+                    issues.append(
+                        {
+                            "type": "suspicious_index",
+                            "description": f"의심스러운 인덱스 접근: [{access}]",
+                            "check_points": [
+                                "인덱스가 배열 범위 내인지 확인",
+                                "+1 이 필요한지 재검토",
+                            ],
+                            "relevance": "high",
+                        }
+                    )
 
         elif error_type == "RecursionError":
             # 재귀 함수 분석
@@ -1473,15 +1531,17 @@ class DebuggingAssistant:
                 if re.search(rf"{func}\s*\(", code):
                     # 종료 조건 확인
                     if not re.search(r"if\s+.*:\s*\n\s*return", code):
-                        issues.append({
-                            "type": "missing_base_case",
-                            "description": f"함수 '{func}'에 명확한 종료 조건이 없을 수 있습니다",
-                            "check_points": [
-                                "재귀의 종료 조건이 있는지 확인",
-                                "종료 조건에 도달할 수 있는지 확인",
-                            ],
-                            "relevance": "high",
-                        })
+                        issues.append(
+                            {
+                                "type": "missing_base_case",
+                                "description": f"함수 '{func}'에 명확한 종료 조건이 없을 수 있습니다",
+                                "check_points": [
+                                    "재귀의 종료 조건이 있는지 확인",
+                                    "종료 조건에 도달할 수 있는지 확인",
+                                ],
+                                "relevance": "high",
+                            }
+                        )
 
         elif error_type == "TimeoutError":
             # 복잡도 분석
@@ -1489,16 +1549,18 @@ class DebuggingAssistant:
             time_comp = analysis["time_complexity"]["estimate"]
 
             if "n²" in time_comp or "n³" in time_comp:
-                issues.append({
-                    "type": "high_complexity",
-                    "description": f"높은 시간 복잡도: {time_comp}",
-                    "check_points": [
-                        "더 효율적인 알고리즘 사용 가능 여부",
-                        "불필요한 중복 계산 제거",
-                        "적절한 자료구조 사용",
-                    ],
-                    "relevance": "high",
-                })
+                issues.append(
+                    {
+                        "type": "high_complexity",
+                        "description": f"높은 시간 복잡도: {time_comp}",
+                        "check_points": [
+                            "더 효율적인 알고리즘 사용 가능 여부",
+                            "불필요한 중복 계산 제거",
+                            "적절한 자료구조 사용",
+                        ],
+                        "relevance": "high",
+                    }
+                )
 
         # 관련도 순 정렬
         relevance_order = {"high": 0, "medium": 1, "low": 2}
@@ -1506,9 +1568,7 @@ class DebuggingAssistant:
 
         return issues
 
-    def _analyze_test_case(
-        self, test_case: dict, error_type: str
-    ) -> dict:
+    def _analyze_test_case(self, test_case: dict, error_type: str) -> dict:
         """테스트 케이스 분석"""
         analysis = {
             "input_characteristics": [],
@@ -1572,12 +1632,8 @@ class DebuggingAssistant:
 
         # 오답인 경우 출력 비교
         if error_type == "WrongAnswer" and expected and actual:
-            analysis["debugging_suggestions"].append(
-                f"예상 출력: {expected}"
-            )
-            analysis["debugging_suggestions"].append(
-                f"실제 출력: {actual}"
-            )
+            analysis["debugging_suggestions"].append(f"예상 출력: {expected}")
+            analysis["debugging_suggestions"].append(f"실제 출력: {actual}")
 
             # 차이점 분석
             if str(expected) != str(actual):
@@ -1591,7 +1647,11 @@ class DebuggingAssistant:
                                 f"출력 길이 차이: 예상 {len(exp_nums)}개, 실제 {len(act_nums)}개"
                             )
                         else:
-                            diffs = [(i, e, a) for i, (e, a) in enumerate(zip(exp_nums, act_nums)) if e != a]
+                            diffs = [
+                                (i, e, a)
+                                for i, (e, a) in enumerate(zip(exp_nums, act_nums))
+                                if e != a
+                            ]
                             if diffs:
                                 first_diff = diffs[0]
                                 analysis["debugging_suggestions"].append(
@@ -1623,7 +1683,7 @@ class DebuggingAssistant:
         error_type: str,
         code_issues: list,
         test_case: dict | None,
-        language: str
+        language: str,
     ) -> list[dict]:
         """수정 제안 생성"""
         suggestions = []
@@ -1631,22 +1691,26 @@ class DebuggingAssistant:
         # 에러 타입별 기본 제안
         if error_type in self.ERROR_PATTERNS:
             for hint in self.ERROR_PATTERNS[error_type]["code_fix_hints"]:
-                suggestions.append({
-                    "type": "code_hint",
-                    "priority": "medium",
-                    "description": hint,
-                })
+                suggestions.append(
+                    {
+                        "type": "code_hint",
+                        "priority": "medium",
+                        "description": hint,
+                    }
+                )
 
         # 코드 이슈 기반 제안
         for issue in code_issues:
             if issue.get("relevance") == "high":
                 for check in issue.get("check_points", []):
-                    suggestions.append({
-                        "type": "check_point",
-                        "priority": "high",
-                        "description": check,
-                        "related_issue": issue["type"],
-                    })
+                    suggestions.append(
+                        {
+                            "type": "check_point",
+                            "priority": "high",
+                            "description": check,
+                            "related_issue": issue["type"],
+                        }
+                    )
 
         # 중복 제거 및 우선순위 정렬
         seen = set()
@@ -1658,7 +1722,9 @@ class DebuggingAssistant:
                 unique_suggestions.append(s)
 
         priority_order = {"high": 0, "medium": 1, "low": 2}
-        unique_suggestions.sort(key=lambda x: priority_order.get(x.get("priority", "low"), 3))
+        unique_suggestions.sort(
+            key=lambda x: priority_order.get(x.get("priority", "low"), 3)
+        )
 
         return unique_suggestions[:10]  # 상위 10개
 
@@ -1714,7 +1780,11 @@ class DebuggingAssistant:
         common_cases = [
             {"case": "빈 입력", "input": "[]", "description": "빈 배열/문자열"},
             {"case": "단일 원소", "input": "[1]", "description": "원소가 하나인 경우"},
-            {"case": "두 원소", "input": "[1, 2]", "description": "최소 비교 가능 크기"},
+            {
+                "case": "두 원소",
+                "input": "[1, 2]",
+                "description": "최소 비교 가능 크기",
+            },
         ]
         edge_cases.extend(common_cases)
 
@@ -1752,27 +1822,35 @@ class DebuggingAssistant:
         if constraints:
             n_max = constraints.get("n")
             if n_max:
-                edge_cases.append({
-                    "case": "최대 크기",
-                    "input": f"n = {n_max}",
-                    "description": "시간/공간 제한 테스트",
-                })
+                edge_cases.append(
+                    {
+                        "case": "최대 크기",
+                        "input": f"n = {n_max}",
+                        "description": "시간/공간 제한 테스트",
+                    }
+                )
 
             value_range = constraints.get("values")
             if value_range:
-                edge_cases.append({
-                    "case": "최소값",
-                    "input": f"모든 값이 {value_range[0]}",
-                })
-                edge_cases.append({
-                    "case": "최대값",
-                    "input": f"모든 값이 {value_range[1]}",
-                })
+                edge_cases.append(
+                    {
+                        "case": "최소값",
+                        "input": f"모든 값이 {value_range[0]}",
+                    }
+                )
+                edge_cases.append(
+                    {
+                        "case": "최대값",
+                        "input": f"모든 값이 {value_range[1]}",
+                    }
+                )
 
         return edge_cases
 
 
 # Factory function
-def get_debugging_assistant(code_analyzer: CodeAnalyzer | None = None) -> DebuggingAssistant:
+def get_debugging_assistant(
+    code_analyzer: CodeAnalyzer | None = None,
+) -> DebuggingAssistant:
     """DebuggingAssistant 인스턴스 생성 헬퍼"""
     return DebuggingAssistant(code_analyzer)

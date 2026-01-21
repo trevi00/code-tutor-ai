@@ -45,11 +45,11 @@ from code_tutor.ml.prediction import InsightsService
 from code_tutor.ml.recommendation import RecommenderService
 from code_tutor.shared.api_response import success_response
 from code_tutor.shared.config import get_settings
+from code_tutor.shared.exceptions import AppException
+from code_tutor.shared.infrastructure.database import get_async_session
 from code_tutor.shared.infrastructure.logging import get_logger
 
 logger = get_logger(__name__)
-from code_tutor.shared.exceptions import AppException
-from code_tutor.shared.infrastructure.database import get_async_session
 
 router = APIRouter(tags=["Learning"])
 
@@ -363,7 +363,9 @@ async def submit_and_evaluate(
     """
     try:
         # Check if user has already solved this problem (for gamification)
-        already_solved = await service.has_user_solved(current_user.id, request.problem_id)
+        already_solved = await service.has_user_solved(
+            current_user.id, request.problem_id
+        )
 
         # Check if this is the user's first submission for this problem
         previous_submissions = await service.get_user_problem_submissions(
@@ -398,12 +400,18 @@ async def submit_and_evaluate(
         if is_solved and not already_solved:
             try:
                 # Award XP based on whether this was first attempt
-                action = "problem_solved_first_try" if is_first_attempt else "problem_solved"
-                logger.info("Recording activity", action=action, user_id=str(current_user.id))
+                action = (
+                    "problem_solved_first_try" if is_first_attempt else "problem_solved"
+                )
+                logger.info(
+                    "Recording activity", action=action, user_id=str(current_user.id)
+                )
                 await xp_service.record_activity(current_user.id, action)
                 logger.info("Activity recorded successfully")
             except Exception as e:
-                logger.error("Gamification failed", error=str(e), error_type=type(e).__name__)
+                logger.error(
+                    "Gamification failed", error=str(e), error_type=type(e).__name__
+                )
                 pass  # Gamification failure shouldn't affect submission
 
         # Analyze code quality (best effort, don't fail on error)
@@ -926,7 +934,9 @@ async def get_recent_quality(
     summary="Get user quality profile",
 )
 async def get_quality_profile(
-    quality_recommender: Annotated[QualityRecommender, Depends(get_quality_recommender)],
+    quality_recommender: Annotated[
+        QualityRecommender, Depends(get_quality_recommender)
+    ],
     current_user: Annotated[UserResponse, Depends(get_current_active_user)],
 ) -> dict[str, Any]:
     """
@@ -947,7 +957,9 @@ async def get_quality_profile(
     summary="Get quality-based problem recommendations",
 )
 async def get_quality_recommendations(
-    quality_recommender: Annotated[QualityRecommender, Depends(get_quality_recommender)],
+    quality_recommender: Annotated[
+        QualityRecommender, Depends(get_quality_recommender)
+    ],
     current_user: Annotated[UserResponse, Depends(get_current_active_user)],
     limit: int = Query(default=5, ge=1, le=10),
 ) -> dict[str, Any]:
@@ -962,7 +974,9 @@ async def get_quality_recommendations(
     recommendations = await quality_recommender.get_quality_recommendations(
         current_user.id, limit
     )
-    return success_response({"recommendations": recommendations, "total": len(recommendations)})
+    return success_response(
+        {"recommendations": recommendations, "total": len(recommendations)}
+    )
 
 
 @router.get(
@@ -970,7 +984,9 @@ async def get_quality_recommendations(
     summary="Get improvement suggestions",
 )
 async def get_improvement_suggestions(
-    quality_recommender: Annotated[QualityRecommender, Depends(get_quality_recommender)],
+    quality_recommender: Annotated[
+        QualityRecommender, Depends(get_quality_recommender)
+    ],
     current_user: Annotated[UserResponse, Depends(get_current_active_user)],
 ) -> dict[str, Any]:
     """

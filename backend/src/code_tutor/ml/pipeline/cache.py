@@ -6,15 +6,15 @@ Redis-based caching for ML model predictions and recommendations.
 from datetime import UTC, datetime
 from uuid import UUID
 
-
-def utc_now() -> datetime:
-    """Get current UTC time (timezone-aware)"""
-    return datetime.now(UTC)
-
 from code_tutor.shared.infrastructure.logging import get_logger
 from code_tutor.shared.infrastructure.redis import RedisClient
 
 logger = get_logger(__name__)
+
+
+def utc_now() -> datetime:
+    """Get current UTC time (timezone-aware)"""
+    return datetime.now(UTC)
 
 
 class CacheMetrics:
@@ -62,7 +62,9 @@ class CacheMetrics:
             "hits": total_hits,
             "misses": total_misses,
             "total": total_requests,
-            "hit_rate": round(total_hits / total_requests, 4) if total_requests > 0 else 0.0,
+            "hit_rate": round(total_hits / total_requests, 4)
+            if total_requests > 0
+            else 0.0,
         }
 
         return stats

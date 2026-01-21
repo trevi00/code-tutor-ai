@@ -101,9 +101,7 @@ class UserProgressRepository(ABC):
         pass
 
     @abstractmethod
-    async def save_path_progress(
-        self, progress: UserPathProgress
-    ) -> UserPathProgress:
+    async def save_path_progress(self, progress: UserPathProgress) -> UserPathProgress:
         """Save path progress."""
         pass
 
@@ -136,9 +134,7 @@ class UserProgressRepository(ABC):
         pass
 
     @abstractmethod
-    async def get_completed_lesson_count(
-        self, user_id: UUID, path_id: UUID
-    ) -> int:
+    async def get_completed_lesson_count(self, user_id: UUID, path_id: UUID) -> int:
         """Get count of completed lessons in a path."""
         pass
 

@@ -37,11 +37,11 @@ class PathLevel(str, Enum):
 class LessonType(str, Enum):
     """Types of lessons in a learning path."""
 
-    CONCEPT = "concept"      # 개념 설명 (텍스트/마크다운)
-    PROBLEM = "problem"      # 문제 풀이
-    TYPING = "typing"        # 받아쓰기 연습
-    PATTERN = "pattern"      # 알고리즘 패턴 학습
-    QUIZ = "quiz"            # 퀴즈 (객관식)
+    CONCEPT = "concept"  # 개념 설명 (텍스트/마크다운)
+    PROBLEM = "problem"  # 문제 풀이
+    TYPING = "typing"  # 받아쓰기 연습
+    PATTERN = "pattern"  # 알고리즘 패턴 학습
+    QUIZ = "quiz"  # 퀴즈 (객관식)
 
     @property
     def display_name(self) -> str:

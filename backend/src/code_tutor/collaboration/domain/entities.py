@@ -5,11 +5,6 @@ from datetime import UTC, datetime
 from typing import Any
 from uuid import UUID, uuid4
 
-
-def utc_now() -> datetime:
-    """Get current UTC time (timezone-aware)"""
-    return datetime.now(UTC)
-
 from code_tutor.collaboration.domain.value_objects import (
     CodeOperation,
     CursorPosition,
@@ -17,6 +12,11 @@ from code_tutor.collaboration.domain.value_objects import (
     SessionStatus,
     get_participant_color,
 )
+
+
+def utc_now() -> datetime:
+    """Get current UTC time (timezone-aware)"""
+    return datetime.now(UTC)
 
 
 @dataclass
@@ -55,8 +55,12 @@ class Participant:
             "id": str(self.id),
             "user_id": str(self.user_id),
             "username": self.username,
-            "cursor_position": self.cursor_position.to_dict() if self.cursor_position else None,
-            "selection_range": self.selection_range.to_dict() if self.selection_range else None,
+            "cursor_position": self.cursor_position.to_dict()
+            if self.cursor_position
+            else None,
+            "selection_range": self.selection_range.to_dict()
+            if self.selection_range
+            else None,
             "is_active": self.is_active,
             "color": self.color,
             "joined_at": self.joined_at.isoformat(),
@@ -203,7 +207,10 @@ class CollaborationSession:
         return self.version
 
     def update_participant_cursor(
-        self, user_id: UUID, position: CursorPosition, selection: SelectionRange | None = None
+        self,
+        user_id: UUID,
+        position: CursorPosition,
+        selection: SelectionRange | None = None,
     ) -> None:
         """Update participant cursor position."""
         participant = self.get_participant_by_user_id(user_id)

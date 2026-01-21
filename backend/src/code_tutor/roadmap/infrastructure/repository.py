@@ -90,7 +90,9 @@ class SQLAlchemyLearningPathRepository(LearningPathRepository):
         result = await self.session.execute(
             select(LearningPathModel)
             .options(
-                selectinload(LearningPathModel.modules).selectinload(ModuleModel.lessons),
+                selectinload(LearningPathModel.modules).selectinload(
+                    ModuleModel.lessons
+                ),
                 selectinload(LearningPathModel.prerequisites),
             )
             .where(LearningPathModel.id == str(path_id))
@@ -103,7 +105,9 @@ class SQLAlchemyLearningPathRepository(LearningPathRepository):
         result = await self.session.execute(
             select(LearningPathModel)
             .options(
-                selectinload(LearningPathModel.modules).selectinload(ModuleModel.lessons),
+                selectinload(LearningPathModel.modules).selectinload(
+                    ModuleModel.lessons
+                ),
                 selectinload(LearningPathModel.prerequisites),
             )
             .where(LearningPathModel.level == level.value)
@@ -116,7 +120,9 @@ class SQLAlchemyLearningPathRepository(LearningPathRepository):
         query = (
             select(LearningPathModel)
             .options(
-                selectinload(LearningPathModel.modules).selectinload(ModuleModel.lessons),
+                selectinload(LearningPathModel.modules).selectinload(
+                    ModuleModel.lessons
+                ),
                 selectinload(LearningPathModel.prerequisites),
             )
             .order_by(LearningPathModel.order)
@@ -292,7 +298,9 @@ class SQLAlchemyUserProgressRepository(UserProgressRepository):
     def __init__(self, session: AsyncSession) -> None:
         self.session = session
 
-    def _path_progress_to_entity(self, model: UserPathProgressModel) -> UserPathProgress:
+    def _path_progress_to_entity(
+        self, model: UserPathProgressModel
+    ) -> UserPathProgress:
         """Convert path progress model to entity."""
         progress = UserPathProgress(
             id=UUID(model.id),
@@ -308,7 +316,9 @@ class SQLAlchemyUserProgressRepository(UserProgressRepository):
         progress._updated_at = model.updated_at
         return progress
 
-    def _lesson_progress_to_entity(self, model: UserLessonProgressModel) -> UserLessonProgress:
+    def _lesson_progress_to_entity(
+        self, model: UserLessonProgressModel
+    ) -> UserLessonProgress:
         """Convert lesson progress model to entity."""
         progress = UserLessonProgress(
             id=UUID(model.id),
@@ -346,9 +356,7 @@ class SQLAlchemyUserProgressRepository(UserProgressRepository):
         )
         return [self._path_progress_to_entity(m) for m in result.scalars().all()]
 
-    async def save_path_progress(
-        self, progress: UserPathProgress
-    ) -> UserPathProgress:
+    async def save_path_progress(self, progress: UserPathProgress) -> UserPathProgress:
         """Save path progress."""
         # Check if exists
         result = await self.session.execute(
@@ -462,9 +470,7 @@ class SQLAlchemyUserProgressRepository(UserProgressRepository):
         await self.session.flush()
         return progress
 
-    async def get_completed_lesson_count(
-        self, user_id: UUID, path_id: UUID
-    ) -> int:
+    async def get_completed_lesson_count(self, user_id: UUID, path_id: UUID) -> int:
         """Get count of completed lessons in a path."""
         result = await self.session.execute(
             select(func.count(UserLessonProgressModel.id))
@@ -483,12 +489,9 @@ class SQLAlchemyUserProgressRepository(UserProgressRepository):
     ) -> Lesson | None:
         """Get the next incomplete lesson for user."""
         # Get completed lesson IDs
-        completed_query = (
-            select(UserLessonProgressModel.lesson_id)
-            .where(
-                UserLessonProgressModel.user_id == str(user_id),
-                UserLessonProgressModel.status == ProgressStatus.COMPLETED.value,
-            )
+        completed_query = select(UserLessonProgressModel.lesson_id).where(
+            UserLessonProgressModel.user_id == str(user_id),
+            UserLessonProgressModel.status == ProgressStatus.COMPLETED.value,
         )
 
         # Find next lesson not completed

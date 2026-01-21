@@ -43,9 +43,7 @@ def create_access_token(
     if expires_delta:
         expire = utc_now() + expires_delta
     else:
-        expire = utc_now() + timedelta(
-            minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES
-        )
+        expire = utc_now() + timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
 
     to_encode.update(
         {
@@ -127,12 +125,8 @@ class TokenPayload:
     def __init__(self, payload: dict[str, Any]) -> None:
         self.sub: str = payload.get("sub", "")
         # Use fromtimestamp with UTC timezone for timezone-aware datetimes
-        self.exp: datetime = datetime.fromtimestamp(
-            payload.get("exp", 0), tz=UTC
-        )
-        self.iat: datetime = datetime.fromtimestamp(
-            payload.get("iat", 0), tz=UTC
-        )
+        self.exp: datetime = datetime.fromtimestamp(payload.get("exp", 0), tz=UTC)
+        self.iat: datetime = datetime.fromtimestamp(payload.get("iat", 0), tz=UTC)
         self.jti: str = payload.get("jti", "")
         self.type: str = payload.get("type", "")
 

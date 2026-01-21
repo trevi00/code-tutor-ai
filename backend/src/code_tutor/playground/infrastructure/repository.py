@@ -99,9 +99,7 @@ class SQLAlchemyPlaygroundRepository(PlaygroundRepository):
 
     async def get_by_share_code(self, share_code: str) -> Playground | None:
         """Get playground by share code."""
-        query = select(PlaygroundModel).where(
-            PlaygroundModel.share_code == share_code
-        )
+        query = select(PlaygroundModel).where(PlaygroundModel.share_code == share_code)
         result = await self.session.execute(query)
         model = result.scalar_one_or_none()
         return self._model_to_entity(model) if model else None
@@ -163,9 +161,7 @@ class SQLAlchemyPlaygroundRepository(PlaygroundRepository):
             query = query.where(PlaygroundModel.language == language.value)
 
         query = (
-            query.order_by(desc(PlaygroundModel.created_at))
-            .limit(limit)
-            .offset(offset)
+            query.order_by(desc(PlaygroundModel.created_at)).limit(limit).offset(offset)
         )
 
         result = await self.session.execute(query)

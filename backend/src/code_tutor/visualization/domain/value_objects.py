@@ -51,23 +51,23 @@ class AlgorithmType(str, Enum):
 class AnimationType(str, Enum):
     """Animation action types."""
 
-    COMPARE = "compare"          # Comparing two elements
-    SWAP = "swap"                # Swapping two elements
-    SET = "set"                  # Setting a value
-    HIGHLIGHT = "highlight"      # Highlighting elements
+    COMPARE = "compare"  # Comparing two elements
+    SWAP = "swap"  # Swapping two elements
+    SET = "set"  # Setting a value
+    HIGHLIGHT = "highlight"  # Highlighting elements
     UNHIGHLIGHT = "unhighlight"  # Removing highlight
-    PIVOT = "pivot"              # Marking pivot
-    SORTED = "sorted"            # Marking as sorted
-    FOUND = "found"              # Element found
-    NOT_FOUND = "not_found"      # Element not found
-    PUSH = "push"                # Push to stack/queue
-    POP = "pop"                  # Pop from stack/queue
-    INSERT = "insert"            # Insert into structure
-    DELETE = "delete"            # Delete from structure
-    VISIT = "visit"              # Visit node (graph/tree)
-    CURRENT = "current"          # Current position marker
-    MERGE = "merge"              # Merging two arrays
-    DIVIDE = "divide"            # Dividing array
+    PIVOT = "pivot"  # Marking pivot
+    SORTED = "sorted"  # Marking as sorted
+    FOUND = "found"  # Element found
+    NOT_FOUND = "not_found"  # Element not found
+    PUSH = "push"  # Push to stack/queue
+    POP = "pop"  # Pop from stack/queue
+    INSERT = "insert"  # Insert into structure
+    DELETE = "delete"  # Delete from structure
+    VISIT = "visit"  # Visit node (graph/tree)
+    CURRENT = "current"  # Current position marker
+    MERGE = "merge"  # Merging two arrays
+    DIVIDE = "divide"  # Dividing array
 
 
 class ElementState(str, Enum):

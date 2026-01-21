@@ -4,16 +4,16 @@ from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from uuid import UUID, uuid4
 
-
-def utc_now() -> datetime:
-    """Get current UTC time (timezone-aware)"""
-    return datetime.now(UTC)
-
 from code_tutor.typing_practice.domain.value_objects import (
     AttemptStatus,
     Difficulty,
     ExerciseCategory,
 )
+
+
+def utc_now() -> datetime:
+    """Get current UTC time (timezone-aware)"""
+    return datetime.now(UTC)
 
 
 @dataclass

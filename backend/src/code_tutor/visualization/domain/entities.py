@@ -23,7 +23,9 @@ class VisualizationStep:
     element_states: list[ElementState]  # Visual state of each element
     description: str  # Korean description of what happened
     code_line: int | None = None  # Corresponding line in code
-    auxiliary_data: dict[str, Any] = field(default_factory=dict)  # Extra data (e.g., pointers, ranges)
+    auxiliary_data: dict[str, Any] = field(
+        default_factory=dict
+    )  # Extra data (e.g., pointers, ranges)
 
     def to_dict(self) -> dict:
         """Convert to dictionary."""

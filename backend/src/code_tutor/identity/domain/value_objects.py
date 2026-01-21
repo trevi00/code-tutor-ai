@@ -108,13 +108,35 @@ class Password(ValueObject):
     SPECIAL_CHARACTERS = "!@#$%^&*()_+-=[]{}|;:,.<>?"
 
     # Common weak passwords to block
-    COMMON_PASSWORDS = frozenset([
-        "password", "123456", "12345678", "qwerty", "abc123",
-        "password1", "password123", "admin", "letmein", "welcome",
-        "monkey", "dragon", "master", "iloveyou", "sunshine",
-        "princess", "football", "baseball", "shadow", "michael",
-        "test1234", "test123", "qwerty123", "pass1234", "admin123",
-    ])
+    COMMON_PASSWORDS = frozenset(
+        [
+            "password",
+            "123456",
+            "12345678",
+            "qwerty",
+            "abc123",
+            "password1",
+            "password123",
+            "admin",
+            "letmein",
+            "welcome",
+            "monkey",
+            "dragon",
+            "master",
+            "iloveyou",
+            "sunshine",
+            "princess",
+            "football",
+            "baseball",
+            "shadow",
+            "michael",
+            "test1234",
+            "test123",
+            "qwerty123",
+            "pass1234",
+            "admin123",
+        ]
+    )
 
     def __post_init__(self) -> None:
         if not self.value:

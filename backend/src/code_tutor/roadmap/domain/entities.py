@@ -84,7 +84,9 @@ class Module(Entity):
         self._touch()
 
     def __repr__(self) -> str:
-        return f"Module(id={self.id}, title='{self.title}', lessons={len(self.lessons)})"
+        return (
+            f"Module(id={self.id}, title='{self.title}', lessons={len(self.lessons)})"
+        )
 
 
 class LearningPath(AggregateRoot):

@@ -5,11 +5,6 @@ from datetime import UTC, datetime
 from typing import Any
 from uuid import UUID, uuid4
 
-
-def utc_now() -> datetime:
-    """Get current UTC time (timezone-aware)"""
-    return datetime.now(UTC)
-
 from .value_objects import (
     DebugStatus,
     StepType,
@@ -17,6 +12,11 @@ from .value_objects import (
     format_variable_value,
     get_variable_type,
 )
+
+
+def utc_now() -> datetime:
+    """Get current UTC time (timezone-aware)"""
+    return datetime.now(UTC)
 
 
 @dataclass

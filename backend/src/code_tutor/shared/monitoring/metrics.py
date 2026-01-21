@@ -93,7 +93,7 @@ class MetricsManager:
             ["language", "status"],
         )
 
-        EXECUTION_DURATION = Histogram(
+        _EXECUTION_DURATION = Histogram(  # noqa: F841
             "codetutor_code_execution_duration_seconds",
             "Code execution duration in seconds",
             ["language"],

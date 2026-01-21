@@ -1,6 +1,5 @@
 """Debugger DTOs."""
 
-
 from pydantic import BaseModel, Field
 
 from code_tutor.debugger.domain import DebugStatus, StepType, VariableType

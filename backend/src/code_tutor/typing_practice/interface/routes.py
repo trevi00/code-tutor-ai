@@ -55,6 +55,7 @@ def get_xp_service(db: AsyncSession = Depends(get_db)) -> XPService:
 
 # ============== Exercise Endpoints ==============
 
+
 @router.get(
     "/exercises",
     response_model=TypingExerciseListResponse,
@@ -65,9 +66,16 @@ def get_xp_service(db: AsyncSession = Depends(get_db)) -> XPService:
     },
 )
 async def list_exercises(
-    category: ExerciseCategory | None = Query(None, description="카테고리 필터 (algorithm, pattern, syntax, typing)"),
+    category: ExerciseCategory | None = Query(
+        None, description="카테고리 필터 (algorithm, pattern, syntax, typing)"
+    ),
     page: int = Query(Pagination.DEFAULT_PAGE, ge=1, description="페이지 번호"),
-    page_size: int = Query(Pagination.DEFAULT_PAGE_SIZE, ge=1, le=Pagination.MAX_PAGE_SIZE, description="페이지당 항목 수"),
+    page_size: int = Query(
+        Pagination.DEFAULT_PAGE_SIZE,
+        ge=1,
+        le=Pagination.MAX_PAGE_SIZE,
+        description="페이지당 항목 수",
+    ),
     service: TypingPracticeService = Depends(get_typing_service),
 ):
     """List all typing exercises."""
@@ -94,6 +102,7 @@ async def get_exercise(
 ):
     """Get a specific typing exercise."""
     import logging
+
     logger = logging.getLogger(__name__)
     logger.info(f"Looking for exercise: {exercise_id} (type: {type(exercise_id)})")
     exercise = await service.get_exercise(exercise_id)
@@ -158,6 +167,7 @@ async def get_exercise_progress(
 
 # ============== Attempt Endpoints ==============
 
+
 @router.post(
     "/attempts",
     response_model=TypingAttemptResponse,
@@ -219,7 +229,11 @@ async def complete_attempt(
 
         # Check if exercise is now mastered
         progress = await service.get_user_progress(current_user.id, attempt.exercise_id)
-        if progress and progress.is_mastered and progress.completed_attempts == TypingConstants.MASTERY_THRESHOLD:
+        if (
+            progress
+            and progress.is_mastered
+            and progress.completed_attempts == TypingConstants.MASTERY_THRESHOLD
+        ):
             # Just reached mastery (5th completion)
             await xp_service.add_xp(current_user.id, "typing_exercise_mastered")
 
@@ -227,12 +241,14 @@ async def complete_attempt(
     except Exception as e:
         # Log error but don't fail the request
         import logging
+
         logging.getLogger(__name__).warning(f"Failed to award XP: {e}")
 
     return attempt
 
 
 # ============== Stats Endpoints ==============
+
 
 @router.get(
     "/stats",
@@ -282,7 +298,12 @@ async def get_mastered_exercises(
     },
 )
 async def get_leaderboard(
-    limit: int = Query(Pagination.LEADERBOARD_DEFAULT_LIMIT, ge=1, le=Pagination.LEADERBOARD_MAX_LIMIT, description="반환할 항목 수"),
+    limit: int = Query(
+        Pagination.LEADERBOARD_DEFAULT_LIMIT,
+        ge=1,
+        le=Pagination.LEADERBOARD_MAX_LIMIT,
+        description="반환할 항목 수",
+    ),
     db: AsyncSession = Depends(get_db),
 ):
     """Get typing practice leaderboard."""
@@ -290,6 +311,7 @@ async def get_leaderboard(
     entries = await attempt_repo.get_leaderboard(limit)
 
     from code_tutor.typing_practice.application.dto import LeaderboardEntryResponse
+
     return LeaderboardResponse(
         entries=[
             LeaderboardEntryResponse(

@@ -307,10 +307,7 @@ export default function DebuggerPanel({ code, input, onLineHighlight }: Debugger
 
             {/* Call Stack */}
             {currentStepData && currentStepData.call_stack.length > 0 && (
-              <CallStack
-                frames={currentStepData.call_stack}
-                currentLine={currentStepData.line_number}
-              />
+              <CallStack frames={currentStepData.call_stack} />
             )}
 
             {/* Output */}

@@ -211,8 +211,7 @@ class AuthService:
         if self._redis:
             # Calculate actual remaining time until expiration
             remaining_time = max(
-                0,
-                int((token_payload.exp - utc_now()).total_seconds())
+                0, int((token_payload.exp - utc_now()).total_seconds())
             )
             if remaining_time > 0:
                 await self._redis.blacklist_token(token_payload.jti, remaining_time)

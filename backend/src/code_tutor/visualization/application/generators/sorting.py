@@ -32,36 +32,43 @@ def generate_bubble_sort(data: list[int]) -> Visualization:
     swaps = 0
 
     # Initial state
-    viz.add_step(VisualizationStep(
-        step_number=step_num,
-        action=AnimationType.HIGHLIGHT,
-        indices=list(range(n)),
-        values=arr.copy(),
-        array_state=arr.copy(),
-        element_states=[ElementState.DEFAULT] * n,
-        description="정렬을 시작합니다.",
-        code_line=1,
-    ))
+    viz.add_step(
+        VisualizationStep(
+            step_number=step_num,
+            action=AnimationType.HIGHLIGHT,
+            indices=list(range(n)),
+            values=arr.copy(),
+            array_state=arr.copy(),
+            element_states=[ElementState.DEFAULT] * n,
+            description="정렬을 시작합니다.",
+            code_line=1,
+        )
+    )
     step_num += 1
 
     for i in range(n):
         for j in range(0, n - i - 1):
             # Compare step
-            states = [ElementState.SORTED if idx >= n - i else ElementState.DEFAULT for idx in range(n)]
+            states = [
+                ElementState.SORTED if idx >= n - i else ElementState.DEFAULT
+                for idx in range(n)
+            ]
             states[j] = ElementState.COMPARING
             states[j + 1] = ElementState.COMPARING
 
-            viz.add_step(VisualizationStep(
-                step_number=step_num,
-                action=AnimationType.COMPARE,
-                indices=[j, j + 1],
-                values=[arr[j], arr[j + 1]],
-                array_state=arr.copy(),
-                element_states=states,
-                description=f"{arr[j]}와 {arr[j+1]}을 비교합니다.",
-                code_line=4,
-                auxiliary_data={"i": i, "j": j},
-            ))
+            viz.add_step(
+                VisualizationStep(
+                    step_number=step_num,
+                    action=AnimationType.COMPARE,
+                    indices=[j, j + 1],
+                    values=[arr[j], arr[j + 1]],
+                    array_state=arr.copy(),
+                    element_states=states,
+                    description=f"{arr[j]}와 {arr[j + 1]}을 비교합니다.",
+                    code_line=4,
+                    auxiliary_data={"i": i, "j": j},
+                )
+            )
             step_num += 1
             comparisons += 1
 
@@ -70,49 +77,61 @@ def generate_bubble_sort(data: list[int]) -> Visualization:
                 arr[j], arr[j + 1] = arr[j + 1], arr[j]
                 swaps += 1
 
-                states = [ElementState.SORTED if idx >= n - i else ElementState.DEFAULT for idx in range(n)]
+                states = [
+                    ElementState.SORTED if idx >= n - i else ElementState.DEFAULT
+                    for idx in range(n)
+                ]
                 states[j] = ElementState.SWAPPING
                 states[j + 1] = ElementState.SWAPPING
 
-                viz.add_step(VisualizationStep(
-                    step_number=step_num,
-                    action=AnimationType.SWAP,
-                    indices=[j, j + 1],
-                    values=[arr[j], arr[j + 1]],
-                    array_state=arr.copy(),
-                    element_states=states,
-                    description=f"{arr[j+1]}이 {arr[j]}보다 크므로 교환합니다.",
-                    code_line=5,
-                    auxiliary_data={"i": i, "j": j},
-                ))
+                viz.add_step(
+                    VisualizationStep(
+                        step_number=step_num,
+                        action=AnimationType.SWAP,
+                        indices=[j, j + 1],
+                        values=[arr[j], arr[j + 1]],
+                        array_state=arr.copy(),
+                        element_states=states,
+                        description=f"{arr[j + 1]}이 {arr[j]}보다 크므로 교환합니다.",
+                        code_line=5,
+                        auxiliary_data={"i": i, "j": j},
+                    )
+                )
                 step_num += 1
 
         # Mark as sorted
         if n - i - 1 >= 0:
-            states = [ElementState.SORTED if idx >= n - i - 1 else ElementState.DEFAULT for idx in range(n)]
-            viz.add_step(VisualizationStep(
-                step_number=step_num,
-                action=AnimationType.SORTED,
-                indices=[n - i - 1],
-                values=[arr[n - i - 1]],
-                array_state=arr.copy(),
-                element_states=states,
-                description=f"{arr[n-i-1]}이 올바른 위치에 정렬되었습니다.",
-                code_line=3,
-            ))
+            states = [
+                ElementState.SORTED if idx >= n - i - 1 else ElementState.DEFAULT
+                for idx in range(n)
+            ]
+            viz.add_step(
+                VisualizationStep(
+                    step_number=step_num,
+                    action=AnimationType.SORTED,
+                    indices=[n - i - 1],
+                    values=[arr[n - i - 1]],
+                    array_state=arr.copy(),
+                    element_states=states,
+                    description=f"{arr[n - i - 1]}이 올바른 위치에 정렬되었습니다.",
+                    code_line=3,
+                )
+            )
             step_num += 1
 
     # Final state
-    viz.add_step(VisualizationStep(
-        step_number=step_num,
-        action=AnimationType.SORTED,
-        indices=list(range(n)),
-        values=arr.copy(),
-        array_state=arr.copy(),
-        element_states=[ElementState.SORTED] * n,
-        description=f"정렬 완료! 비교: {comparisons}회, 교환: {swaps}회",
-        code_line=6,
-    ))
+    viz.add_step(
+        VisualizationStep(
+            step_number=step_num,
+            action=AnimationType.SORTED,
+            indices=list(range(n)),
+            values=arr.copy(),
+            array_state=arr.copy(),
+            element_states=[ElementState.SORTED] * n,
+            description=f"정렬 완료! 비교: {comparisons}회, 교환: {swaps}회",
+            code_line=6,
+        )
+    )
 
     viz.final_data = arr.copy()
     viz.total_comparisons = comparisons
@@ -145,74 +164,90 @@ def generate_selection_sort(data: list[int]) -> Visualization:
     swaps = 0
 
     # Initial state
-    viz.add_step(VisualizationStep(
-        step_number=step_num,
-        action=AnimationType.HIGHLIGHT,
-        indices=list(range(n)),
-        values=arr.copy(),
-        array_state=arr.copy(),
-        element_states=[ElementState.DEFAULT] * n,
-        description="정렬을 시작합니다.",
-        code_line=1,
-    ))
+    viz.add_step(
+        VisualizationStep(
+            step_number=step_num,
+            action=AnimationType.HIGHLIGHT,
+            indices=list(range(n)),
+            values=arr.copy(),
+            array_state=arr.copy(),
+            element_states=[ElementState.DEFAULT] * n,
+            description="정렬을 시작합니다.",
+            code_line=1,
+        )
+    )
     step_num += 1
 
     for i in range(n):
         min_idx = i
 
         # Mark current minimum
-        states = [ElementState.SORTED if idx < i else ElementState.DEFAULT for idx in range(n)]
+        states = [
+            ElementState.SORTED if idx < i else ElementState.DEFAULT for idx in range(n)
+        ]
         states[i] = ElementState.PIVOT
 
-        viz.add_step(VisualizationStep(
-            step_number=step_num,
-            action=AnimationType.HIGHLIGHT,
-            indices=[i],
-            values=[arr[i]],
-            array_state=arr.copy(),
-            element_states=states,
-            description=f"위치 {i}부터 최소값을 찾습니다. 현재 최소값: {arr[i]}",
-            code_line=4,
-            auxiliary_data={"i": i, "min_idx": min_idx},
-        ))
+        viz.add_step(
+            VisualizationStep(
+                step_number=step_num,
+                action=AnimationType.HIGHLIGHT,
+                indices=[i],
+                values=[arr[i]],
+                array_state=arr.copy(),
+                element_states=states,
+                description=f"위치 {i}부터 최소값을 찾습니다. 현재 최소값: {arr[i]}",
+                code_line=4,
+                auxiliary_data={"i": i, "min_idx": min_idx},
+            )
+        )
         step_num += 1
 
         for j in range(i + 1, n):
             # Compare step
-            states = [ElementState.SORTED if idx < i else ElementState.DEFAULT for idx in range(n)]
+            states = [
+                ElementState.SORTED if idx < i else ElementState.DEFAULT
+                for idx in range(n)
+            ]
             states[min_idx] = ElementState.PIVOT
             states[j] = ElementState.COMPARING
 
-            viz.add_step(VisualizationStep(
-                step_number=step_num,
-                action=AnimationType.COMPARE,
-                indices=[min_idx, j],
-                values=[arr[min_idx], arr[j]],
-                array_state=arr.copy(),
-                element_states=states,
-                description=f"{arr[j]}와 현재 최소값 {arr[min_idx]}을 비교합니다.",
-                code_line=5,
-                auxiliary_data={"i": i, "j": j, "min_idx": min_idx},
-            ))
+            viz.add_step(
+                VisualizationStep(
+                    step_number=step_num,
+                    action=AnimationType.COMPARE,
+                    indices=[min_idx, j],
+                    values=[arr[min_idx], arr[j]],
+                    array_state=arr.copy(),
+                    element_states=states,
+                    description=f"{arr[j]}와 현재 최소값 {arr[min_idx]}을 비교합니다.",
+                    code_line=5,
+                    auxiliary_data={"i": i, "j": j, "min_idx": min_idx},
+                )
+            )
             step_num += 1
             comparisons += 1
 
             if arr[j] < arr[min_idx]:
                 min_idx = j
-                states = [ElementState.SORTED if idx < i else ElementState.DEFAULT for idx in range(n)]
+                states = [
+                    ElementState.SORTED if idx < i else ElementState.DEFAULT
+                    for idx in range(n)
+                ]
                 states[min_idx] = ElementState.PIVOT
 
-                viz.add_step(VisualizationStep(
-                    step_number=step_num,
-                    action=AnimationType.HIGHLIGHT,
-                    indices=[min_idx],
-                    values=[arr[min_idx]],
-                    array_state=arr.copy(),
-                    element_states=states,
-                    description=f"새로운 최소값 발견: {arr[min_idx]}",
-                    code_line=7,
-                    auxiliary_data={"i": i, "min_idx": min_idx},
-                ))
+                viz.add_step(
+                    VisualizationStep(
+                        step_number=step_num,
+                        action=AnimationType.HIGHLIGHT,
+                        indices=[min_idx],
+                        values=[arr[min_idx]],
+                        array_state=arr.copy(),
+                        element_states=states,
+                        description=f"새로운 최소값 발견: {arr[min_idx]}",
+                        code_line=7,
+                        auxiliary_data={"i": i, "min_idx": min_idx},
+                    )
+                )
                 step_num += 1
 
         # Swap if needed
@@ -220,47 +255,59 @@ def generate_selection_sort(data: list[int]) -> Visualization:
             arr[i], arr[min_idx] = arr[min_idx], arr[i]
             swaps += 1
 
-            states = [ElementState.SORTED if idx < i else ElementState.DEFAULT for idx in range(n)]
+            states = [
+                ElementState.SORTED if idx < i else ElementState.DEFAULT
+                for idx in range(n)
+            ]
             states[i] = ElementState.SWAPPING
             states[min_idx] = ElementState.SWAPPING
 
-            viz.add_step(VisualizationStep(
-                step_number=step_num,
-                action=AnimationType.SWAP,
-                indices=[i, min_idx],
-                values=[arr[i], arr[min_idx]],
-                array_state=arr.copy(),
-                element_states=states,
-                description=f"{arr[i]}와 {arr[min_idx]}을 교환합니다.",
-                code_line=8,
-            ))
+            viz.add_step(
+                VisualizationStep(
+                    step_number=step_num,
+                    action=AnimationType.SWAP,
+                    indices=[i, min_idx],
+                    values=[arr[i], arr[min_idx]],
+                    array_state=arr.copy(),
+                    element_states=states,
+                    description=f"{arr[i]}와 {arr[min_idx]}을 교환합니다.",
+                    code_line=8,
+                )
+            )
             step_num += 1
 
         # Mark as sorted
-        states = [ElementState.SORTED if idx <= i else ElementState.DEFAULT for idx in range(n)]
-        viz.add_step(VisualizationStep(
-            step_number=step_num,
-            action=AnimationType.SORTED,
-            indices=[i],
-            values=[arr[i]],
-            array_state=arr.copy(),
-            element_states=states,
-            description=f"{arr[i]}이 올바른 위치에 정렬되었습니다.",
-            code_line=3,
-        ))
+        states = [
+            ElementState.SORTED if idx <= i else ElementState.DEFAULT
+            for idx in range(n)
+        ]
+        viz.add_step(
+            VisualizationStep(
+                step_number=step_num,
+                action=AnimationType.SORTED,
+                indices=[i],
+                values=[arr[i]],
+                array_state=arr.copy(),
+                element_states=states,
+                description=f"{arr[i]}이 올바른 위치에 정렬되었습니다.",
+                code_line=3,
+            )
+        )
         step_num += 1
 
     # Final state
-    viz.add_step(VisualizationStep(
-        step_number=step_num,
-        action=AnimationType.SORTED,
-        indices=list(range(n)),
-        values=arr.copy(),
-        array_state=arr.copy(),
-        element_states=[ElementState.SORTED] * n,
-        description=f"정렬 완료! 비교: {comparisons}회, 교환: {swaps}회",
-        code_line=9,
-    ))
+    viz.add_step(
+        VisualizationStep(
+            step_number=step_num,
+            action=AnimationType.SORTED,
+            indices=list(range(n)),
+            values=arr.copy(),
+            array_state=arr.copy(),
+            element_states=[ElementState.SORTED] * n,
+            description=f"정렬 완료! 비교: {comparisons}회, 교환: {swaps}회",
+            code_line=9,
+        )
+    )
 
     viz.final_data = arr.copy()
     viz.total_comparisons = comparisons
@@ -293,56 +340,67 @@ def generate_insertion_sort(data: list[int]) -> Visualization:
     swaps = 0
 
     # Initial state
-    viz.add_step(VisualizationStep(
-        step_number=step_num,
-        action=AnimationType.HIGHLIGHT,
-        indices=list(range(n)),
-        values=arr.copy(),
-        array_state=arr.copy(),
-        element_states=[ElementState.SORTED] + [ElementState.DEFAULT] * (n - 1),
-        description="첫 번째 원소는 이미 정렬되어 있습니다.",
-        code_line=1,
-    ))
+    viz.add_step(
+        VisualizationStep(
+            step_number=step_num,
+            action=AnimationType.HIGHLIGHT,
+            indices=list(range(n)),
+            values=arr.copy(),
+            array_state=arr.copy(),
+            element_states=[ElementState.SORTED] + [ElementState.DEFAULT] * (n - 1),
+            description="첫 번째 원소는 이미 정렬되어 있습니다.",
+            code_line=1,
+        )
+    )
     step_num += 1
 
     for i in range(1, n):
         key = arr[i]
 
         # Pick current element
-        states = [ElementState.SORTED if idx < i else ElementState.DEFAULT for idx in range(n)]
+        states = [
+            ElementState.SORTED if idx < i else ElementState.DEFAULT for idx in range(n)
+        ]
         states[i] = ElementState.CURRENT
 
-        viz.add_step(VisualizationStep(
-            step_number=step_num,
-            action=AnimationType.HIGHLIGHT,
-            indices=[i],
-            values=[key],
-            array_state=arr.copy(),
-            element_states=states,
-            description=f"{key}를 정렬된 부분에 삽입할 위치를 찾습니다.",
-            code_line=3,
-            auxiliary_data={"key": key, "i": i},
-        ))
+        viz.add_step(
+            VisualizationStep(
+                step_number=step_num,
+                action=AnimationType.HIGHLIGHT,
+                indices=[i],
+                values=[key],
+                array_state=arr.copy(),
+                element_states=states,
+                description=f"{key}를 정렬된 부분에 삽입할 위치를 찾습니다.",
+                code_line=3,
+                auxiliary_data={"key": key, "i": i},
+            )
+        )
         step_num += 1
 
         j = i - 1
         while j >= 0 and arr[j] > key:
             # Compare step
-            states = [ElementState.SORTED if idx < i else ElementState.DEFAULT for idx in range(n)]
+            states = [
+                ElementState.SORTED if idx < i else ElementState.DEFAULT
+                for idx in range(n)
+            ]
             states[j] = ElementState.COMPARING
             states[i] = ElementState.CURRENT
 
-            viz.add_step(VisualizationStep(
-                step_number=step_num,
-                action=AnimationType.COMPARE,
-                indices=[j, i],
-                values=[arr[j], key],
-                array_state=arr.copy(),
-                element_states=states,
-                description=f"{arr[j]}가 {key}보다 크므로 오른쪽으로 이동합니다.",
-                code_line=5,
-                auxiliary_data={"key": key, "j": j},
-            ))
+            viz.add_step(
+                VisualizationStep(
+                    step_number=step_num,
+                    action=AnimationType.COMPARE,
+                    indices=[j, i],
+                    values=[arr[j], key],
+                    array_state=arr.copy(),
+                    element_states=states,
+                    description=f"{arr[j]}가 {key}보다 크므로 오른쪽으로 이동합니다.",
+                    code_line=5,
+                    auxiliary_data={"key": key, "j": j},
+                )
+            )
             step_num += 1
             comparisons += 1
 
@@ -350,17 +408,19 @@ def generate_insertion_sort(data: list[int]) -> Visualization:
             arr[j + 1] = arr[j]
             swaps += 1
 
-            viz.add_step(VisualizationStep(
-                step_number=step_num,
-                action=AnimationType.SET,
-                indices=[j + 1],
-                values=[arr[j + 1]],
-                array_state=arr.copy(),
-                element_states=states,
-                description=f"{arr[j]}를 오른쪽으로 이동합니다.",
-                code_line=6,
-                auxiliary_data={"key": key, "j": j},
-            ))
+            viz.add_step(
+                VisualizationStep(
+                    step_number=step_num,
+                    action=AnimationType.SET,
+                    indices=[j + 1],
+                    values=[arr[j + 1]],
+                    array_state=arr.copy(),
+                    element_states=states,
+                    description=f"{arr[j]}를 오른쪽으로 이동합니다.",
+                    code_line=6,
+                    auxiliary_data={"key": key, "j": j},
+                )
+            )
             step_num += 1
 
             j -= 1
@@ -368,33 +428,40 @@ def generate_insertion_sort(data: list[int]) -> Visualization:
         # Insert key
         arr[j + 1] = key
 
-        states = [ElementState.SORTED if idx <= i else ElementState.DEFAULT for idx in range(n)]
+        states = [
+            ElementState.SORTED if idx <= i else ElementState.DEFAULT
+            for idx in range(n)
+        ]
         states[j + 1] = ElementState.ACTIVE
 
-        viz.add_step(VisualizationStep(
-            step_number=step_num,
-            action=AnimationType.SET,
-            indices=[j + 1],
-            values=[key],
-            array_state=arr.copy(),
-            element_states=states,
-            description=f"{key}를 위치 {j+1}에 삽입합니다.",
-            code_line=8,
-            auxiliary_data={"key": key, "position": j + 1},
-        ))
+        viz.add_step(
+            VisualizationStep(
+                step_number=step_num,
+                action=AnimationType.SET,
+                indices=[j + 1],
+                values=[key],
+                array_state=arr.copy(),
+                element_states=states,
+                description=f"{key}를 위치 {j + 1}에 삽입합니다.",
+                code_line=8,
+                auxiliary_data={"key": key, "position": j + 1},
+            )
+        )
         step_num += 1
 
     # Final state
-    viz.add_step(VisualizationStep(
-        step_number=step_num,
-        action=AnimationType.SORTED,
-        indices=list(range(n)),
-        values=arr.copy(),
-        array_state=arr.copy(),
-        element_states=[ElementState.SORTED] * n,
-        description=f"정렬 완료! 비교: {comparisons}회, 이동: {swaps}회",
-        code_line=9,
-    ))
+    viz.add_step(
+        VisualizationStep(
+            step_number=step_num,
+            action=AnimationType.SORTED,
+            indices=list(range(n)),
+            values=arr.copy(),
+            array_state=arr.copy(),
+            element_states=[ElementState.SORTED] * n,
+            description=f"정렬 완료! 비교: {comparisons}회, 이동: {swaps}회",
+            code_line=9,
+        )
+    )
 
     viz.final_data = arr.copy()
     viz.total_comparisons = comparisons
@@ -434,17 +501,19 @@ def partition(arr, low, high):
     sorted_indices = set()
 
     def add_step(action, indices, values, states, description, code_line, aux=None):
-        viz.add_step(VisualizationStep(
-            step_number=step_num[0],
-            action=action,
-            indices=indices,
-            values=values,
-            array_state=arr.copy(),
-            element_states=states,
-            description=description,
-            code_line=code_line,
-            auxiliary_data=aux or {},
-        ))
+        viz.add_step(
+            VisualizationStep(
+                step_number=step_num[0],
+                action=action,
+                indices=indices,
+                values=values,
+                array_state=arr.copy(),
+                element_states=states,
+                description=description,
+                code_line=code_line,
+                auxiliary_data=aux or {},
+            )
+        )
         step_num[0] += 1
 
     def get_states(low, high, pivot_idx=None, comparing=None):
@@ -535,7 +604,7 @@ def partition(arr, low, high):
             [i + 1, high],
             [arr[i + 1], arr[high]],
             states,
-            f"피벗 {arr[i+1]}을 올바른 위치에 배치합니다.",
+            f"피벗 {arr[i + 1]}을 올바른 위치에 배치합니다.",
             14,
             {"pivot_position": i + 1},
         )
@@ -611,17 +680,19 @@ def merge(arr, left, right):
     comparisons = [0]
 
     def add_step(action, indices, values, states, description, code_line, aux=None):
-        viz.add_step(VisualizationStep(
-            step_number=step_num[0],
-            action=action,
-            indices=indices,
-            values=values,
-            array_state=arr.copy(),
-            element_states=states,
-            description=description,
-            code_line=code_line,
-            auxiliary_data=aux or {},
-        ))
+        viz.add_step(
+            VisualizationStep(
+                step_number=step_num[0],
+                action=action,
+                indices=indices,
+                values=values,
+                array_state=arr.copy(),
+                element_states=states,
+                description=description,
+                code_line=code_line,
+                auxiliary_data=aux or {},
+            )
+        )
         step_num[0] += 1
 
     # Initial state
@@ -650,9 +721,9 @@ def merge(arr, left, right):
         add_step(
             AnimationType.DIVIDE,
             list(range(left_idx, right_idx + 1)),
-            arr[left_idx:right_idx + 1],
+            arr[left_idx : right_idx + 1],
             states,
-            f"배열을 [{left_idx}:{mid}]와 [{mid+1}:{right_idx}]로 분할합니다.",
+            f"배열을 [{left_idx}:{mid}]와 [{mid + 1}:{right_idx}]로 분할합니다.",
             3,
             {"left": left_idx, "mid": mid, "right": right_idx},
         )
@@ -664,8 +735,8 @@ def merge(arr, left, right):
         merge(left_idx, mid, right_idx)
 
     def merge(left_idx, mid, right_idx):
-        left = arr[left_idx:mid + 1]
-        right = arr[mid + 1:right_idx + 1]
+        left = arr[left_idx : mid + 1]
+        right = arr[mid + 1 : right_idx + 1]
 
         states = [ElementState.DEFAULT] * n
         for i in range(left_idx, right_idx + 1):
@@ -674,7 +745,7 @@ def merge(arr, left, right):
         add_step(
             AnimationType.MERGE,
             list(range(left_idx, right_idx + 1)),
-            arr[left_idx:right_idx + 1],
+            arr[left_idx : right_idx + 1],
             states,
             f"[{left}]와 [{right}]를 병합합니다.",
             10,

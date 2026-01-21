@@ -1,6 +1,5 @@
 """Performance analysis DTOs."""
 
-
 from pydantic import BaseModel, Field
 
 from ..domain import (

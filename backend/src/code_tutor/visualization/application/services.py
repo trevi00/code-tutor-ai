@@ -50,22 +50,25 @@ class VisualizationService:
         algorithms = []
 
         for algo_type, info in ALGORITHM_INFO.items():
-            algorithms.append({
-                "id": algo_type.value,
-                "name": info["name"],
-                "name_en": info["name_en"],
-                "category": info["category"].value,
-                "time_complexity": info["time_complexity"],
-                "space_complexity": info["space_complexity"],
-                "description": info["description"],
-            })
+            algorithms.append(
+                {
+                    "id": algo_type.value,
+                    "name": info["name"],
+                    "name_en": info["name_en"],
+                    "category": info["category"].value,
+                    "time_complexity": info["time_complexity"],
+                    "space_complexity": info["space_complexity"],
+                    "description": info["description"],
+                }
+            )
 
         return algorithms
 
     def get_algorithms_by_category(self, category: AlgorithmCategory) -> list[dict]:
         """Get algorithms filtered by category."""
         return [
-            algo for algo in self.get_available_algorithms()
+            algo
+            for algo in self.get_available_algorithms()
             if algo["category"] == category.value
         ]
 

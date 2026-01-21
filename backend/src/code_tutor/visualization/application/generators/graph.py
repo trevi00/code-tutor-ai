@@ -12,7 +12,9 @@ from code_tutor.visualization.domain import (
 )
 
 
-def create_sample_graph() -> tuple[list[GraphNode], list[GraphEdge], dict[str, list[str]]]:
+def create_sample_graph() -> tuple[
+    list[GraphNode], list[GraphEdge], dict[str, list[str]]
+]:
     """Create a sample graph for visualization."""
     # Create nodes in a circle layout
     nodes = []
@@ -25,12 +27,14 @@ def create_sample_graph() -> tuple[list[GraphNode], list[GraphEdge], dict[str, l
         angle = (2 * math.pi * i / num_nodes) - math.pi / 2
         x = center_x + radius * math.cos(angle)
         y = center_y + radius * math.sin(angle)
-        nodes.append(GraphNode(
-            id=labels[i],
-            value=labels[i],
-            x=x,
-            y=y,
-        ))
+        nodes.append(
+            GraphNode(
+                id=labels[i],
+                value=labels[i],
+                x=x,
+                y=y,
+            )
+        )
 
     # Create edges (adjacency list)
     adjacency = {
@@ -105,16 +109,20 @@ def generate_bfs(start_node: str = "A") -> GraphVisualization:
         return states
 
     # Initial state
-    viz.steps.append({
-        "step_number": step_num,
-        "action": "init",
-        "current_node": None,
-        "queue": list(queue),
-        "visited": list(visited),
-        "node_states": {n.id: ElementState.DEFAULT.value for n in nodes},
-        "edge_states": {f"{e.source}-{e.target}": ElementState.DEFAULT.value for e in edges},
-        "description": f"BFS를 노드 {start_node}에서 시작합니다.",
-    })
+    viz.steps.append(
+        {
+            "step_number": step_num,
+            "action": "init",
+            "current_node": None,
+            "queue": list(queue),
+            "visited": list(visited),
+            "node_states": {n.id: ElementState.DEFAULT.value for n in nodes},
+            "edge_states": {
+                f"{e.source}-{e.target}": ElementState.DEFAULT.value for e in edges
+            },
+            "description": f"BFS를 노드 {start_node}에서 시작합니다.",
+        }
+    )
     step_num += 1
 
     while queue:
@@ -130,16 +138,23 @@ def generate_bfs(start_node: str = "A") -> GraphVisualization:
         node_states = get_node_states()
         node_states[current] = ElementState.CURRENT
 
-        viz.steps.append({
-            "step_number": step_num,
-            "action": "visit",
-            "current_node": current,
-            "queue": list(queue),
-            "visited": list(visited),
-            "node_states": {k: v.value if isinstance(v, ElementState) else v for k, v in node_states.items()},
-            "edge_states": {f"{e.source}-{e.target}": ElementState.DEFAULT.value for e in edges},
-            "description": f"노드 {current}를 방문합니다. 큐: {list(queue)}",
-        })
+        viz.steps.append(
+            {
+                "step_number": step_num,
+                "action": "visit",
+                "current_node": current,
+                "queue": list(queue),
+                "visited": list(visited),
+                "node_states": {
+                    k: v.value if isinstance(v, ElementState) else v
+                    for k, v in node_states.items()
+                },
+                "edge_states": {
+                    f"{e.source}-{e.target}": ElementState.DEFAULT.value for e in edges
+                },
+                "description": f"노드 {current}를 방문합니다. 큐: {list(queue)}",
+            }
+        )
         step_num += 1
 
         # Explore neighbors
@@ -151,32 +166,47 @@ def generate_bfs(start_node: str = "A") -> GraphVisualization:
                 node_states[current] = ElementState.CURRENT
                 node_states[neighbor] = ElementState.ACTIVE
 
-                viz.steps.append({
-                    "step_number": step_num,
-                    "action": "explore",
-                    "current_node": current,
-                    "exploring": neighbor,
-                    "queue": list(queue),
-                    "visited": list(visited),
-                    "node_states": {k: v.value if isinstance(v, ElementState) else v for k, v in node_states.items()},
-                    "edge_states": {f"{e.source}-{e.target}": ElementState.ACTIVE.value if (e.source == current and e.target == neighbor) or (e.target == current and e.source == neighbor) else ElementState.DEFAULT.value for e in edges},
-                    "description": f"이웃 노드 {neighbor}를 큐에 추가합니다. 큐: {list(queue)}",
-                })
+                viz.steps.append(
+                    {
+                        "step_number": step_num,
+                        "action": "explore",
+                        "current_node": current,
+                        "exploring": neighbor,
+                        "queue": list(queue),
+                        "visited": list(visited),
+                        "node_states": {
+                            k: v.value if isinstance(v, ElementState) else v
+                            for k, v in node_states.items()
+                        },
+                        "edge_states": {
+                            f"{e.source}-{e.target}": ElementState.ACTIVE.value
+                            if (e.source == current and e.target == neighbor)
+                            or (e.target == current and e.source == neighbor)
+                            else ElementState.DEFAULT.value
+                            for e in edges
+                        },
+                        "description": f"이웃 노드 {neighbor}를 큐에 추가합니다. 큐: {list(queue)}",
+                    }
+                )
                 step_num += 1
 
         node_map[current].state = ElementState.VISITED
 
     # Final state
-    viz.steps.append({
-        "step_number": step_num,
-        "action": "complete",
-        "current_node": None,
-        "queue": [],
-        "visited": list(visited),
-        "node_states": {n.id: ElementState.VISITED.value for n in nodes},
-        "edge_states": {f"{e.source}-{e.target}": ElementState.VISITED.value for e in edges},
-        "description": f"BFS 완료! 방문 순서: {list(visited)}",
-    })
+    viz.steps.append(
+        {
+            "step_number": step_num,
+            "action": "complete",
+            "current_node": None,
+            "queue": [],
+            "visited": list(visited),
+            "node_states": {n.id: ElementState.VISITED.value for n in nodes},
+            "edge_states": {
+                f"{e.source}-{e.target}": ElementState.VISITED.value for e in edges
+            },
+            "description": f"BFS 완료! 방문 순서: {list(visited)}",
+        }
+    )
 
     return viz
 
@@ -222,16 +252,20 @@ def generate_dfs(start_node: str = "A") -> GraphVisualization:
         return states
 
     # Initial state
-    viz.steps.append({
-        "step_number": step_num[0],
-        "action": "init",
-        "current_node": None,
-        "stack": [start_node],
-        "visited": [],
-        "node_states": {n.id: ElementState.DEFAULT.value for n in nodes},
-        "edge_states": {f"{e.source}-{e.target}": ElementState.DEFAULT.value for e in edges},
-        "description": f"DFS를 노드 {start_node}에서 시작합니다.",
-    })
+    viz.steps.append(
+        {
+            "step_number": step_num[0],
+            "action": "init",
+            "current_node": None,
+            "stack": [start_node],
+            "visited": [],
+            "node_states": {n.id: ElementState.DEFAULT.value for n in nodes},
+            "edge_states": {
+                f"{e.source}-{e.target}": ElementState.DEFAULT.value for e in edges
+            },
+            "description": f"DFS를 노드 {start_node}에서 시작합니다.",
+        }
+    )
     step_num[0] += 1
 
     def dfs_recursive(current, stack_trace):
@@ -240,32 +274,46 @@ def generate_dfs(start_node: str = "A") -> GraphVisualization:
         node_map[current].state = ElementState.CURRENT
 
         # Visit step
-        viz.steps.append({
-            "step_number": step_num[0],
-            "action": "visit",
-            "current_node": current,
-            "stack": stack_trace + [current],
-            "visited": list(visited),
-            "node_states": get_node_states(current=current),
-            "edge_states": {f"{e.source}-{e.target}": ElementState.DEFAULT.value for e in edges},
-            "description": f"노드 {current}를 방문합니다. 스택: {stack_trace + [current]}",
-        })
+        viz.steps.append(
+            {
+                "step_number": step_num[0],
+                "action": "visit",
+                "current_node": current,
+                "stack": stack_trace + [current],
+                "visited": list(visited),
+                "node_states": get_node_states(current=current),
+                "edge_states": {
+                    f"{e.source}-{e.target}": ElementState.DEFAULT.value for e in edges
+                },
+                "description": f"노드 {current}를 방문합니다. 스택: {stack_trace + [current]}",
+            }
+        )
         step_num[0] += 1
 
         for neighbor in adjacency[current]:
             if neighbor not in visited:
                 # Explore step
-                viz.steps.append({
-                    "step_number": step_num[0],
-                    "action": "explore",
-                    "current_node": current,
-                    "exploring": neighbor,
-                    "stack": stack_trace + [current],
-                    "visited": list(visited),
-                    "node_states": get_node_states(current=current, exploring=neighbor),
-                    "edge_states": {f"{e.source}-{e.target}": ElementState.ACTIVE.value if (e.source == current and e.target == neighbor) or (e.target == current and e.source == neighbor) else ElementState.DEFAULT.value for e in edges},
-                    "description": f"노드 {current}에서 이웃 {neighbor}로 탐색합니다.",
-                })
+                viz.steps.append(
+                    {
+                        "step_number": step_num[0],
+                        "action": "explore",
+                        "current_node": current,
+                        "exploring": neighbor,
+                        "stack": stack_trace + [current],
+                        "visited": list(visited),
+                        "node_states": get_node_states(
+                            current=current, exploring=neighbor
+                        ),
+                        "edge_states": {
+                            f"{e.source}-{e.target}": ElementState.ACTIVE.value
+                            if (e.source == current and e.target == neighbor)
+                            or (e.target == current and e.source == neighbor)
+                            else ElementState.DEFAULT.value
+                            for e in edges
+                        },
+                        "description": f"노드 {current}에서 이웃 {neighbor}로 탐색합니다.",
+                    }
+                )
                 step_num[0] += 1
 
                 dfs_recursive(neighbor, stack_trace + [current])
@@ -273,31 +321,40 @@ def generate_dfs(start_node: str = "A") -> GraphVisualization:
         # Backtrack step
         node_map[current].state = ElementState.VISITED
         if stack_trace:
-            viz.steps.append({
-                "step_number": step_num[0],
-                "action": "backtrack",
-                "current_node": current,
-                "back_to": stack_trace[-1] if stack_trace else None,
-                "stack": stack_trace,
-                "visited": list(visited),
-                "node_states": get_node_states(),
-                "edge_states": {f"{e.source}-{e.target}": ElementState.DEFAULT.value for e in edges},
-                "description": f"노드 {current}의 모든 이웃을 탐색했습니다. 백트래킹합니다.",
-            })
+            viz.steps.append(
+                {
+                    "step_number": step_num[0],
+                    "action": "backtrack",
+                    "current_node": current,
+                    "back_to": stack_trace[-1] if stack_trace else None,
+                    "stack": stack_trace,
+                    "visited": list(visited),
+                    "node_states": get_node_states(),
+                    "edge_states": {
+                        f"{e.source}-{e.target}": ElementState.DEFAULT.value
+                        for e in edges
+                    },
+                    "description": f"노드 {current}의 모든 이웃을 탐색했습니다. 백트래킹합니다.",
+                }
+            )
             step_num[0] += 1
 
     dfs_recursive(start_node, [])
 
     # Final state
-    viz.steps.append({
-        "step_number": step_num[0],
-        "action": "complete",
-        "current_node": None,
-        "stack": [],
-        "visited": visit_order,
-        "node_states": {n.id: ElementState.VISITED.value for n in nodes},
-        "edge_states": {f"{e.source}-{e.target}": ElementState.VISITED.value for e in edges},
-        "description": f"DFS 완료! 방문 순서: {visit_order}",
-    })
+    viz.steps.append(
+        {
+            "step_number": step_num[0],
+            "action": "complete",
+            "current_node": None,
+            "stack": [],
+            "visited": visit_order,
+            "node_states": {n.id: ElementState.VISITED.value for n in nodes},
+            "edge_states": {
+                f"{e.source}-{e.target}": ElementState.VISITED.value for e in edges
+            },
+            "description": f"DFS 완료! 방문 순서: {visit_order}",
+        }
+    )
 
     return viz

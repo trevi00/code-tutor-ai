@@ -4,11 +4,6 @@ from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from uuid import UUID, uuid4
 
-
-def utc_now() -> datetime:
-    """Get current UTC time (timezone-aware)"""
-    return datetime.now(UTC)
-
 from .value_objects import (
     BadgeCategory,
     BadgeRarity,
@@ -18,6 +13,11 @@ from .value_objects import (
     get_level_title,
     xp_for_next_level,
 )
+
+
+def utc_now() -> datetime:
+    """Get current UTC time (timezone-aware)"""
+    return datetime.now(UTC)
 
 
 @dataclass
@@ -138,7 +138,9 @@ class UserStats:
         _, current_threshold, next_threshold = self.xp_progress
         if next_threshold == current_threshold:
             return 100.0
-        return ((self.total_xp - current_threshold) / (next_threshold - current_threshold)) * 100
+        return (
+            (self.total_xp - current_threshold) / (next_threshold - current_threshold)
+        ) * 100
 
     def add_xp(self, amount: int) -> int:
         """Add XP and return new total."""
@@ -252,8 +254,16 @@ class Challenge:
         """Check if challenge is currently active."""
         now = utc_now()
         # Ensure timezone-aware comparison
-        start = self.start_date.replace(tzinfo=UTC) if self.start_date.tzinfo is None else self.start_date
-        end = self.end_date.replace(tzinfo=UTC) if self.end_date.tzinfo is None else self.end_date
+        start = (
+            self.start_date.replace(tzinfo=UTC)
+            if self.start_date.tzinfo is None
+            else self.start_date
+        )
+        end = (
+            self.end_date.replace(tzinfo=UTC)
+            if self.end_date.tzinfo is None
+            else self.end_date
+        )
         return start <= now <= end
 
 

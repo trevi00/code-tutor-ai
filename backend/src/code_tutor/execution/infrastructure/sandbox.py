@@ -95,7 +95,9 @@ class DockerSandbox:
                             stderr=stderr_text,
                             exit_code=process.returncode or 1,
                             execution_time_ms=execution_time,
-                            error_message=stderr_text[:Truncation.ERROR_MESSAGE_MAX] if stderr_text else None,
+                            error_message=stderr_text[: Truncation.ERROR_MESSAGE_MAX]
+                            if stderr_text
+                            else None,
                         )
 
                 except TimeoutError:
@@ -212,7 +214,7 @@ class MockSandbox:
                             stderr=result.stderr,
                             exit_code=result.returncode,
                             execution_time_ms=execution_time,
-                            error_message=result.stderr[:Truncation.ERROR_MESSAGE_MAX]
+                            error_message=result.stderr[: Truncation.ERROR_MESSAGE_MAX]
                             if result.stderr
                             else None,
                         )
@@ -233,5 +235,5 @@ class MockSandbox:
             return ExecutionResult(
                 execution_id=request.execution_id,
                 status=ExecutionStatus.RUNTIME_ERROR,
-                error_message=error_detail[:Truncation.ERROR_MESSAGE_MAX],
+                error_message=error_detail[: Truncation.ERROR_MESSAGE_MAX],
             )

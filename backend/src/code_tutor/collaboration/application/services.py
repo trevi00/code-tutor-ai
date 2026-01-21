@@ -4,11 +4,6 @@ import random
 from datetime import UTC, datetime
 from uuid import UUID, uuid4
 
-
-def utc_now() -> datetime:
-    """Get current UTC time (timezone-aware)"""
-    return datetime.now(UTC)
-
 from code_tutor.collaboration.application.dto import (
     CodeChangeRequest,
     CreateSessionRequest,
@@ -37,6 +32,12 @@ from code_tutor.collaboration.infrastructure.connection_manager import (
 from code_tutor.shared.infrastructure.logging import get_logger
 
 logger = get_logger(__name__)
+
+
+def utc_now() -> datetime:
+    """Get current UTC time (timezone-aware)"""
+    return datetime.now(UTC)
+
 
 # Predefined colors for participants
 PARTICIPANT_COLORS = [
@@ -94,11 +95,21 @@ class CollaborationService:
                     user_id=p.user_id,
                     username=p.username,
                     cursor_line=p.cursor_position.line if p.cursor_position else None,
-                    cursor_column=p.cursor_position.column if p.cursor_position else None,
-                    selection_start_line=p.selection_range.start.line if p.selection_range else None,
-                    selection_start_column=p.selection_range.start.column if p.selection_range else None,
-                    selection_end_line=p.selection_range.end.line if p.selection_range else None,
-                    selection_end_column=p.selection_range.end.column if p.selection_range else None,
+                    cursor_column=p.cursor_position.column
+                    if p.cursor_position
+                    else None,
+                    selection_start_line=p.selection_range.start.line
+                    if p.selection_range
+                    else None,
+                    selection_start_column=p.selection_range.start.column
+                    if p.selection_range
+                    else None,
+                    selection_end_line=p.selection_range.end.line
+                    if p.selection_range
+                    else None,
+                    selection_end_column=p.selection_range.end.column
+                    if p.selection_range
+                    else None,
                     is_active=p.is_active,
                     color=p.color,
                     joined_at=p.joined_at,
@@ -387,8 +398,12 @@ class CollaborationService:
                         "user_id": str(p.user_id),
                         "username": p.username,
                         "color": p.color,
-                        "cursor": p.cursor_position.to_dict() if p.cursor_position else None,
-                        "selection": p.selection_range.to_dict() if p.selection_range else None,
+                        "cursor": p.cursor_position.to_dict()
+                        if p.cursor_position
+                        else None,
+                        "selection": p.selection_range.to_dict()
+                        if p.selection_range
+                        else None,
                         "is_active": p.is_active,
                     }
                     for p in session.participants

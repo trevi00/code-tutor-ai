@@ -1,6 +1,5 @@
 """Debugger application services."""
 
-
 from code_tutor.debugger.domain import (
     DebugResult,
     ExecutionStep,

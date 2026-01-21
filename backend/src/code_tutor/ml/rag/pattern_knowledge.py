@@ -814,7 +814,12 @@ def counting_sort_by_digit(arr, exp):
             arr[j] = temp
         gap //= 2
     return arr""",
-        "keywords": ["gap sequence", "insertion sort", "in-place", "diminishing increment"],
+        "keywords": [
+            "gap sequence",
+            "insertion sort",
+            "in-place",
+            "diminishing increment",
+        ],
     },
     {
         "id": "fenwick-tree",
@@ -851,7 +856,13 @@ def counting_sort_by_digit(arr, exp):
 
     def range_sum(self, left, right):
         return self.prefix_sum(right) - self.prefix_sum(left - 1)""",
-        "keywords": ["binary indexed tree", "bit", "range query", "point update", "inversion"],
+        "keywords": [
+            "binary indexed tree",
+            "bit",
+            "range query",
+            "point update",
+            "inversion",
+        ],
     },
     {
         "id": "avl-tree",
@@ -1004,7 +1015,12 @@ def dijkstra(graph, start):
                 dist[v] = dist[u] + weight
                 heapq.heappush(pq, (dist[v], v))
     return dist""",
-        "keywords": ["shortest path", "weighted graph", "priority queue", "single source"],
+        "keywords": [
+            "shortest path",
+            "weighted graph",
+            "priority queue",
+            "single source",
+        ],
     },
     {
         "id": "prim-mst",
@@ -1208,7 +1224,13 @@ def min_meeting_rooms(intervals):
         heapq.heappush(rooms, end)
 
     return len(rooms)""",
-        "keywords": ["scheduling", "interval", "meeting room", "greedy", "non-overlapping"],
+        "keywords": [
+            "scheduling",
+            "interval",
+            "meeting room",
+            "greedy",
+            "non-overlapping",
+        ],
     },
     # ============== Advanced Data Structures ==============
     {
@@ -1559,7 +1581,13 @@ def spfa(n, adj, src):
                         return None  # 음수 사이클
 
     return dist""",
-        "keywords": ["bellman-ford", "negative weight", "negative cycle", "SPFA", "shortest path"],
+        "keywords": [
+            "bellman-ford",
+            "negative weight",
+            "negative cycle",
+            "SPFA",
+            "shortest path",
+        ],
     },
     {
         "id": "floyd-warshall",
@@ -1606,7 +1634,12 @@ def reconstruct_path(u, v, next_node):
         u = next_node[u][v]
         path.append(u)
     return path""",
-        "keywords": ["floyd-warshall", "all pairs", "shortest path", "transitive closure"],
+        "keywords": [
+            "floyd-warshall",
+            "all pairs",
+            "shortest path",
+            "transitive closure",
+        ],
     },
     {
         "id": "articulation-bridges",
@@ -1658,7 +1691,13 @@ def reconstruct_path(u, v, next_node):
             dfs(i)
 
     return articulation_points, bridges""",
-        "keywords": ["articulation point", "bridge", "cut vertex", "biconnected", "DFS"],
+        "keywords": [
+            "articulation point",
+            "bridge",
+            "cut vertex",
+            "biconnected",
+            "DFS",
+        ],
     },
     {
         "id": "2-sat",
@@ -1832,7 +1871,12 @@ def lis_with_sequence(arr):
         idx = prev[idx]
 
     return lis[::-1]""",
-        "keywords": ["LIS", "longest increasing subsequence", "binary search", "patience sorting"],
+        "keywords": [
+            "LIS",
+            "longest increasing subsequence",
+            "binary search",
+            "patience sorting",
+        ],
     },
     {
         "id": "bitmask-dp",
@@ -1941,7 +1985,13 @@ def min_palindrome_partitions(s):
                     dp[i] = min(dp[i], dp[j] + 1)
 
     return dp[n-1]""",
-        "keywords": ["interval DP", "range DP", "matrix chain", "palindrome", "parenthesization"],
+        "keywords": [
+            "interval DP",
+            "range DP",
+            "matrix chain",
+            "palindrome",
+            "parenthesization",
+        ],
     },
     {
         "id": "digit-dp",
@@ -2189,7 +2239,13 @@ class AhoCorasick:
                 results.append((i, pattern_idx))
 
         return results""",
-        "keywords": ["aho-corasick", "multi-pattern", "trie", "failure link", "automaton"],
+        "keywords": [
+            "aho-corasick",
+            "multi-pattern",
+            "trie",
+            "failure link",
+            "automaton",
+        ],
     },
     {
         "id": "manacher",

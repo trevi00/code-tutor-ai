@@ -16,6 +16,7 @@ logger = get_logger(__name__)
 
 class HealthStatus(str, Enum):
     """Health status enum"""
+
     HEALTHY = "healthy"
     DEGRADED = "degraded"
     UNHEALTHY = "unhealthy"
@@ -24,6 +25,7 @@ class HealthStatus(str, Enum):
 @dataclass
 class ServiceHealth:
     """Health status for a single service"""
+
     name: str
     status: HealthStatus
     latency_ms: float | None = None
@@ -86,7 +88,9 @@ class HealthChecker:
 
                 health = ServiceHealth(
                     name="redis",
-                    status=HealthStatus.HEALTHY if latency < 50 else HealthStatus.DEGRADED,
+                    status=HealthStatus.HEALTHY
+                    if latency < 50
+                    else HealthStatus.DEGRADED,
                     latency_ms=latency,
                     message="Connected" if latency < 50 else "Slow response",
                 )
@@ -160,10 +164,7 @@ class HealthChecker:
 
     def get_cached_status(self) -> dict[str, Any]:
         """Get cached health status without running checks"""
-        return {
-            name: health.to_dict()
-            for name, health in self._checks.items()
-        }
+        return {name: health.to_dict() for name, health in self._checks.items()}
 
 
 # Singleton instance

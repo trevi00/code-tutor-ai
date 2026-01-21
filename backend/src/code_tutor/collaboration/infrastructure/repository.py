@@ -31,7 +31,9 @@ class SQLAlchemyCollaborationRepository(CollaborationRepository):
     def __init__(self, session: AsyncSession):
         self.session = session
 
-    def _model_to_entity(self, model: CollaborationSessionModel) -> CollaborationSession:
+    def _model_to_entity(
+        self, model: CollaborationSessionModel
+    ) -> CollaborationSession:
         """Convert SQLAlchemy model to domain entity."""
         participants = []
         for p in model.participants:
@@ -73,7 +75,9 @@ class SQLAlchemyCollaborationRepository(CollaborationRepository):
         )
 
     def _entity_to_model(
-        self, entity: CollaborationSession, existing_model: CollaborationSessionModel | None = None
+        self,
+        entity: CollaborationSession,
+        existing_model: CollaborationSessionModel | None = None,
     ) -> CollaborationSessionModel:
         """Convert domain entity to SQLAlchemy model."""
         if existing_model:
@@ -152,8 +156,12 @@ class SQLAlchemyCollaborationRepository(CollaborationRepository):
                     session_id=entity.id,
                     user_id=p.user_id,
                     username=p.username,
-                    cursor_position=p.cursor_position.to_dict() if p.cursor_position else None,
-                    selection_range=p.selection_range.to_dict() if p.selection_range else None,
+                    cursor_position=p.cursor_position.to_dict()
+                    if p.cursor_position
+                    else None,
+                    selection_range=p.selection_range.to_dict()
+                    if p.selection_range
+                    else None,
                     is_active=p.is_active,
                     color=p.color,
                     joined_at=p.joined_at,
@@ -163,8 +171,12 @@ class SQLAlchemyCollaborationRepository(CollaborationRepository):
                 # Update existing
                 for pm in model.participants:
                     if pm.id == p.id:
-                        pm.cursor_position = p.cursor_position.to_dict() if p.cursor_position else None
-                        pm.selection_range = p.selection_range.to_dict() if p.selection_range else None
+                        pm.cursor_position = (
+                            p.cursor_position.to_dict() if p.cursor_position else None
+                        )
+                        pm.selection_range = (
+                            p.selection_range.to_dict() if p.selection_range else None
+                        )
                         pm.is_active = p.is_active
                         break
 

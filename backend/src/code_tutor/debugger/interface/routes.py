@@ -1,6 +1,5 @@
 """Debugger API routes."""
 
-
 from fastapi import APIRouter, HTTPException, Query
 
 from code_tutor.debugger.application import (
@@ -71,7 +70,9 @@ async def get_step(
     """Get information about a specific step."""
     bp_list = []
     if breakpoints:
-        bp_list = [int(x.strip()) for x in breakpoints.split(",") if x.strip().isdigit()]
+        bp_list = [
+            int(x.strip()) for x in breakpoints.split(",") if x.strip().isdigit()
+        ]
 
     result = await debug_service.get_step(session_id, step_number, bp_list)
     if not result:

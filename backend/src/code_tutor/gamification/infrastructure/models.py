@@ -67,7 +67,9 @@ class UserStatsModel(Base):
     __tablename__ = "user_stats"
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid4)
-    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), unique=True, nullable=False)
+    user_id = Column(
+        UUID(as_uuid=True), ForeignKey("users.id"), unique=True, nullable=False
+    )
     total_xp = Column(Integer, default=0)
     current_streak = Column(Integer, default=0)
     longest_streak = Column(Integer, default=0)
@@ -117,7 +119,9 @@ class UserChallengeModel(Base):
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid4)
     user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
-    challenge_id = Column(UUID(as_uuid=True), ForeignKey("challenges.id"), nullable=False)
+    challenge_id = Column(
+        UUID(as_uuid=True), ForeignKey("challenges.id"), nullable=False
+    )
     current_progress = Column(Integer, default=0)
     status = Column(SQLEnum(ChallengeStatus), default=ChallengeStatus.ACTIVE)
     started_at = Column(DateTime, default=datetime.utcnow)

@@ -6,11 +6,6 @@ Aggregates user-problem interactions for NCF collaborative filtering.
 from datetime import UTC, datetime
 from uuid import UUID
 
-
-def utc_now() -> datetime:
-    """Get current UTC time (timezone-aware)"""
-    return datetime.now(UTC)
-
 from sqlalchemy import func, select
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.dialects.sqlite import insert as sqlite_insert
@@ -22,6 +17,11 @@ from code_tutor.ml.pipeline.models import UserInteractionModel
 from code_tutor.shared.infrastructure.logging import get_logger
 
 logger = get_logger(__name__)
+
+
+def utc_now() -> datetime:
+    """Get current UTC time (timezone-aware)"""
+    return datetime.now(UTC)
 
 
 class DataAggregator:

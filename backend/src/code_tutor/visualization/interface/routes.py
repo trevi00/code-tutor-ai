@@ -34,10 +34,12 @@ async def list_algorithms(
     else:
         algorithms = visualization_service.get_available_algorithms()
 
-    return success_response({
-        "algorithms": algorithms,
-        "total": len(algorithms),
-    })
+    return success_response(
+        {
+            "algorithms": algorithms,
+            "total": len(algorithms),
+        }
+    )
 
 
 @router.get(
@@ -62,15 +64,17 @@ async def get_algorithm_info(algorithm_id: str):
         raise HTTPException(status_code=404, detail="Algorithm info not available")
 
     info = ALGORITHM_INFO[algo_type]
-    return success_response({
-        "id": algo_type.value,
-        "name": info["name"],
-        "name_en": info["name_en"],
-        "category": info["category"].value,
-        "time_complexity": info["time_complexity"],
-        "space_complexity": info["space_complexity"],
-        "description": info["description"],
-    })
+    return success_response(
+        {
+            "id": algo_type.value,
+            "name": info["name"],
+            "name_en": info["name_en"],
+            "category": info["category"].value,
+            "time_complexity": info["time_complexity"],
+            "space_complexity": info["space_complexity"],
+            "description": info["description"],
+        }
+    )
 
 
 @router.get(
@@ -92,10 +96,12 @@ async def generate_random_array(
         raise HTTPException(status_code=400, detail="min_val must be <= max_val")
 
     arr = visualization_service.generate_random_array(size, min_val, max_val)
-    return success_response({
-        "array": arr,
-        "size": len(arr),
-    })
+    return success_response(
+        {
+            "array": arr,
+            "size": len(arr),
+        }
+    )
 
 
 @router.post(

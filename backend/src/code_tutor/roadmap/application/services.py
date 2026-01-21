@@ -65,9 +65,7 @@ class RoadmapService:
 
     # ============== Path Methods ==============
 
-    async def list_paths(
-        self, user_id: UUID | None = None
-    ) -> LearningPathListResponse:
+    async def list_paths(self, user_id: UUID | None = None) -> LearningPathListResponse:
         """List all learning paths with optional user progress."""
         paths = await self.path_repo.list_all()
         items = []
@@ -347,7 +345,9 @@ class RoadmapService:
         if include_modules:
             for module in path.modules:
                 modules.append(
-                    await self._module_to_response(module, user_id, include_lessons=True)
+                    await self._module_to_response(
+                        module, user_id, include_lessons=True
+                    )
                 )
 
         # Get user progress

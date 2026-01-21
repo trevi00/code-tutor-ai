@@ -18,6 +18,7 @@ logger = get_logger(__name__)
 
 # ============== Retry Configuration ==============
 
+
 class RetryConfig:
     """Configuration for retry with exponential backoff."""
 
@@ -43,7 +44,7 @@ class RetryConfig:
 
     def get_delay(self, attempt: int) -> float:
         """Calculate delay with exponential backoff."""
-        delay = self.base_delay * (self.exponential_base ** attempt)
+        delay = self.base_delay * (self.exponential_base**attempt)
         return min(delay, self.max_delay)
 
 
@@ -120,6 +121,7 @@ async def retry_with_backoff(
 
 # ============== Common Fallback Responses ==============
 
+
 def generate_simple_fallback_response(user_message: str) -> str:
     """Generate a simple fallback response when LLM is unavailable.
 
@@ -148,13 +150,15 @@ def generate_simple_fallback_response(user_message: str) -> str:
 
 # ============== Progressive Hint System ==============
 
+
 class HintLevel(IntEnum):
     """Progressive hint levels from vague to specific"""
-    APPROACH = 1      # 접근법 힌트 (가장 약한)
-    ALGORITHM = 2     # 알고리즘 패턴 제시
-    PSEUDOCODE = 3    # 의사코드 제공
+
+    APPROACH = 1  # 접근법 힌트 (가장 약한)
+    ALGORITHM = 2  # 알고리즘 패턴 제시
+    PSEUDOCODE = 3  # 의사코드 제공
     PARTIAL_CODE = 4  # 부분 코드 제공
-    FULL_SOLUTION = 5 # 전체 해답 (명시적 요청 시만)
+    FULL_SOLUTION = 5  # 전체 해답 (명시적 요청 시만)
 
 
 class ProgressiveHintSystem:
@@ -178,7 +182,6 @@ class ProgressiveHintSystem:
 **키워드**: {keywords}
 
 스스로 조금 더 생각해보시고, 막히면 다음 힌트를 요청해주세요!""",
-
         HintLevel.ALGORITHM: """## 📚 알고리즘 패턴 힌트
 
 이 문제에 적합한 알고리즘 패턴을 알려드릴게요.
@@ -193,7 +196,6 @@ class ProgressiveHintSystem:
 {pattern_key_idea}
 
 이 패턴을 어떻게 적용할 수 있을지 생각해보세요!""",
-
         HintLevel.PSEUDOCODE: """## 📝 의사코드 힌트
 
 알고리즘의 전체 흐름을 의사코드로 보여드릴게요.
@@ -206,7 +208,6 @@ class ProgressiveHintSystem:
 {step_explanations}
 
 이제 이 의사코드를 Python 코드로 변환해보세요!""",
-
         HintLevel.PARTIAL_CODE: """## 🔧 부분 코드 힌트
 
 핵심 부분의 코드 골격을 제공해드릴게요.
@@ -219,7 +220,6 @@ class ProgressiveHintSystem:
 {fill_hints}
 
 빈 부분을 직접 채워보세요!""",
-
         HintLevel.FULL_SOLUTION: """## ✅ 전체 풀이
 
 최종 풀이를 보여드릴게요. 다음에는 스스로 풀어볼 수 있도록 해보세요!
@@ -234,12 +234,14 @@ class ProgressiveHintSystem:
 **시간 복잡도**: {time_complexity}
 **공간 복잡도**: {space_complexity}
 
-**학습 포인트**: 이 문제를 통해 {learning_points}를 배웠습니다."""
+**학습 포인트**: 이 문제를 통해 {learning_points}를 배웠습니다.""",
     }
 
     def __init__(self):
         # 사용자별, 문제별 힌트 상태 추적
-        self._hint_states: dict[str, dict[str, int]] = {}  # {user_id: {problem_id: hint_level}}
+        self._hint_states: dict[
+            str, dict[str, int]
+        ] = {}  # {user_id: {problem_id: hint_level}}
 
     def get_current_level(self, user_id: str | UUID, problem_id: str | UUID) -> int:
         """현재 힌트 레벨 조회"""
@@ -255,7 +257,7 @@ class ProgressiveHintSystem:
         self,
         user_id: str | UUID,
         problem_id: str | UUID,
-        force_level: int | None = None
+        force_level: int | None = None,
     ) -> HintLevel:
         """
         다음 레벨의 힌트 요청.
@@ -302,10 +304,7 @@ class ProgressiveHintSystem:
             self._hint_states[user_key] = {}
 
     def format_hint(
-        self,
-        level: HintLevel,
-        problem_data: dict,
-        pattern_data: dict | None = None
+        self, level: HintLevel, problem_data: dict, pattern_data: dict | None = None
     ) -> str:
         """
         힌트 레벨에 맞는 응답 생성.
@@ -318,7 +317,9 @@ class ProgressiveHintSystem:
         Returns:
             포맷된 힌트 문자열
         """
-        template = self.HINT_TEMPLATES.get(level, self.HINT_TEMPLATES[HintLevel.APPROACH])
+        template = self.HINT_TEMPLATES.get(
+            level, self.HINT_TEMPLATES[HintLevel.APPROACH]
+        )
 
         # 기본 값 설정
         format_data = {
@@ -342,13 +343,21 @@ class ProgressiveHintSystem:
 
         # 패턴 데이터가 있으면 추가
         if pattern_data:
-            format_data.update({
-                "pattern_name": pattern_data.get("name_ko", pattern_data.get("name", "")),
-                "pattern_description": pattern_data.get("description_ko", ""),
-                "pattern_key_idea": pattern_data.get("description", "")[:Truncation.DESCRIPTION_MAX],
-                "pseudocode": self._generate_pseudocode(problem_data, pattern_data),
-                "partial_code": self._generate_partial_code(problem_data, pattern_data),
-            })
+            format_data.update(
+                {
+                    "pattern_name": pattern_data.get(
+                        "name_ko", pattern_data.get("name", "")
+                    ),
+                    "pattern_description": pattern_data.get("description_ko", ""),
+                    "pattern_key_idea": pattern_data.get("description", "")[
+                        : Truncation.DESCRIPTION_MAX
+                    ],
+                    "pseudocode": self._generate_pseudocode(problem_data, pattern_data),
+                    "partial_code": self._generate_partial_code(
+                        problem_data, pattern_data
+                    ),
+                }
+            )
 
         # 힌트 데이터 (문제에 힌트가 있으면 활용)
         hints = problem_data.get("hints", [])
@@ -444,10 +453,13 @@ class ProgressiveHintSystem:
 3. 결과 반환""",
         }
 
-        return pseudocode_templates.get(pattern_id, """1. 입력 처리
+        return pseudocode_templates.get(
+            pattern_id,
+            """1. 입력 처리
 2. 자료구조 초기화
 3. 메인 로직 수행
-4. 결과 반환""")
+4. 결과 반환""",
+        )
 
     def _generate_partial_code(self, problem_data: dict, pattern_data: dict) -> str:
         """패턴 기반 부분 코드 생성"""
@@ -459,7 +471,9 @@ class ProgressiveHintSystem:
             partial_lines = []
             for i, line in enumerate(lines):
                 if i % 3 == 2 and "=" in line:  # 일부 줄을 비워둠
-                    partial_lines.append(line.split("=")[0] + "= ???  # 이 부분을 채워보세요")
+                    partial_lines.append(
+                        line.split("=")[0] + "= ???  # 이 부분을 채워보세요"
+                    )
                 else:
                     partial_lines.append(line)
             return "\n".join(partial_lines)
@@ -485,6 +499,7 @@ def get_hint_system() -> ProgressiveHintSystem:
     if _hint_system is None:
         _hint_system = ProgressiveHintSystem()
     return _hint_system
+
 
 # System prompt for the AI tutor with 7-step problem-solving framework
 TUTOR_SYSTEM_PROMPT = """당신은 알고리즘 학습을 돕는 전문 AI 튜터입니다.
@@ -742,10 +757,10 @@ class PatternBasedLLMService(LLMService):
 
         response = f"""## {title}
 
-{sections.get("개요", "").strip()[:Truncation.PATTERN_OVERVIEW_MAX]}
+{sections.get("개요", "").strip()[: Truncation.PATTERN_OVERVIEW_MAX]}
 
 ### 언제 사용하나요?
-{sections.get("언제 사용", "").strip()[:Truncation.CODE_SNIPPET_MAX] or "이 패턴은 특정 조건에서 효율적인 솔루션을 제공합니다."}
+{sections.get("언제 사용", "").strip()[: Truncation.CODE_SNIPPET_MAX] or "이 패턴은 특정 조건에서 효율적인 솔루션을 제공합니다."}
 
 더 자세한 설명이 필요하시면 말씀해주세요! 템플릿 코드나 예제 문제도 보여드릴 수 있습니다."""
 
@@ -787,7 +802,7 @@ class PatternBasedLLMService(LLMService):
         if context and "code" in lower_msg:
             return f"""코드를 분석해보겠습니다.
 
-{context[:Truncation.DESCRIPTION_MAX] if context else ""}
+{context[: Truncation.DESCRIPTION_MAX] if context else ""}
 
 **리뷰 포인트:**
 1. 변수명이 명확한지 확인하세요
@@ -992,7 +1007,7 @@ class RAGBasedLLMService(LLMService):
 
             if main_pattern.get("example_code"):
                 response_parts.append(
-                    f"\n**참고 코드**:\n```python\n{main_pattern['example_code'][:Truncation.CODE_SNIPPET_MAX]}...\n```"
+                    f"\n**참고 코드**:\n```python\n{main_pattern['example_code'][: Truncation.CODE_SNIPPET_MAX]}...\n```"
                 )
 
         return "\n".join(response_parts)
@@ -1018,7 +1033,9 @@ class RAGBasedLLMService(LLMService):
 어떤 알고리즘에 대해 알고 싶으신가요?"""
 
         # Help/Guide request
-        if any(word in lower_msg for word in ["힌트", "도움", "모르겠", "어떻게", "가이드"]):
+        if any(
+            word in lower_msg for word in ["힌트", "도움", "모르겠", "어떻게", "가이드"]
+        ):
             return """## 7단계 문제 풀이 가이드
 
 문제를 체계적으로 풀어봅시다!
@@ -1296,15 +1313,19 @@ class OpenAILLMService(LLMService):
                 operation_name="OpenAI API call",
             )
             result = response.json()
-            return result.get("choices", [{}])[0].get("message", {}).get(
-                "content", "응답을 생성할 수 없습니다."
+            return (
+                result.get("choices", [{}])[0]
+                .get("message", {})
+                .get("content", "응답을 생성할 수 없습니다.")
             )
 
         except httpx.TimeoutException:
             logger.error("OpenAI request timed out after retries")
             return "죄송합니다. 응답 생성에 시간이 너무 오래 걸립니다. 잠시 후 다시 시도해주세요."
         except httpx.HTTPStatusError as e:
-            logger.error(f"OpenAI HTTP error: {e.response.status_code} - {e.response.text}")
+            logger.error(
+                f"OpenAI HTTP error: {e.response.status_code} - {e.response.text}"
+            )
             if e.response.status_code == 401:
                 return "죄송합니다. API 키가 유효하지 않습니다."
             elif e.response.status_code == 429:
@@ -1349,7 +1370,10 @@ class OpenAILLMService(LLMService):
                 json={
                     "model": self._model,
                     "messages": [
-                        {"role": "system", "content": "당신은 코드 분석 전문가입니다. 한국어로 응답하세요."},
+                        {
+                            "role": "system",
+                            "content": "당신은 코드 분석 전문가입니다. 한국어로 응답하세요.",
+                        },
                         {"role": "user", "content": prompt},
                     ],
                     "temperature": 0.3,
@@ -1359,7 +1383,9 @@ class OpenAILLMService(LLMService):
             response.raise_for_status()
 
             result = response.json()
-            analysis_text = result.get("choices", [{}])[0].get("message", {}).get("content", "")
+            analysis_text = (
+                result.get("choices", [{}])[0].get("message", {}).get("content", "")
+            )
 
             return {
                 "analysis": analysis_text,
@@ -1536,7 +1562,9 @@ def get_llm_service() -> LLMService:
             logger.info("Using OpenAI LLM service")
             return OpenAILLMService()
         else:
-            logger.warning("OpenAI API key not set, falling back to pattern-based service")
+            logger.warning(
+                "OpenAI API key not set, falling back to pattern-based service"
+            )
 
     if provider == "ollama":
         logger.info("Using Ollama LLM service")

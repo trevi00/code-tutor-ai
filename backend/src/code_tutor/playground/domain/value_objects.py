@@ -91,51 +91,51 @@ LANGUAGE_CONFIG = {
 
 # Default code templates per language
 DEFAULT_CODE = {
-    PlaygroundLanguage.PYTHON: '''# Python Playground
+    PlaygroundLanguage.PYTHON: """# Python Playground
 def main():
     print("Hello, World!")
 
 if __name__ == "__main__":
     main()
-''',
-    PlaygroundLanguage.JAVASCRIPT: '''// JavaScript Playground
+""",
+    PlaygroundLanguage.JAVASCRIPT: """// JavaScript Playground
 function main() {
     console.log("Hello, World!");
 }
 
 main();
-''',
-    PlaygroundLanguage.TYPESCRIPT: '''// TypeScript Playground
+""",
+    PlaygroundLanguage.TYPESCRIPT: """// TypeScript Playground
 function main(): void {
     console.log("Hello, World!");
 }
 
 main();
-''',
-    PlaygroundLanguage.JAVA: '''// Java Playground
+""",
+    PlaygroundLanguage.JAVA: """// Java Playground
 public class Main {
     public static void main(String[] args) {
         System.out.println("Hello, World!");
     }
 }
-''',
-    PlaygroundLanguage.CPP: '''// C++ Playground
+""",
+    PlaygroundLanguage.CPP: """// C++ Playground
 #include <iostream>
 
 int main() {
     std::cout << "Hello, World!" << std::endl;
     return 0;
 }
-''',
-    PlaygroundLanguage.C: '''// C Playground
+""",
+    PlaygroundLanguage.C: """// C Playground
 #include <stdio.h>
 
 int main() {
     printf("Hello, World!\\n");
     return 0;
 }
-''',
-    PlaygroundLanguage.GO: '''// Go Playground
+""",
+    PlaygroundLanguage.GO: """// Go Playground
 package main
 
 import "fmt"
@@ -143,10 +143,10 @@ import "fmt"
 func main() {
     fmt.Println("Hello, World!")
 }
-''',
-    PlaygroundLanguage.RUST: '''// Rust Playground
+""",
+    PlaygroundLanguage.RUST: """// Rust Playground
 fn main() {
     println!("Hello, World!");
 }
-''',
+""",
 }

@@ -34,7 +34,9 @@ class SQLAlchemyTypingExerciseRepository(TypingExerciseRepository):
 
     async def get_by_id(self, exercise_id: UUID) -> TypingExercise | None:
         """Get exercise by ID."""
-        stmt = select(TypingExerciseModel).where(TypingExerciseModel.id == str(exercise_id))
+        stmt = select(TypingExerciseModel).where(
+            TypingExerciseModel.id == str(exercise_id)
+        )
         result = await self.session.execute(stmt)
         model = result.scalar_one_or_none()
         return self._to_entity(model) if model else None
@@ -62,7 +64,9 @@ class SQLAlchemyTypingExerciseRepository(TypingExerciseRepository):
 
     async def save(self, exercise: TypingExercise) -> TypingExercise:
         """Save or update an exercise."""
-        stmt = select(TypingExerciseModel).where(TypingExerciseModel.id == str(exercise.id))
+        stmt = select(TypingExerciseModel).where(
+            TypingExerciseModel.id == str(exercise.id)
+        )
         result = await self.session.execute(stmt)
         existing = result.scalar_one_or_none()
 
@@ -99,7 +103,9 @@ class SQLAlchemyTypingExerciseRepository(TypingExerciseRepository):
 
     async def delete(self, exercise_id: UUID) -> bool:
         """Delete an exercise."""
-        stmt = select(TypingExerciseModel).where(TypingExerciseModel.id == str(exercise_id))
+        stmt = select(TypingExerciseModel).where(
+            TypingExerciseModel.id == str(exercise_id)
+        )
         result = await self.session.execute(stmt)
         model = result.scalar_one_or_none()
 
@@ -146,7 +152,9 @@ class SQLAlchemyTypingAttemptRepository(TypingAttemptRepository):
 
     async def get_by_id(self, attempt_id: UUID) -> TypingAttempt | None:
         """Get attempt by ID."""
-        stmt = select(TypingAttemptModel).where(TypingAttemptModel.id == str(attempt_id))
+        stmt = select(TypingAttemptModel).where(
+            TypingAttemptModel.id == str(attempt_id)
+        )
         result = await self.session.execute(stmt)
         model = result.scalar_one_or_none()
         return self._to_entity(model) if model else None
@@ -157,10 +165,14 @@ class SQLAlchemyTypingAttemptRepository(TypingAttemptRepository):
         exercise_id: UUID,
     ) -> list[TypingAttempt]:
         """List attempts by user and exercise."""
-        stmt = select(TypingAttemptModel).where(
-            TypingAttemptModel.user_id == str(user_id),
-            TypingAttemptModel.exercise_id == str(exercise_id),
-        ).order_by(TypingAttemptModel.attempt_number)
+        stmt = (
+            select(TypingAttemptModel)
+            .where(
+                TypingAttemptModel.user_id == str(user_id),
+                TypingAttemptModel.exercise_id == str(exercise_id),
+            )
+            .order_by(TypingAttemptModel.attempt_number)
+        )
 
         result = await self.session.execute(stmt)
         models = result.scalars().all()
@@ -173,9 +185,13 @@ class SQLAlchemyTypingAttemptRepository(TypingAttemptRepository):
         offset: int = 0,
     ) -> list[TypingAttempt]:
         """List all attempts by user."""
-        stmt = select(TypingAttemptModel).where(
-            TypingAttemptModel.user_id == str(user_id)
-        ).order_by(TypingAttemptModel.started_at.desc()).limit(limit).offset(offset)
+        stmt = (
+            select(TypingAttemptModel)
+            .where(TypingAttemptModel.user_id == str(user_id))
+            .order_by(TypingAttemptModel.started_at.desc())
+            .limit(limit)
+            .offset(offset)
+        )
 
         result = await self.session.execute(stmt)
         models = result.scalars().all()
@@ -183,7 +199,9 @@ class SQLAlchemyTypingAttemptRepository(TypingAttemptRepository):
 
     async def save(self, attempt: TypingAttempt) -> TypingAttempt:
         """Save or update an attempt."""
-        stmt = select(TypingAttemptModel).where(TypingAttemptModel.id == str(attempt.id))
+        stmt = select(TypingAttemptModel).where(
+            TypingAttemptModel.id == str(attempt.id)
+        )
         result = await self.session.execute(stmt)
         existing = result.scalar_one_or_none()
 
@@ -227,6 +245,7 @@ class SQLAlchemyTypingAttemptRepository(TypingAttemptRepository):
 
         # Get required completions from exercise
         from code_tutor.typing_practice.infrastructure.models import TypingExerciseModel
+
         stmt = select(TypingExerciseModel.required_completions).where(
             TypingExerciseModel.id == str(exercise_id)
         )
@@ -271,7 +290,11 @@ class SQLAlchemyTypingAttemptRepository(TypingAttemptRepository):
         exercise_counts = {}
         for a in attempts:
             exercise_counts[a.exercise_id] = exercise_counts.get(a.exercise_id, 0) + 1
-        mastered = sum(1 for count in exercise_counts.values() if count >= TypingConstants.MASTERY_THRESHOLD)
+        mastered = sum(
+            1
+            for count in exercise_counts.values()
+            if count >= TypingConstants.MASTERY_THRESHOLD
+        )
 
         return {
             "total_exercises_attempted": len(unique_exercises),
@@ -289,16 +312,19 @@ class SQLAlchemyTypingAttemptRepository(TypingAttemptRepository):
         Optimized single query instead of N+1 queries.
         """
         # Single query with GROUP BY and HAVING to find mastered exercises
-        stmt = select(
-            TypingAttemptModel.exercise_id,
-            func.count(TypingAttemptModel.id).label("completion_count"),
-        ).where(
-            TypingAttemptModel.user_id == str(user_id),
-            TypingAttemptModel.status == AttemptStatus.COMPLETED.value,
-        ).group_by(
-            TypingAttemptModel.exercise_id
-        ).having(
-            func.count(TypingAttemptModel.id) >= TypingConstants.MASTERY_THRESHOLD
+        stmt = (
+            select(
+                TypingAttemptModel.exercise_id,
+                func.count(TypingAttemptModel.id).label("completion_count"),
+            )
+            .where(
+                TypingAttemptModel.user_id == str(user_id),
+                TypingAttemptModel.status == AttemptStatus.COMPLETED.value,
+            )
+            .group_by(TypingAttemptModel.exercise_id)
+            .having(
+                func.count(TypingAttemptModel.id) >= TypingConstants.MASTERY_THRESHOLD
+            )
         )
 
         result = await self.session.execute(stmt)
@@ -310,18 +336,20 @@ class SQLAlchemyTypingAttemptRepository(TypingAttemptRepository):
         """Get top performers by WPM."""
         # This would need to join with users table for username
         # Simplified version without username
-        stmt = select(
-            TypingAttemptModel.user_id,
-            func.max(TypingAttemptModel.wpm).label("best_wpm"),
-            func.avg(TypingAttemptModel.accuracy).label("avg_accuracy"),
-            func.count(func.distinct(TypingAttemptModel.exercise_id)).label("exercises"),
-        ).where(
-            TypingAttemptModel.status == AttemptStatus.COMPLETED.value
-        ).group_by(
-            TypingAttemptModel.user_id
-        ).order_by(
-            func.max(TypingAttemptModel.wpm).desc()
-        ).limit(limit)
+        stmt = (
+            select(
+                TypingAttemptModel.user_id,
+                func.max(TypingAttemptModel.wpm).label("best_wpm"),
+                func.avg(TypingAttemptModel.accuracy).label("avg_accuracy"),
+                func.count(func.distinct(TypingAttemptModel.exercise_id)).label(
+                    "exercises"
+                ),
+            )
+            .where(TypingAttemptModel.status == AttemptStatus.COMPLETED.value)
+            .group_by(TypingAttemptModel.user_id)
+            .order_by(func.max(TypingAttemptModel.wpm).desc())
+            .limit(limit)
+        )
 
         result = await self.session.execute(stmt)
         rows = result.all()
@@ -342,8 +370,12 @@ class SQLAlchemyTypingAttemptRepository(TypingAttemptRepository):
         """Convert model to entity."""
         return TypingAttempt(
             id=UUID(model.id) if isinstance(model.id, str) else model.id,
-            user_id=UUID(model.user_id) if isinstance(model.user_id, str) else model.user_id,
-            exercise_id=UUID(model.exercise_id) if isinstance(model.exercise_id, str) else model.exercise_id,
+            user_id=UUID(model.user_id)
+            if isinstance(model.user_id, str)
+            else model.user_id,
+            exercise_id=UUID(model.exercise_id)
+            if isinstance(model.exercise_id, str)
+            else model.exercise_id,
             attempt_number=model.attempt_number,
             user_code=model.user_code or "",
             accuracy=model.accuracy or 0.0,

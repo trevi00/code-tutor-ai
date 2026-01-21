@@ -1,6 +1,5 @@
 """FastAPI routes for Learning Roadmap."""
 
-from typing import Optional
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -58,7 +57,9 @@ def get_roadmap_service(
     module_repo = SQLAlchemyModuleRepository(db)
     lesson_repo = SQLAlchemyLessonRepository(db)
     progress_repo = SQLAlchemyUserProgressRepository(db)
-    return RoadmapService(path_repo, module_repo, lesson_repo, progress_repo, xp_service)
+    return RoadmapService(
+        path_repo, module_repo, lesson_repo, progress_repo, xp_service
+    )
 
 
 # ============== Path Endpoints ==============
@@ -326,9 +327,7 @@ async def complete_lesson(
 ):
     """Complete a lesson."""
     try:
-        progress = await service.complete_lesson(
-            current_user.id, lesson_id, request
-        )
+        progress = await service.complete_lesson(current_user.id, lesson_id, request)
         await db.commit()
         return progress
     except ValueError as e:
@@ -340,7 +339,7 @@ async def complete_lesson(
 
 @router.get(
     "/next-lesson",
-    response_model=Optional[LessonResponse],
+    response_model=LessonResponse | None,
     summary="다음 추천 레슨 조회",
     description="현재 사용자에게 추천하는 다음 레슨을 조회합니다. path_id를 지정하면 해당 경로 내에서 다음 레슨을 반환합니다.",
     responses={

@@ -119,7 +119,9 @@ class RuntimeProfiler:
             total_time_func = ct * 1000  # cumulative time
             own_time_func = tt * 1000  # own time
             avg_time = total_time_func / nc if nc > 0 else 0
-            percentage = (total_time_func / total_time_ms * 100) if total_time_ms > 0 else 0
+            percentage = (
+                (total_time_func / total_time_ms * 100) if total_time_ms > 0 else 0
+            )
 
             # Use clean name
             clean_name = name
@@ -207,7 +209,6 @@ class MemoryProfiler:
         # Analyze snapshot
         stats = snapshot.statistics("lineno")
 
-        total_size = sum(stat.size for stat in stats)
         largest = stats[0] if stats else None
 
         allocations = len(stats)

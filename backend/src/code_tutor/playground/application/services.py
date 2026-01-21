@@ -168,7 +168,9 @@ class PlaygroundService:
             raise ForbiddenError("You don't have permission to edit this playground")
 
         language = PlaygroundLanguage(request.language) if request.language else None
-        visibility = PlaygroundVisibility(request.visibility) if request.visibility else None
+        visibility = (
+            PlaygroundVisibility(request.visibility) if request.visibility else None
+        )
 
         playground.update(
             title=request.title,
@@ -351,9 +353,7 @@ class PlaygroundService:
     ) -> PlaygroundListResponse:
         """Search public playgrounds."""
         lang = PlaygroundLanguage(language) if language else None
-        playgrounds = await self.playground_repo.search_playgrounds(
-            query, lang, limit
-        )
+        playgrounds = await self.playground_repo.search_playgrounds(query, lang, limit)
         return PlaygroundListResponse(
             playgrounds=[self._to_response(p) for p in playgrounds],
             total=len(playgrounds),

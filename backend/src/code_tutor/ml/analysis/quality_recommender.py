@@ -143,9 +143,7 @@ class QualityRecommender:
         common_smells = sorted(smell_counts.items(), key=lambda x: -x[1])[:5]
 
         # Calculate average complexity
-        avg_complexity = (
-            sum(a.cyclomatic_complexity for a in analyses) / len(analyses)
-        )
+        avg_complexity = sum(a.cyclomatic_complexity for a in analyses) / len(analyses)
 
         # Determine improvement trend (compare first half vs second half)
         if len(analyses) >= 4:
@@ -307,10 +305,7 @@ class QualityRecommender:
         # Boost scores for weakest dimension
         if weak_areas:
             weakest = min(weak_areas, key=lambda d: dimensions.get(d, 50))
-            if any(
-                weakest in CATEGORY_DIMENSION_BOOST.get(category, {})
-                for _ in [1]
-            ):
+            if any(weakest in CATEGORY_DIMENSION_BOOST.get(category, {}) for _ in [1]):
                 score += 0.3
                 if self._get_dimension_label(weakest) not in reasons:
                     reasons.insert(0, self._get_dimension_label(weakest))

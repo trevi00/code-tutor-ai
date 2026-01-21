@@ -29,7 +29,9 @@ logger = get_logger(__name__)
 router = APIRouter(prefix="/collaboration", tags=["collaboration-ws"])
 
 
-async def get_collaboration_service(db=Depends(get_async_session)) -> CollaborationService:
+async def get_collaboration_service(
+    db=Depends(get_async_session),
+) -> CollaborationService:
     """Get collaboration service with repository."""
     repository = SQLAlchemyCollaborationRepository(db)
     return CollaborationService(repository)
@@ -179,9 +181,7 @@ async def handle_message(
             end_column=data.get("end_column", 0),
         )
         await service.update_selection(session_id, user_id, request)
-        await service.handle_selection_broadcast(
-            session_id, user_id, username, request
-        )
+        await service.handle_selection_broadcast(session_id, user_id, username, request)
 
     elif msg_type == MessageType.CHAT:
         message_text = data.get("message", "")

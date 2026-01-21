@@ -6,10 +6,10 @@ from enum import Enum
 class BadgeRarity(str, Enum):
     """Badge rarity levels."""
 
-    COMMON = "common"        # Easy to get
-    UNCOMMON = "uncommon"    # Some effort needed
-    RARE = "rare"            # Significant achievement
-    EPIC = "epic"            # Major milestone
+    COMMON = "common"  # Easy to get
+    UNCOMMON = "uncommon"  # Some effort needed
+    RARE = "rare"  # Significant achievement
+    EPIC = "epic"  # Major milestone
     LEGENDARY = "legendary"  # Exceptional achievement
 
 
@@ -17,10 +17,10 @@ class BadgeCategory(str, Enum):
     """Badge categories."""
 
     PROBLEM_SOLVING = "problem_solving"  # Solving problems
-    STREAK = "streak"                    # Consecutive days
-    MASTERY = "mastery"                  # Pattern mastery
-    SOCIAL = "social"                    # Collaboration, sharing
-    SPECIAL = "special"                  # Special events
+    STREAK = "streak"  # Consecutive days
+    MASTERY = "mastery"  # Pattern mastery
+    SOCIAL = "social"  # Collaboration, sharing
+    SPECIAL = "special"  # Special events
 
 
 class ChallengeType(str, Enum):
@@ -63,19 +63,19 @@ XP_REWARDS = {
 
 # Level thresholds
 LEVEL_THRESHOLDS = [
-    0,      # Level 1
-    100,    # Level 2
-    250,    # Level 3
-    500,    # Level 4
-    850,    # Level 5
-    1300,   # Level 6
-    1900,   # Level 7
-    2650,   # Level 8
-    3550,   # Level 9
-    4600,   # Level 10
-    5800,   # Level 11
-    7150,   # Level 12
-    8650,   # Level 13
+    0,  # Level 1
+    100,  # Level 2
+    250,  # Level 3
+    500,  # Level 4
+    850,  # Level 5
+    1300,  # Level 6
+    1900,  # Level 7
+    2650,  # Level 8
+    3550,  # Level 9
+    4600,  # Level 10
+    5800,  # Level 11
+    7150,  # Level 12
+    8650,  # Level 13
     10300,  # Level 14
     12100,  # Level 15
     14050,  # Level 16
@@ -129,7 +129,11 @@ def xp_for_next_level(current_xp: int) -> tuple[int, int]:
         return LEVEL_THRESHOLDS[-1], LEVEL_THRESHOLDS[-1]
 
     current_threshold = LEVEL_THRESHOLDS[level - 1] if level > 0 else 0
-    next_threshold = LEVEL_THRESHOLDS[level] if level < len(LEVEL_THRESHOLDS) else LEVEL_THRESHOLDS[-1]
+    next_threshold = (
+        LEVEL_THRESHOLDS[level]
+        if level < len(LEVEL_THRESHOLDS)
+        else LEVEL_THRESHOLDS[-1]
+    )
 
     return current_threshold, next_threshold
 

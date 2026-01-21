@@ -20,7 +20,9 @@ from code_tutor.shared.infrastructure.database import get_async_session
 router = APIRouter(prefix="/collaboration", tags=["Collaboration"])
 
 
-async def get_collaboration_service(db=Depends(get_async_session)) -> CollaborationService:
+async def get_collaboration_service(
+    db=Depends(get_async_session),
+) -> CollaborationService:
     """Get collaboration service with repository."""
     repository = SQLAlchemyCollaborationRepository(db)
     return CollaborationService(repository)

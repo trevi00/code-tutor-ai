@@ -6,16 +6,16 @@ from datetime import UTC, datetime
 from typing import Any
 from uuid import UUID
 
-
-def utc_now() -> datetime:
-    """Get current UTC time (timezone-aware)"""
-    return datetime.now(UTC)
-
 from fastapi import WebSocket
 
 from code_tutor.shared.infrastructure.logging import get_logger
 
 logger = get_logger(__name__)
+
+
+def utc_now() -> datetime:
+    """Get current UTC time (timezone-aware)"""
+    return datetime.now(UTC)
 
 
 @dataclass

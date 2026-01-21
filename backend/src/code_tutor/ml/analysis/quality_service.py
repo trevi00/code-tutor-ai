@@ -7,11 +7,6 @@ Provides comprehensive code quality tracking and trend analysis.
 from datetime import UTC, date, datetime, timedelta
 from uuid import UUID
 
-
-def utc_now() -> datetime:
-    """Get current UTC time (timezone-aware)"""
-    return datetime.now(UTC)
-
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -19,6 +14,12 @@ from code_tutor.ml.pipeline.models import CodeQualityAnalysisModel, QualityTrend
 from code_tutor.shared.infrastructure.logging import get_logger
 
 logger = get_logger(__name__)
+
+
+def utc_now() -> datetime:
+    """Get current UTC time (timezone-aware)"""
+    return datetime.now(UTC)
+
 
 # Version for tracking analyzer changes
 ANALYZER_VERSION = "1.0.0"

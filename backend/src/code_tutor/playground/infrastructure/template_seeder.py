@@ -18,9 +18,9 @@ TEMPLATES = [
         "id": str(uuid4()),
         "title": "Hello World",
         "description": "Basic Python hello world program",
-        "code": '''# Hello World in Python
+        "code": """# Hello World in Python
 print("Hello, World!")
-''',
+""",
         "language": PlaygroundLanguage.PYTHON.value,
         "category": TemplateCategory.BASIC.value,
         "tags": ["beginner", "hello-world"],
@@ -112,7 +112,7 @@ print(f"Sorted: {quicksort(arr)}")
         "id": str(uuid4()),
         "title": "Linked List",
         "description": "Basic linked list implementation",
-        "code": '''class Node:
+        "code": """class Node:
     def __init__(self, data):
         self.data = data
         self.next = None
@@ -147,20 +147,19 @@ ll.append(1)
 ll.append(2)
 ll.append(3)
 print(f"Linked List: {ll.display()}")
-''',
+""",
         "language": PlaygroundLanguage.PYTHON.value,
         "category": TemplateCategory.DATA_STRUCTURE.value,
         "tags": ["linked-list", "data-structure"],
     },
-
     # JavaScript Templates
     {
         "id": str(uuid4()),
         "title": "Hello World",
         "description": "Basic JavaScript hello world program",
-        "code": '''// Hello World in JavaScript
+        "code": """// Hello World in JavaScript
 console.log("Hello, World!");
-''',
+""",
         "language": PlaygroundLanguage.JAVASCRIPT.value,
         "category": TemplateCategory.BASIC.value,
         "tags": ["beginner", "hello-world"],
@@ -169,7 +168,7 @@ console.log("Hello, World!");
         "id": str(uuid4()),
         "title": "Array Methods",
         "description": "Common JavaScript array methods",
-        "code": '''// JavaScript Array Methods Demo
+        "code": """// JavaScript Array Methods Demo
 
 const numbers = [1, 2, 3, 4, 5];
 
@@ -192,7 +191,7 @@ console.log("Found > 3:", found);
 // some/every - check conditions
 console.log("Some > 3:", numbers.some(n => n > 3));
 console.log("Every > 0:", numbers.every(n => n > 0));
-''',
+""",
         "language": PlaygroundLanguage.JAVASCRIPT.value,
         "category": TemplateCategory.BASIC.value,
         "tags": ["array", "functional", "beginner"],
@@ -201,7 +200,7 @@ console.log("Every > 0:", numbers.every(n => n > 0));
         "id": str(uuid4()),
         "title": "Promises and Async/Await",
         "description": "JavaScript async programming patterns",
-        "code": '''// Promises and Async/Await Demo
+        "code": """// Promises and Async/Await Demo
 
 // Simulated async operation
 function fetchData(id) {
@@ -236,23 +235,22 @@ getUser();
 // Multiple concurrent requests
 Promise.all([fetchData(1), fetchData(2), fetchData(3)])
     .then(users => console.log("All users:", users));
-''',
+""",
         "language": PlaygroundLanguage.JAVASCRIPT.value,
         "category": TemplateCategory.UTILITY.value,
         "tags": ["async", "promises", "intermediate"],
     },
-
     # Java Templates
     {
         "id": str(uuid4()),
         "title": "Hello World",
         "description": "Basic Java hello world program",
-        "code": '''public class Main {
+        "code": """public class Main {
     public static void main(String[] args) {
         System.out.println("Hello, World!");
     }
 }
-''',
+""",
         "language": PlaygroundLanguage.JAVA.value,
         "category": TemplateCategory.BASIC.value,
         "tags": ["beginner", "hello-world"],
@@ -261,7 +259,7 @@ Promise.all([fetchData(1), fetchData(2), fetchData(3)])
         "id": str(uuid4()),
         "title": "ArrayList Example",
         "description": "Working with Java ArrayList",
-        "code": '''import java.util.ArrayList;
+        "code": """import java.util.ArrayList;
 import java.util.Collections;
 
 public class Main {
@@ -289,25 +287,24 @@ public class Main {
         System.out.println("After remove: " + numbers);
     }
 }
-''',
+""",
         "language": PlaygroundLanguage.JAVA.value,
         "category": TemplateCategory.DATA_STRUCTURE.value,
         "tags": ["arraylist", "collections", "beginner"],
     },
-
     # Go Templates
     {
         "id": str(uuid4()),
         "title": "Hello World",
         "description": "Basic Go hello world program",
-        "code": '''package main
+        "code": """package main
 
 import "fmt"
 
 func main() {
     fmt.Println("Hello, World!")
 }
-''',
+""",
         "language": PlaygroundLanguage.GO.value,
         "category": TemplateCategory.BASIC.value,
         "tags": ["beginner", "hello-world"],
@@ -316,7 +313,7 @@ func main() {
         "id": str(uuid4()),
         "title": "Goroutines and Channels",
         "description": "Go concurrency with goroutines and channels",
-        "code": '''package main
+        "code": """package main
 
 import (
     "fmt"
@@ -352,21 +349,20 @@ func main() {
         fmt.Printf("Result: %d\\n", result)
     }
 }
-''',
+""",
         "language": PlaygroundLanguage.GO.value,
         "category": TemplateCategory.UTILITY.value,
         "tags": ["concurrency", "goroutines", "channels"],
     },
-
     # Rust Templates
     {
         "id": str(uuid4()),
         "title": "Hello World",
         "description": "Basic Rust hello world program",
-        "code": '''fn main() {
+        "code": """fn main() {
     println!("Hello, World!");
 }
-''',
+""",
         "language": PlaygroundLanguage.RUST.value,
         "category": TemplateCategory.BASIC.value,
         "tags": ["beginner", "hello-world"],
@@ -375,7 +371,7 @@ func main() {
         "id": str(uuid4()),
         "title": "Ownership and Borrowing",
         "description": "Rust ownership and borrowing concepts",
-        "code": '''fn main() {
+        "code": """fn main() {
     // Ownership
     let s1 = String::from("hello");
     let s2 = s1.clone(); // Clone to keep s1 valid
@@ -398,24 +394,23 @@ fn calculate_length(s: &String) -> usize {
 fn change(s: &mut String) {
     s.push_str(", world!");
 }
-''',
+""",
         "language": PlaygroundLanguage.RUST.value,
         "category": TemplateCategory.BASIC.value,
         "tags": ["ownership", "borrowing", "memory"],
     },
-
     # C++ Templates
     {
         "id": str(uuid4()),
         "title": "Hello World",
         "description": "Basic C++ hello world program",
-        "code": '''#include <iostream>
+        "code": """#include <iostream>
 
 int main() {
     std::cout << "Hello, World!" << std::endl;
     return 0;
 }
-''',
+""",
         "language": PlaygroundLanguage.CPP.value,
         "category": TemplateCategory.BASIC.value,
         "tags": ["beginner", "hello-world"],
@@ -424,7 +419,7 @@ int main() {
         "id": str(uuid4()),
         "title": "STL Vector",
         "description": "C++ STL vector operations",
-        "code": '''#include <iostream>
+        "code": """#include <iostream>
 #include <vector>
 #include <algorithm>
 
@@ -455,24 +450,23 @@ int main() {
 
     return 0;
 }
-''',
+""",
         "language": PlaygroundLanguage.CPP.value,
         "category": TemplateCategory.DATA_STRUCTURE.value,
         "tags": ["stl", "vector", "algorithms"],
     },
-
     # C Templates
     {
         "id": str(uuid4()),
         "title": "Hello World",
         "description": "Basic C hello world program",
-        "code": '''#include <stdio.h>
+        "code": """#include <stdio.h>
 
 int main() {
     printf("Hello, World!\\n");
     return 0;
 }
-''',
+""",
         "language": PlaygroundLanguage.C.value,
         "category": TemplateCategory.BASIC.value,
         "tags": ["beginner", "hello-world"],
@@ -481,7 +475,7 @@ int main() {
         "id": str(uuid4()),
         "title": "Pointers",
         "description": "C pointers and memory",
-        "code": '''#include <stdio.h>
+        "code": """#include <stdio.h>
 #include <stdlib.h>
 
 int main() {
@@ -515,21 +509,20 @@ int main() {
 
     return 0;
 }
-''',
+""",
         "language": PlaygroundLanguage.C.value,
         "category": TemplateCategory.BASIC.value,
         "tags": ["pointers", "memory", "malloc"],
     },
-
     # TypeScript Templates
     {
         "id": str(uuid4()),
         "title": "Hello World",
         "description": "Basic TypeScript hello world program",
-        "code": '''// Hello World in TypeScript
+        "code": """// Hello World in TypeScript
 const message: string = "Hello, World!";
 console.log(message);
-''',
+""",
         "language": PlaygroundLanguage.TYPESCRIPT.value,
         "category": TemplateCategory.BASIC.value,
         "tags": ["beginner", "hello-world"],
@@ -538,7 +531,7 @@ console.log(message);
         "id": str(uuid4()),
         "title": "Interfaces and Types",
         "description": "TypeScript type system examples",
-        "code": '''// Interface definition
+        "code": """// Interface definition
 interface User {
     id: number;
     name: string;
@@ -567,7 +560,7 @@ console.log("User:", user);
 console.log("Role:", role);
 console.log("First number:", getFirst([1, 2, 3]));
 console.log("First string:", getFirst(["a", "b", "c"]));
-''',
+""",
         "language": PlaygroundLanguage.TYPESCRIPT.value,
         "category": TemplateCategory.BASIC.value,
         "tags": ["types", "interfaces", "generics"],
@@ -1214,9 +1207,7 @@ print(f"\\n외부 정렬 (chunk=3): {external_sort(nums2, 3)}")
 async def seed_templates(session: AsyncSession) -> int:
     """Seed code templates if they don't exist."""
     # Check if templates already exist
-    result = await session.execute(
-        select(CodeTemplateModel).limit(1)
-    )
+    result = await session.execute(select(CodeTemplateModel).limit(1))
     if result.scalar_one_or_none():
         return 0  # Templates already exist
 
