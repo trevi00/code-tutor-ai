@@ -28,7 +28,7 @@ dependencies = [
     # ML/Numeric
     "numpy>=1.26.0",
     # ML/AI (optional, for later phases)
-    # "torch>=2.1.0",
+    # "torch>=2.11.0",
     # "transformers>=4.36.0",
     # "langchain>=0.1.0",
     # "faiss-cpu>=1.7.4",
@@ -51,7 +51,7 @@ dev = [
 
 ml = [
     # Core ML
-    "torch>=2.1.0",
+    "torch>=2.11.0",
     "transformers>=4.36.0",
 
     # Embeddings
