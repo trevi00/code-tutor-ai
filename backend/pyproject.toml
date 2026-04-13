@@ -23,7 +23,7 @@ dependencies = [
     "pydantic-settings>=2.1.0",
     "email-validator>=2.1.0",
     # DI & Utils
-    "dependency-injector>=4.41.0",
+    "dependency-injector>=4.49.0",
     "structlog>=24.1.0",
     # ML/Numeric
     "numpy>=1.26.0",
