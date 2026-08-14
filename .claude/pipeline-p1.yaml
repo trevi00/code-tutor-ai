@@ -2,7 +2,7 @@
 # 베이스라인(2026-08-14): pytest 1630 PASS / 29 FAIL (roadmap 16 · typing 13,
 # 대표 오류: SQLAlchemy UUID 컬럼에 str 바인딩 — 'str' has no attribute 'hex')
 schema_version: "0.1"
-premises: [requirements.md, component-diagram.md]   # 온보딩 산출 — 이 파이프라인엔 생산 단계 없음
+premises: [requirements.md, component-diagram.md, usecase.md]   # 온보딩 산출 전제
 caps: { iter: 60, wallclock_s: 21600 }
 stages:
 
@@ -88,3 +88,42 @@ stages:
         # 게이트 설계 교정(2026-08-14): e2e 수리가 백엔드를 건드리는데 무회귀
         # 문장이 없었다 — 회귀 1건(search Query 직접호출 충돌)을 사후 검증이 검출
     skills: [frontend-e2e]
+
+  # ── 4차 루프: P2 확장 (설계 협업 구간 — 무인 아님)
+
+  - id: p2-usecases
+    seq: 6
+    name: P2 유스케이스 상세 복원 (REQ-013~023)
+    dge: planner
+    input: [usecase.md]
+    output: usecase.md
+    artifact: "유예 11 도메인의 UC/AC 상세 — AC 는 역추출 EP 인용(발명 금지), AI 도메인은 스텁 수위(REQ-004) 명시"
+    gate:
+      - statement: "P2 전 도메인 UC 존재 (UC-15 까지)"
+        check: { type: file_content, target: usecase.md, expect: "UC-15" }
+      - statement: "사용자가 P2 유스케이스 확장을 승인함"
+        verdict_mode: human
+    skills: [persona-gwt]
+
+  - id: p2-verify
+    seq: 7
+    name: P2 커버리지·무회귀 검증
+    dge: evaluator
+    input: ["p2-usecases 결과물"]
+    output: p2-report.md
+    artifact: "전 REQ 커버리지 재판정 + 스위트 무회귀 확인 요약 (RESULT 마커)"
+    gate:
+      - statement: "모든 requirements 항목이 최소 1개 AC로 커버됨"
+        check: { type: graph_query, query: "requirement→AC 커버리지" }
+        checks: [requirements.md]
+      - statement: "모든 AC 에 대응 엔드포인트 참조 존재 (UI 전용은 EP-N/A 명시)"
+        check: { type: graph_query, query: "AC→EP 대응 존재" }
+        checks: [usecase.md]
+      - statement: "usecase 의 EP 참조가 전부 실존"
+        check: { type: graph_query, query: "usecase EP 참조 실존" }
+        checks: [usecase.md, api-spec.md]
+      - statement: "백엔드 테스트 무회귀"
+        check: { type: exit_code, cmd: "cd backend && uv run pytest tests -q --no-header" }
+      - statement: "리포트 존재"
+        check: { type: file_content, target: p2-report.md, expect: "RESULT" }
+    skills: [verification]
