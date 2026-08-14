@@ -1,13 +1,23 @@
 import { test, expect } from '@playwright/test';
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
+import { getProblemIdByTitle } from './helpers';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+
+// Reuse the authenticated session from auth.setup.ts instead of logging in
+// through the UI in every test (the login endpoint is rate-limited to 5/min).
+test.use({ storageState: join(__dirname, '../.auth/user.json') });
 
 // Run tests serially to avoid session conflicts
 test.describe.configure({ mode: 'serial' });
 
-// Helper function to solve a problem
-async function solveProblem(page: import('@playwright/test').Page, context: import('@playwright/test').BrowserContext, problemId: string, code: string) {
+// Helper function to solve a problem (ids are random per seed run — resolve by title)
+async function solveProblem(page: import('@playwright/test').Page, context: import('@playwright/test').BrowserContext, problemTitle: string, code: string) {
   await context.grantPermissions(['clipboard-read', 'clipboard-write']);
 
   // Go to problem solve page
+  const problemId = await getProblemIdByTitle(page.request, problemTitle);
   await page.goto(`http://localhost:5173/problems/${problemId}/solve`);
   await page.waitForLoadState('networkidle');
 
@@ -60,16 +70,6 @@ async function solveProblem(page: import('@playwright/test').Page, context: impo
 }
 
 test.describe('Problem Types Tests', () => {
-  test.beforeEach(async ({ page }) => {
-    // Login with e2etest user (same as other tests)
-    await page.goto('http://localhost:5173/login');
-    await page.fill('input[type="email"]', 'e2etest@example.com');
-    await page.fill('input[type="password"]', 'TestPassword123!');
-    await page.click('button[type="submit"]');
-    await page.waitForURL(/\/(dashboard|problems|$)/, { timeout: 10000 });
-    await page.waitForTimeout(2000);
-  });
-
   test('STACK - 유효한 괄호', async ({ page, context }) => {
     test.setTimeout(120000);
 
@@ -90,7 +90,7 @@ if __name__ == "__main__":
 
     const result = await solveProblem(
       page, context,
-      '9f90e6fa-2f6b-4429-ab50-58b701f652bb',
+      '유효한 괄호',
       code
     );
 
@@ -122,7 +122,7 @@ if __name__ == "__main__":
 
     const result = await solveProblem(
       page, context,
-      'da8eafac-464a-4af8-affe-2622a750fec3',
+      '이진 탐색',
       code
     );
 
@@ -148,7 +148,7 @@ if __name__ == "__main__":
 
     const result = await solveProblem(
       page, context,
-      '0fda256e-fbd6-4208-9dc8-e509d31b812c',
+      '최대 부분배열 합 (카데인)',
       code
     );
 
@@ -211,7 +211,7 @@ if __name__ == "__main__":
 
     const result = await solveProblem(
       page, context,
-      '30980dd1-721c-46a9-8b0a-2b34122a1bc0',
+      '이진 트리 레벨 순회',
       code
     );
 
@@ -242,7 +242,7 @@ if __name__ == "__main__":
 
     const result = await solveProblem(
       page, context,
-      '8f2c1706-3e31-4381-8d7a-c930dfa83072',
+      '회의실 배정 (그리디)',
       code
     );
 
@@ -265,7 +265,7 @@ if __name__ == "__main__":
 
     const result = await solveProblem(
       page, context,
-      '8c0a5448-9715-4e59-a825-54cb59e3b733',
+      '문자열 뒤집기',
       code
     );
 

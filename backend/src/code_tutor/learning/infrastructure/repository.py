@@ -156,6 +156,7 @@ class SQLAlchemyProblemRepository(ProblemRepository):
         category: Category | None = None,
         difficulty: Difficulty | None = None,
         pattern_id: str | None = None,
+        search: str | None = None,
         limit: int = 20,
         offset: int = 0,
     ) -> list[Problem]:
@@ -169,6 +170,8 @@ class SQLAlchemyProblemRepository(ProblemRepository):
         if pattern_id:
             # Filter problems that contain this pattern_id in their pattern_ids JSON array
             conditions.append(ProblemModel.pattern_ids.contains([pattern_id]))
+        if search:
+            conditions.append(ProblemModel.title.ilike(f"%{search}%"))
 
         stmt = (
             select(ProblemModel)
@@ -187,6 +190,7 @@ class SQLAlchemyProblemRepository(ProblemRepository):
         category: Category | None = None,
         difficulty: Difficulty | None = None,
         pattern_id: str | None = None,
+        search: str | None = None,
     ) -> int:
         """Count published problems"""
         conditions = [ProblemModel.is_published == True]
@@ -197,6 +201,8 @@ class SQLAlchemyProblemRepository(ProblemRepository):
             conditions.append(ProblemModel.difficulty == difficulty)
         if pattern_id:
             conditions.append(ProblemModel.pattern_ids.contains([pattern_id]))
+        if search:
+            conditions.append(ProblemModel.title.ilike(f"%{search}%"))
 
         stmt = select(func.count()).select_from(ProblemModel).where(and_(*conditions))
         result = await self._session.execute(stmt)

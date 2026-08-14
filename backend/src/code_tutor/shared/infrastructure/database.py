@@ -2,8 +2,11 @@
 
 from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
+from datetime import UTC, datetime
+from typing import Any
 
-from sqlalchemy import MetaData
+from sqlalchemy import DateTime, MetaData, TypeDecorator
+from sqlalchemy.engine import Dialect
 from sqlalchemy.ext.asyncio import (
     AsyncEngine,
     AsyncSession,
@@ -24,10 +27,34 @@ NAMING_CONVENTION: dict[str, str] = {
 }
 
 
+class NaiveUTCDateTime(TypeDecorator[datetime]):
+    """DateTime type that stores timezone-aware datetimes as naive UTC.
+
+    The domain layer uses timezone-aware UTC datetimes (``datetime.now(UTC)``)
+    while the persistence schema uses ``TIMESTAMP WITHOUT TIME ZONE`` columns.
+    asyncpg rejects aware datetimes for naive columns, so values are normalized
+    to naive UTC at the bind boundary. Naive values are assumed to already be
+    UTC and are passed through unchanged.
+    """
+
+    impl = DateTime
+    cache_ok = True
+
+    def process_bind_param(
+        self, value: Any | None, dialect: Dialect
+    ) -> datetime | None:
+        if isinstance(value, datetime) and value.tzinfo is not None:
+            return value.astimezone(UTC).replace(tzinfo=None)
+        return value
+
+
 class Base(DeclarativeBase):
     """Base class for all SQLAlchemy models"""
 
     metadata = MetaData(naming_convention=NAMING_CONVENTION)
+    # Ensure Mapped[datetime] annotations (without an explicit column type)
+    # also normalize aware datetimes to naive UTC on write.
+    type_annotation_map = {datetime: NaiveUTCDateTime()}
 
 
 # Global engine and session factory

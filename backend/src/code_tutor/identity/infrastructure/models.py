@@ -3,11 +3,11 @@
 from datetime import datetime
 from uuid import UUID, uuid4
 
-from sqlalchemy import Boolean, DateTime, Enum, String
+from sqlalchemy import Boolean, Enum, String
 from sqlalchemy.orm import Mapped, mapped_column
 
 from code_tutor.identity.domain.value_objects import UserRole
-from code_tutor.shared.infrastructure.database import Base
+from code_tutor.shared.infrastructure.database import Base, NaiveUTCDateTime
 
 
 class UserModel(Base):
@@ -51,7 +51,7 @@ class UserModel(Base):
         nullable=False,
     )
     last_login_at: Mapped[datetime | None] = mapped_column(
-        DateTime,
+        NaiveUTCDateTime,
         nullable=True,
     )
     bio: Mapped[str | None] = mapped_column(
@@ -59,12 +59,12 @@ class UserModel(Base):
         nullable=True,
     )
     created_at: Mapped[datetime] = mapped_column(
-        DateTime,
+        NaiveUTCDateTime,
         default=datetime.utcnow,
         nullable=False,
     )
     updated_at: Mapped[datetime] = mapped_column(
-        DateTime,
+        NaiveUTCDateTime,
         default=datetime.utcnow,
         onupdate=datetime.utcnow,
         nullable=False,

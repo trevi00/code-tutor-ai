@@ -45,8 +45,10 @@ test.describe('Dashboard - Authenticated', () => {
     await page.goto('/dashboard');
     await page.waitForLoadState('networkidle');
 
-    // Find link to problems
-    const problemsLink = page.locator('a[href*="/problems"]').first();
+    // Find link to problems in the page content (a bare a[href*="/problems"]
+    // would match the header dropdown's CSS-hidden menu item first, which is
+    // never clickable while the dropdown is closed)
+    const problemsLink = page.locator('main a[href*="/problems"]').first();
 
     if (await problemsLink.isVisible()) {
       await problemsLink.click();

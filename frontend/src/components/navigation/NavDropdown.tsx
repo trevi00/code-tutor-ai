@@ -64,7 +64,11 @@ export function NavDropdown({ label, icon: Icon, items, colorClass = 'hover:text
       onMouseLeave={handleMouseLeave}
     >
       <button
-        onClick={() => setIsOpen(!isOpen)}
+        // Click always opens (never toggles closed): hover already opens the
+        // menu, so a toggle races with it — e.g. a transient page reflow can
+        // fire a spurious mouseleave and a click meant to open would close.
+        // Closing stays on mouseleave / outside-click / route change.
+        onClick={handleMouseEnter}
         className={clsx(
           'flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200',
           isGroupActive

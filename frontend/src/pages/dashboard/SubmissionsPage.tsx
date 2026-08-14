@@ -273,7 +273,7 @@ export default function SubmissionsPage() {
                   return (
                     <Link
                       key={submission.id}
-                      to={`/problems/${submission.problem_id}`}
+                      to={`/problems/${submission.problem_id}/solve`}
                       className="grid grid-cols-12 gap-4 px-6 py-4 hover:bg-neutral-100/50 dark:hover:bg-slate-700/20 transition-colors group"
                     >
                       <div className="col-span-4">

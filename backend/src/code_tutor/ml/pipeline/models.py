@@ -10,7 +10,6 @@ from sqlalchemy import (
     JSON,
     Boolean,
     Date,
-    DateTime,
     Float,
     ForeignKey,
     Index,
@@ -20,7 +19,7 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import Mapped, mapped_column
 
-from code_tutor.shared.infrastructure.database import Base
+from code_tutor.shared.infrastructure.database import Base, NaiveUTCDateTime
 
 
 class DailyStatsModel(Base):
@@ -65,9 +64,9 @@ class DailyStatsModel(Base):
     is_active_day: Mapped[bool] = mapped_column(Boolean, default=False)
 
     # Timestamps
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    created_at: Mapped[datetime] = mapped_column(NaiveUTCDateTime, default=datetime.utcnow)
     updated_at: Mapped[datetime] = mapped_column(
-        DateTime, default=datetime.utcnow, onupdate=datetime.utcnow
+        NaiveUTCDateTime, default=datetime.utcnow, onupdate=datetime.utcnow
     )
 
     __table_args__ = (
@@ -104,17 +103,17 @@ class UserInteractionModel(Base):
     best_memory_usage_mb: Mapped[float] = mapped_column(Float, nullable=True)
 
     # Engagement signals
-    first_attempt_at: Mapped[datetime] = mapped_column(DateTime, nullable=True)
-    solved_at: Mapped[datetime] = mapped_column(DateTime, nullable=True)
+    first_attempt_at: Mapped[datetime] = mapped_column(NaiveUTCDateTime, nullable=True)
+    solved_at: Mapped[datetime] = mapped_column(NaiveUTCDateTime, nullable=True)
     time_to_solve_seconds: Mapped[int] = mapped_column(Integer, nullable=True)
 
     # Implicit feedback score (computed)
     interaction_score: Mapped[float] = mapped_column(Float, default=0.0)
 
     # Timestamps
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    created_at: Mapped[datetime] = mapped_column(NaiveUTCDateTime, default=datetime.utcnow)
     updated_at: Mapped[datetime] = mapped_column(
-        DateTime, default=datetime.utcnow, onupdate=datetime.utcnow
+        NaiveUTCDateTime, default=datetime.utcnow, onupdate=datetime.utcnow
     )
 
     __table_args__ = (
@@ -142,8 +141,8 @@ class ModelTrainingLogModel(Base):
     model_path: Mapped[str] = mapped_column(String(500), nullable=True)
 
     # Training details
-    training_started_at: Mapped[datetime] = mapped_column(DateTime, nullable=False)
-    training_completed_at: Mapped[datetime] = mapped_column(DateTime, nullable=True)
+    training_started_at: Mapped[datetime] = mapped_column(NaiveUTCDateTime, nullable=False)
+    training_completed_at: Mapped[datetime] = mapped_column(NaiveUTCDateTime, nullable=True)
     training_samples: Mapped[int] = mapped_column(Integer, default=0)
     epochs_completed: Mapped[int] = mapped_column(Integer, default=0)
 
@@ -159,7 +158,7 @@ class ModelTrainingLogModel(Base):
     error_message: Mapped[str] = mapped_column(String(1000), nullable=True)
     is_active: Mapped[bool] = mapped_column(Boolean, default=False)
 
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    created_at: Mapped[datetime] = mapped_column(NaiveUTCDateTime, default=datetime.utcnow)
 
     __table_args__ = (
         Index("ix_model_training_type_active", "model_type", "is_active"),
@@ -227,7 +226,7 @@ class CodeQualityAnalysisModel(Base):
     analyzer_version: Mapped[str] = mapped_column(String(20), default="1.0.0")
 
     # Timestamps
-    analyzed_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    analyzed_at: Mapped[datetime] = mapped_column(NaiveUTCDateTime, default=datetime.utcnow)
 
     __table_args__ = (
         Index("ix_quality_user_analyzed", "user_id", "analyzed_at"),
@@ -278,9 +277,9 @@ class QualityTrendModel(Base):
     )  # {"A": 2, "B": 3, "C": 1}
 
     # Timestamps
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    created_at: Mapped[datetime] = mapped_column(NaiveUTCDateTime, default=datetime.utcnow)
     updated_at: Mapped[datetime] = mapped_column(
-        DateTime, default=datetime.utcnow, onupdate=datetime.utcnow
+        NaiveUTCDateTime, default=datetime.utcnow, onupdate=datetime.utcnow
     )
 
     __table_args__ = (

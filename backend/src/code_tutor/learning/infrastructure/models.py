@@ -6,7 +6,6 @@ from uuid import UUID, uuid4
 from sqlalchemy import (
     JSON,
     Boolean,
-    DateTime,
     Enum,
     Float,
     ForeignKey,
@@ -21,7 +20,7 @@ from code_tutor.learning.domain.value_objects import (
     Difficulty,
     SubmissionStatus,
 )
-from code_tutor.shared.infrastructure.database import Base
+from code_tutor.shared.infrastructure.database import Base, NaiveUTCDateTime
 
 
 class ProblemModel(Base):
@@ -55,11 +54,11 @@ class ProblemModel(Base):
     time_complexity_hint: Mapped[str] = mapped_column(String(50), default="")
     space_complexity_hint: Mapped[str] = mapped_column(String(50), default="")
     created_at: Mapped[datetime] = mapped_column(
-        DateTime,
+        NaiveUTCDateTime,
         default=datetime.utcnow,
     )
     updated_at: Mapped[datetime] = mapped_column(
-        DateTime,
+        NaiveUTCDateTime,
         default=datetime.utcnow,
         onupdate=datetime.utcnow,
     )
@@ -93,7 +92,7 @@ class TestCaseModel(Base):
     is_sample: Mapped[bool] = mapped_column(Boolean, default=False)
     order: Mapped[int] = mapped_column(Integer, default=0)
     created_at: Mapped[datetime] = mapped_column(
-        DateTime,
+        NaiveUTCDateTime,
         default=datetime.utcnow,
     )
 
@@ -134,17 +133,17 @@ class SubmissionModel(Base):
     memory_usage_mb: Mapped[float] = mapped_column(Float, default=0.0)
     error_message: Mapped[str | None] = mapped_column(Text, nullable=True)
     submitted_at: Mapped[datetime] = mapped_column(
-        DateTime,
+        NaiveUTCDateTime,
         default=datetime.utcnow,
         index=True,
     )
-    evaluated_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    evaluated_at: Mapped[datetime | None] = mapped_column(NaiveUTCDateTime, nullable=True)
     created_at: Mapped[datetime] = mapped_column(
-        DateTime,
+        NaiveUTCDateTime,
         default=datetime.utcnow,
     )
     updated_at: Mapped[datetime] = mapped_column(
-        DateTime,
+        NaiveUTCDateTime,
         default=datetime.utcnow,
         onupdate=datetime.utcnow,
     )

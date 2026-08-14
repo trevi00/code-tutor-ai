@@ -118,15 +118,17 @@ async def list_problems(
     service: Annotated[ProblemService, Depends(get_problem_service)],
     category: Category | None = None,
     difficulty: Difficulty | None = None,
-    pattern: str | None = Query(default=None, description="Filter by pattern ID"),
-    page: int = Query(default=1, ge=1),
-    size: int = Query(default=20, ge=1, le=100),
+    pattern: Annotated[str | None, Query(description="Filter by pattern ID")] = None,
+    search: Annotated[str | None, Query(description="Search by problem title")] = None,
+    page: Annotated[int, Query(ge=1)] = 1,
+    size: Annotated[int, Query(ge=1, le=100)] = 20,
 ) -> ProblemListResponse:
     """List published problems with optional filters"""
     params = ProblemFilterParams(
         category=category,
         difficulty=difficulty,
         pattern_id=pattern,
+        search=search,
         page=page,
         size=size,
     )

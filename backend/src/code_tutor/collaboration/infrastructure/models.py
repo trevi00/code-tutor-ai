@@ -6,7 +6,6 @@ from uuid import UUID, uuid4
 from sqlalchemy import (
     JSON,
     Boolean,
-    DateTime,
     ForeignKey,
     Index,
     Integer,
@@ -16,7 +15,7 @@ from sqlalchemy import (
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from code_tutor.collaboration.domain.value_objects import SessionStatus
-from code_tutor.shared.infrastructure.database import Base
+from code_tutor.shared.infrastructure.database import Base, NaiveUTCDateTime
 
 
 class CollaborationSessionModel(Base):
@@ -44,9 +43,9 @@ class CollaborationSessionModel(Base):
     version: Mapped[int] = mapped_column(Integer, default=0)
     max_participants: Mapped[int] = mapped_column(Integer, default=5)
 
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    created_at: Mapped[datetime] = mapped_column(NaiveUTCDateTime, default=datetime.utcnow)
     updated_at: Mapped[datetime] = mapped_column(
-        DateTime, default=datetime.utcnow, onupdate=datetime.utcnow
+        NaiveUTCDateTime, default=datetime.utcnow, onupdate=datetime.utcnow
     )
 
     # Relationships
@@ -88,7 +87,7 @@ class SessionParticipantModel(Base):
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     color: Mapped[str] = mapped_column(String(20), default="#4ECDC4")
 
-    joined_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    joined_at: Mapped[datetime] = mapped_column(NaiveUTCDateTime, default=datetime.utcnow)
 
     # Relationships
     session: Mapped["CollaborationSessionModel"] = relationship(
@@ -118,7 +117,7 @@ class CodeChangeModel(Base):
     operation: Mapped[dict] = mapped_column(JSON, nullable=False)
     version: Mapped[int] = mapped_column(Integer, nullable=False)
 
-    timestamp: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    timestamp: Mapped[datetime] = mapped_column(NaiveUTCDateTime, default=datetime.utcnow)
 
     # Relationships
     session: Mapped["CollaborationSessionModel"] = relationship(

@@ -6,7 +6,6 @@ from uuid import uuid4
 from sqlalchemy import (
     Boolean,
     Column,
-    DateTime,
     Float,
     ForeignKey,
     Integer,
@@ -16,7 +15,7 @@ from sqlalchemy import (
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 
-from code_tutor.shared.infrastructure.database import Base
+from code_tutor.shared.infrastructure.database import Base, NaiveUTCDateTime
 from code_tutor.typing_practice.domain.value_objects import (
     AttemptStatus,
     Difficulty,
@@ -43,8 +42,8 @@ class TypingExerciseModel(Base):
     description = Column(Text, default="")
     required_completions = Column(Integer, default=5)
     is_published = Column(Boolean, default=True)
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = Column(NaiveUTCDateTime, default=datetime.utcnow)
+    updated_at = Column(NaiveUTCDateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     # Relationships
     attempts = relationship("TypingAttemptModel", back_populates="exercise")
@@ -64,8 +63,8 @@ class TypingAttemptModel(Base):
     wpm = Column(Float, default=0.0)
     time_seconds = Column(Float, default=0.0)
     status = Column(String(20), default=AttemptStatus.IN_PROGRESS.value)
-    started_at = Column(DateTime, default=datetime.utcnow)
-    completed_at = Column(DateTime, nullable=True)
+    started_at = Column(NaiveUTCDateTime, default=datetime.utcnow)
+    completed_at = Column(NaiveUTCDateTime, nullable=True)
 
     # Relationships
     exercise = relationship("TypingExerciseModel", back_populates="attempts")

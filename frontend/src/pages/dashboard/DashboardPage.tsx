@@ -567,7 +567,7 @@ function RecentSubmissionItem({ submission, delay }: RecentSubmissionItemProps) 
 
   return (
     <Link
-      to={`/problems/${submission.problem_id}`}
+      to={`/problems/${submission.problem_id}/solve`}
       className="flex items-center gap-3 p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-all group animate-fade-in"
       style={{ animationDelay: `${(delay + 8) * 100}ms` }}
     >

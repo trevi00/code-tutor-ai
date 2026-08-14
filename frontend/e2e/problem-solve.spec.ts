@@ -1,4 +1,13 @@
 import { test } from '@playwright/test';
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
+import { getProblemIdByTitle } from './helpers';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+
+// Reuse the authenticated session from auth.setup.ts instead of logging in
+// through the UI (the login endpoint is rate-limited to 5/min).
+test.use({ storageState: join(__dirname, '../.auth/user.json') });
 
 // Run this test in isolation to avoid Monaco editor conflicts
 test.describe.configure({ mode: 'serial' });
@@ -9,16 +18,9 @@ test('problem solve - run and submit', async ({ page, context }) => {
   // Grant clipboard permissions
   await context.grantPermissions(['clipboard-read', 'clipboard-write']);
 
-  // Login with e2etest user (same as other tests)
-  await page.goto('http://localhost:5173/login');
-  await page.fill('input[type="email"]', 'e2etest@example.com');
-  await page.fill('input[type="password"]', 'TestPassword123!');
-  await page.click('button[type="submit"]');
-  await page.waitForURL(/\/(dashboard|problems|$)/, { timeout: 10000 });
-  await page.waitForTimeout(2000);
-
-  // Go to Two Sum problem
-  await page.goto('http://localhost:5173/problems/246130bc-e8ee-4909-a25b-b09dd1098ad0/solve');
+  // Go to Two Sum problem (ids are random per seed run — resolve by title)
+  const problemId = await getProblemIdByTitle(page.request, '두 수의 합');
+  await page.goto(`http://localhost:5173/problems/${problemId}/solve`);
   await page.waitForLoadState('networkidle');
 
   // Wait for Monaco editor to fully load

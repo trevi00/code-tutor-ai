@@ -6,7 +6,6 @@ from uuid import uuid4
 from sqlalchemy import (
     Boolean,
     Column,
-    DateTime,
     ForeignKey,
     Integer,
     String,
@@ -20,7 +19,7 @@ from code_tutor.roadmap.domain.value_objects import (
     PathLevel,
     ProgressStatus,
 )
-from code_tutor.shared.infrastructure.database import Base
+from code_tutor.shared.infrastructure.database import Base, NaiveUTCDateTime
 
 
 def generate_uuid() -> str:
@@ -41,8 +40,8 @@ class LearningPathModel(Base):
     order = Column(Integer, default=0)
     estimated_hours = Column(Integer, default=0)
     is_published = Column(Boolean, default=True)
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = Column(NaiveUTCDateTime, default=datetime.utcnow)
+    updated_at = Column(NaiveUTCDateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     # Relationships
     modules = relationship(
@@ -93,8 +92,8 @@ class ModuleModel(Base):
     title = Column(String(255), nullable=False)
     description = Column(Text, default="")
     order = Column(Integer, default=0)
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = Column(NaiveUTCDateTime, default=datetime.utcnow)
+    updated_at = Column(NaiveUTCDateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     # Relationships
     path = relationship("LearningPathModel", back_populates="modules")
@@ -121,8 +120,8 @@ class LessonModel(Base):
     order = Column(Integer, default=0)
     xp_reward = Column(Integer, default=10)
     estimated_minutes = Column(Integer, default=10)
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = Column(NaiveUTCDateTime, default=datetime.utcnow)
+    updated_at = Column(NaiveUTCDateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     # Relationships
     module = relationship("ModuleModel", back_populates="lessons")
@@ -142,12 +141,12 @@ class UserPathProgressModel(Base):
     user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
     path_id = Column(String(36), ForeignKey("learning_paths.id"), nullable=False)
     status = Column(String(20), default=ProgressStatus.NOT_STARTED.value)
-    started_at = Column(DateTime, nullable=True)
-    completed_at = Column(DateTime, nullable=True)
+    started_at = Column(NaiveUTCDateTime, nullable=True)
+    completed_at = Column(NaiveUTCDateTime, nullable=True)
     completed_lessons = Column(Integer, default=0)
     total_lessons = Column(Integer, default=0)
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = Column(NaiveUTCDateTime, default=datetime.utcnow)
+    updated_at = Column(NaiveUTCDateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     # Relationships
     path = relationship("LearningPathModel", back_populates="user_progress")
@@ -162,12 +161,12 @@ class UserLessonProgressModel(Base):
     user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
     lesson_id = Column(String(36), ForeignKey("roadmap_lessons.id"), nullable=False)
     status = Column(String(20), default=ProgressStatus.NOT_STARTED.value)
-    started_at = Column(DateTime, nullable=True)
-    completed_at = Column(DateTime, nullable=True)
+    started_at = Column(NaiveUTCDateTime, nullable=True)
+    completed_at = Column(NaiveUTCDateTime, nullable=True)
     score = Column(Integer, nullable=True)
     attempts = Column(Integer, default=0)
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = Column(NaiveUTCDateTime, default=datetime.utcnow)
+    updated_at = Column(NaiveUTCDateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     # Relationships
     lesson = relationship("LessonModel", back_populates="user_progress")

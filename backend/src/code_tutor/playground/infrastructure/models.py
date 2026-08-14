@@ -5,7 +5,6 @@ from uuid import UUID, uuid4
 
 from sqlalchemy import (
     Boolean,
-    DateTime,
     Float,
     ForeignKey,
     Index,
@@ -20,7 +19,7 @@ from code_tutor.playground.domain.value_objects import (
     PlaygroundVisibility,
     TemplateCategory,
 )
-from code_tutor.shared.infrastructure.database import Base
+from code_tutor.shared.infrastructure.database import Base, NaiveUTCDateTime
 
 
 class PlaygroundModel(Base):
@@ -61,9 +60,9 @@ class PlaygroundModel(Base):
     run_count: Mapped[int] = mapped_column(Integer, default=0)
     fork_count: Mapped[int] = mapped_column(Integer, default=0)
 
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    created_at: Mapped[datetime] = mapped_column(NaiveUTCDateTime, default=datetime.utcnow)
     updated_at: Mapped[datetime] = mapped_column(
-        DateTime,
+        NaiveUTCDateTime,
         default=datetime.utcnow,
         onupdate=datetime.utcnow,
     )
@@ -96,7 +95,7 @@ class CodeTemplateModel(Base):
     tags: Mapped[str] = mapped_column(Text, default="")  # JSON array as string
     usage_count: Mapped[int] = mapped_column(Integer, default=0)
 
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    created_at: Mapped[datetime] = mapped_column(NaiveUTCDateTime, default=datetime.utcnow)
 
     __table_args__ = (Index("ix_templates_category_usage", "category", "usage_count"),)
 
@@ -125,7 +124,7 @@ class ExecutionHistoryModel(Base):
     execution_time_ms: Mapped[float] = mapped_column(Float, default=0.0)
     is_success: Mapped[bool] = mapped_column(Boolean, default=False)
 
-    executed_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    executed_at: Mapped[datetime] = mapped_column(NaiveUTCDateTime, default=datetime.utcnow)
 
     __table_args__ = (
         Index("ix_executions_playground_time", "playground_id", "executed_at"),

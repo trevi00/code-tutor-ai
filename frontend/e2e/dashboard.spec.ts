@@ -1,30 +1,28 @@
 import { test, expect } from '@playwright/test';
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+
+// Reuse the authenticated session from auth.setup.ts instead of logging in
+// through the UI in every test (the login endpoint is rate-limited to 5/min).
+test.use({ storageState: join(__dirname, '../.auth/user.json') });
 
 test.describe('Dashboard Page', () => {
-  const testUser = {
-    email: 'e2etest@example.com',
-    password: 'TestPassword123!',
-  };
-
   test('should display dashboard with stats and activity', async ({ page }) => {
-    // 1. Login first
-    await page.goto('/login');
-    await page.fill('input[type="email"]', testUser.email);
-    await page.fill('input[type="password"]', testUser.password);
-    await page.click('button[type="submit"]');
-    await page.waitForURL(/\/(dashboard|problems|$)/, { timeout: 10000 });
-    console.log('1. Logged in');
+    // 1. Authenticated via storage state
+    console.log('1. Logged in (storage state)');
 
     // 2. Navigate to dashboard
     await page.goto('/dashboard');
     console.log('2. Navigated to dashboard');
 
-    // 3. Wait for dashboard to load
-    await page.waitForSelector('h1:has-text("대시보드")', { timeout: 10000 });
-    console.log('3. Dashboard title visible');
+    // 3. Wait for dashboard to load (stat card titles appear once stats are fetched)
+    await page.waitForSelector('text=푼 문제', { timeout: 10000 });
+    console.log('3. Dashboard stats visible');
 
     // 4. Check for stat cards
-    const statCards = page.locator('.bg-white.rounded-lg.shadow');
+    const statCards = page.locator('.bg-white.rounded-2xl.shadow-lg');
     const cardCount = await statCards.count();
     console.log(`4. Found ${cardCount} stat cards`);
     expect(cardCount).toBeGreaterThanOrEqual(4);
@@ -37,8 +35,8 @@ test.describe('Dashboard Page', () => {
     await expect(page.locator('text=총 제출')).toBeVisible();
     console.log('6. "총 제출" stat visible');
 
-    // 7. Check for "현재 스트릭" stat
-    await expect(page.locator('text=현재 스트릭')).toBeVisible();
+    // 7. Check for "현재 스트릭" stat (appears in stat card and streak widget — use first())
+    await expect(page.locator('text=현재 스트릭').first()).toBeVisible();
     console.log('7. "현재 스트릭" stat visible');
 
     // 8. Check for category progress section

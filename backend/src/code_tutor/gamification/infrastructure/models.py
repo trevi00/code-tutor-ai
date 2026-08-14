@@ -6,7 +6,6 @@ from uuid import uuid4
 from sqlalchemy import (
     Boolean,
     Column,
-    DateTime,
     ForeignKey,
     Integer,
     String,
@@ -24,7 +23,7 @@ from code_tutor.gamification.domain.value_objects import (
     ChallengeStatus,
     ChallengeType,
 )
-from code_tutor.shared.infrastructure.database import Base
+from code_tutor.shared.infrastructure.database import Base, NaiveUTCDateTime
 
 
 class BadgeModel(Base):
@@ -41,7 +40,7 @@ class BadgeModel(Base):
     requirement = Column(String(100), nullable=False)
     requirement_value = Column(Integer, nullable=False)
     xp_reward = Column(Integer, default=0)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(NaiveUTCDateTime, default=datetime.utcnow)
 
     # Relationships
     user_badges = relationship("UserBadgeModel", back_populates="badge")
@@ -55,7 +54,7 @@ class UserBadgeModel(Base):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid4)
     user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
     badge_id = Column(UUID(as_uuid=True), ForeignKey("badges.id"), nullable=False)
-    earned_at = Column(DateTime, default=datetime.utcnow)
+    earned_at = Column(NaiveUTCDateTime, default=datetime.utcnow)
 
     # Relationships
     badge = relationship("BadgeModel", back_populates="user_badges")
@@ -87,9 +86,9 @@ class UserStatsModel(Base):
     elementary_path_completed = Column(Boolean, default=False)
     intermediate_path_completed = Column(Boolean, default=False)
     advanced_path_completed = Column(Boolean, default=False)
-    last_activity_date = Column(DateTime, nullable=True)
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    last_activity_date = Column(NaiveUTCDateTime, nullable=True)
+    created_at = Column(NaiveUTCDateTime, default=datetime.utcnow)
+    updated_at = Column(NaiveUTCDateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
 
 class ChallengeModel(Base):
@@ -104,9 +103,9 @@ class ChallengeModel(Base):
     target_action = Column(String(50), nullable=False)
     target_value = Column(Integer, nullable=False)
     xp_reward = Column(Integer, nullable=False)
-    start_date = Column(DateTime, nullable=False)
-    end_date = Column(DateTime, nullable=False)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    start_date = Column(NaiveUTCDateTime, nullable=False)
+    end_date = Column(NaiveUTCDateTime, nullable=False)
+    created_at = Column(NaiveUTCDateTime, default=datetime.utcnow)
 
     # Relationships
     user_challenges = relationship("UserChallengeModel", back_populates="challenge")
@@ -124,8 +123,8 @@ class UserChallengeModel(Base):
     )
     current_progress = Column(Integer, default=0)
     status = Column(SQLEnum(ChallengeStatus), default=ChallengeStatus.ACTIVE)
-    started_at = Column(DateTime, default=datetime.utcnow)
-    completed_at = Column(DateTime, nullable=True)
+    started_at = Column(NaiveUTCDateTime, default=datetime.utcnow)
+    completed_at = Column(NaiveUTCDateTime, nullable=True)
 
     # Relationships
     challenge = relationship("ChallengeModel", back_populates="user_challenges")

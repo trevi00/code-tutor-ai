@@ -1,20 +1,18 @@
 import { test, expect } from '@playwright/test';
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+
+// Reuse the authenticated session from auth.setup.ts instead of logging in
+// through the UI in every test (the login endpoint is rate-limited to 5/min).
+test.use({ storageState: join(__dirname, '../.auth/user.json') });
 
 test.describe('AI Tutor Chat Page', () => {
-  const testUser = {
-    email: 'e2etest@example.com',
-    password: 'TestPassword123!',
-  };
-
   test('should display chat page and send message', async ({ page }) => {
     test.setTimeout(120000); // AI response can take up to 90 seconds
-    // 1. Login first
-    await page.goto('/login');
-    await page.fill('input[type="email"]', testUser.email);
-    await page.fill('input[type="password"]', testUser.password);
-    await page.click('button[type="submit"]');
-    await page.waitForURL(/\/(dashboard|problems|$)/, { timeout: 10000 });
-    console.log('1. Logged in');
+    // 1. Authenticated via storage state
+    console.log('1. Logged in (storage state)');
 
     // 2. Navigate to chat page
     await page.goto('/chat');
@@ -83,18 +81,13 @@ test.describe('AI Tutor Chat Page', () => {
   });
 
   test('should access chat from problem page', async ({ page }) => {
-    // 1. Login
-    await page.goto('/login');
-    await page.fill('input[type="email"]', testUser.email);
-    await page.fill('input[type="password"]', testUser.password);
-    await page.click('button[type="submit"]');
-    await page.waitForURL(/\/(dashboard|problems|$)/, { timeout: 10000 });
-    console.log('1. Logged in');
+    // 1. Authenticated via storage state
+    console.log('1. Logged in (storage state)');
 
-    // 2. Go to a problem solve page
+    // 2. Go to a problem solve page (problem entries are card/list links)
     await page.goto('/problems');
-    await page.waitForSelector('table tbody tr', { timeout: 10000 });
-    await page.click('table tbody tr:first-child a');
+    await page.waitForSelector('main a[href$="/solve"]', { timeout: 10000 });
+    await page.locator('main a[href$="/solve"]').first().click();
     await page.waitForURL(/\/problems\/.*\/solve/);
     console.log('2. On problem solve page');
 

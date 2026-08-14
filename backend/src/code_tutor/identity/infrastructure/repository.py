@@ -1,5 +1,6 @@
 """Identity repository implementations"""
 
+from datetime import UTC, datetime
 from uuid import UUID
 
 from sqlalchemy import select
@@ -13,6 +14,18 @@ from code_tutor.identity.domain.value_objects import (
     Username,
 )
 from code_tutor.identity.infrastructure.models import UserModel
+
+
+def _to_naive_utc(dt: datetime | None) -> datetime | None:
+    """Convert an aware datetime to naive UTC for TIMESTAMP WITHOUT TIME ZONE columns.
+
+    The domain layer uses timezone-aware UTC datetimes, while the persistence
+    schema (create_all, no timezone=True) stores naive UTC. asyncpg rejects
+    aware datetimes for naive columns, so we normalize at this boundary.
+    """
+    if dt is None or dt.tzinfo is None:
+        return dt
+    return dt.astimezone(UTC).replace(tzinfo=None)
 
 
 class SQLAlchemyUserRepository(UserRepository):
@@ -51,10 +64,10 @@ class SQLAlchemyUserRepository(UserRepository):
             role=entity.role,
             is_active=entity.is_active,
             is_verified=entity.is_verified,
-            last_login_at=entity.last_login_at,
+            last_login_at=_to_naive_utc(entity.last_login_at),
             bio=entity.bio,
-            created_at=entity.created_at,
-            updated_at=entity.updated_at,
+            created_at=_to_naive_utc(entity.created_at),
+            updated_at=_to_naive_utc(entity.updated_at),
         )
 
     async def get_by_id(self, id: UUID) -> User | None:

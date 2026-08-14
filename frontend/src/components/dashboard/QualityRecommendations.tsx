@@ -132,7 +132,7 @@ export function QualityRecommendations({
             {recommendations.slice(0, 3).map((rec) => (
               <Link
                 key={rec.id}
-                to={`/problems/${rec.id}`}
+                to={`/problems/${rec.id}/solve`}
                 className="flex items-center justify-between p-3 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors"
               >
                 <div className="flex-1 min-w-0">

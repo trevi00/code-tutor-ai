@@ -3,11 +3,11 @@
 from datetime import datetime
 from uuid import UUID, uuid4
 
-from sqlalchemy import Boolean, DateTime, Enum, ForeignKey, Integer, String, Text
+from sqlalchemy import Boolean, Enum, ForeignKey, Integer, String, Text
 from sqlalchemy.dialects.postgresql import JSON
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from code_tutor.shared.infrastructure.database import Base
+from code_tutor.shared.infrastructure.database import Base, NaiveUTCDateTime
 from code_tutor.tutor.domain.value_objects import ConversationType, MessageRole
 
 
@@ -35,11 +35,11 @@ class ConversationModel(Base):
     total_tokens: Mapped[int] = mapped_column(Integer, default=0)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, index=True)
     created_at: Mapped[datetime] = mapped_column(
-        DateTime,
+        NaiveUTCDateTime,
         default=datetime.utcnow,
     )
     updated_at: Mapped[datetime] = mapped_column(
-        DateTime,
+        NaiveUTCDateTime,
         default=datetime.utcnow,
         onupdate=datetime.utcnow,
     )
@@ -72,7 +72,7 @@ class MessageModel(Base):
     code_context: Mapped[dict | None] = mapped_column(JSON, nullable=True)
     tokens_used: Mapped[int] = mapped_column(Integer, default=0)
     created_at: Mapped[datetime] = mapped_column(
-        DateTime,
+        NaiveUTCDateTime,
         default=datetime.utcnow,
     )
 

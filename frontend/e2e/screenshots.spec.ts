@@ -1,10 +1,14 @@
 import { test } from '@playwright/test';
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+
+// Reuse the authenticated session from auth.setup.ts instead of logging in
+// through the UI (the login endpoint is rate-limited to 5/min).
+test.use({ storageState: join(__dirname, '../.auth/user.json') });
 
 test.describe('Screenshots for README', () => {
-  const testUser = {
-    email: 'e2etest@example.com',
-    password: 'TestPassword123!',
-  };
   const screenshotDir = '../docs/screenshots';
 
   test('capture all main pages', async ({ page }) => {
@@ -24,27 +28,23 @@ test.describe('Screenshots for README', () => {
     await page.screenshot({ path: `${screenshotDir}/02-login.png` });
     console.log('2. Login page captured');
 
-    // 3. Login
-    await page.fill('input[type="email"]', testUser.email);
-    await page.fill('input[type="password"]', testUser.password);
-    await page.click('button[type="submit"]');
-    await page.waitForURL(/\/(dashboard|problems|$)/, { timeout: 10000 });
+    // 3. Already authenticated via storage state
 
     // 4. Dashboard
     await page.goto('/dashboard');
-    await page.waitForSelector('h1:has-text("대시보드")', { timeout: 10000 });
+    await page.waitForSelector('text=푼 문제', { timeout: 10000 });
     await page.waitForTimeout(1000); // Wait for animations
     await page.screenshot({ path: `${screenshotDir}/03-dashboard.png`, fullPage: true });
     console.log('3. Dashboard captured');
 
-    // 5. Problems list
+    // 5. Problems list (problem entries are card/list links to the solve page)
     await page.goto('/problems');
-    await page.waitForSelector('table tbody tr', { timeout: 10000 });
+    await page.waitForSelector('main a[href$="/solve"]', { timeout: 10000 });
     await page.screenshot({ path: `${screenshotDir}/04-problems.png` });
     console.log('4. Problems list captured');
 
     // 6. Problem solve page
-    await page.click('table tbody tr:first-child a');
+    await page.locator('main a[href$="/solve"]').first().click();
     await page.waitForURL(/\/problems\/.*\/solve/);
     await page.waitForSelector('.monaco-editor', { timeout: 15000 });
     await page.waitForTimeout(1000); // Wait for Monaco to fully load

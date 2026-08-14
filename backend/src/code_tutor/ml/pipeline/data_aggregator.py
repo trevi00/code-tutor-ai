@@ -6,7 +6,7 @@ Aggregates user-problem interactions for NCF collaborative filtering.
 from datetime import UTC, datetime
 from uuid import UUID
 
-from sqlalchemy import func, select
+from sqlalchemy import Integer, cast, func, select
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.dialects.sqlite import insert as sqlite_insert
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -54,9 +54,10 @@ class DataAggregator:
             SubmissionModel.user_id,
             SubmissionModel.problem_id,
             func.count(SubmissionModel.id).label("attempt_count"),
-            func.max(SubmissionModel.status == SubmissionStatus.ACCEPTED).label(
-                "is_solved"
-            ),
+            # PostgreSQL has no max(boolean) — cast to int (0/1) first
+            func.max(
+                cast(SubmissionModel.status == SubmissionStatus.ACCEPTED, Integer)
+            ).label("is_solved"),
             func.min(SubmissionModel.submitted_at).label("first_attempt"),
             func.min(SubmissionModel.execution_time_ms)
             .filter(SubmissionModel.status == SubmissionStatus.ACCEPTED)

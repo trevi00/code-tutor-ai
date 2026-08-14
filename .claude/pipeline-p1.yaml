@@ -70,3 +70,21 @@ stages:
       - statement: "기동 리포트 존재"
         check: { type: file_content, target: ops-report.md, expect: "RESULT" }
     skills: [devops]
+
+  # ── 3차 루프 (2026-08-14 증분 추가)
+
+  - id: e2e-front
+    seq: 5
+    name: 프론트 e2e 전량 (REQ-030 나머지 절반 · AC-031)
+    dge: evaluator
+    input: ["ops-up 결과물"]
+    output: "frontend/e2e/**"
+    artifact: "베이스라인: auth.setup 1 FAIL→40 미실행(단일 차단점 — 신선한 compose DB에 테스트 유저 부재 또는 셀렉터 드리프트 추정). 실 스택(compose backend 8000·vite webServer 5173)이 떠 있다. 수리는 근본 원인만 — 테스트 유저 시딩이 필요하면 결정론 시드 스크립트로(스킵·완화 금지). 수리 내역은 repair-notes.md 에 추가"
+    gate:
+      - statement: "프론트 e2e 전량 통과"
+        check: { type: exit_code, cmd: "cd frontend && npm run test:e2e" }
+      - statement: "백엔드 테스트 무회귀"
+        check: { type: exit_code, cmd: "cd backend && uv run pytest tests -q --no-header" }
+        # 게이트 설계 교정(2026-08-14): e2e 수리가 백엔드를 건드리는데 무회귀
+        # 문장이 없었다 — 회귀 1건(search Query 직접호출 충돌)을 사후 검증이 검출
+    skills: [frontend-e2e]

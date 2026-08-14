@@ -84,6 +84,7 @@ class ProblemService:
             category=params.category,
             difficulty=params.difficulty,
             pattern_id=params.pattern_id,
+            search=params.search,
             limit=params.size,
             offset=offset,
         )
@@ -92,6 +93,7 @@ class ProblemService:
             category=params.category,
             difficulty=params.difficulty,
             pattern_id=params.pattern_id,
+            search=params.search,
         )
 
         pages = (total + params.size - 1) // params.size

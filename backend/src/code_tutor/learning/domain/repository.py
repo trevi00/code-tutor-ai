@@ -36,6 +36,7 @@ class ProblemRepository(ABC):
         category: Category | None = None,
         difficulty: Difficulty | None = None,
         pattern_id: str | None = None,
+        search: str | None = None,
         limit: int = 20,
         offset: int = 0,
     ) -> list[Problem]:
@@ -48,6 +49,7 @@ class ProblemRepository(ABC):
         category: Category | None = None,
         difficulty: Difficulty | None = None,
         pattern_id: str | None = None,
+        search: str | None = None,
     ) -> int:
         """Count published problems"""
         ...
