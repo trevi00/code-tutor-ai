@@ -501,7 +501,7 @@ class TestSubmissionEvaluator:
     @pytest.fixture
     def evaluator(self, mock_problem_repo, mock_submission_repo):
         """Create SubmissionEvaluator with mocks."""
-        from code_tutor.execution.application.services import SubmissionEvaluator
+        from code_tutor.learning.application.submission_evaluator import SubmissionEvaluator
         evaluator = SubmissionEvaluator(
             problem_repository=mock_problem_repo,
             submission_repository=mock_submission_repo,
@@ -717,7 +717,7 @@ class TestSubmissionEvaluatorRunTestCase:
     @pytest.fixture
     def evaluator(self):
         """Create SubmissionEvaluator with MockSandbox."""
-        from code_tutor.execution.application.services import SubmissionEvaluator
+        from code_tutor.learning.application.submission_evaluator import SubmissionEvaluator
         return SubmissionEvaluator(
             problem_repository=AsyncMock(),
             submission_repository=AsyncMock(),

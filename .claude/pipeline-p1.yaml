@@ -1,0 +1,36 @@
+# P1 프로덕션급 인상 — 1차 루프 (REQ-030 테스트 게이트 + REQ-031 순환 수리)
+# 베이스라인(2026-08-14): pytest 1630 PASS / 29 FAIL (roadmap 16 · typing 13,
+# 대표 오류: SQLAlchemy UUID 컬럼에 str 바인딩 — 'str' has no attribute 'hex')
+schema_version: "0.1"
+premises: [requirements.md, component-diagram.md]   # 온보딩 산출 — 이 파이프라인엔 생산 단계 없음
+caps: { iter: 60, wallclock_s: 21600 }
+stages:
+
+  - id: repair-tests
+    seq: 1
+    name: 백엔드 테스트 전량 수리 (REQ-030)
+    dge: generator
+    input: [requirements.md]
+    output: "backend/**"
+    artifact: "29건 실패 수리 — 근본 원인 수정(테스트 완화·skip 금지). 소스가 명백히 틀렸으면 소스를, 테스트가 계약을 잘못 가정했으면 테스트를 고치되 사유를 repair-notes.md 에 기록"
+    gate:
+      - statement: "백엔드 테스트 전량 통과"
+        check: { type: exit_code, cmd: "cd backend && uv run pytest tests -q --no-header" }
+    skills: [backend-python]
+
+  - id: fix-cycle
+    seq: 2
+    name: 순환 의존 해소 (REQ-031)
+    dge: generator
+    input: ["repair-tests 결과물", component-diagram.md]
+    output: "backend/** + component-diagram.md"
+    artifact: "execution↔learning 순환 절단(의존 역전·공용 추출 등 구조 수리) 후 {harness}/scripts/engine/reverse.py --project . --only component-diagram.md 로 재추출 — 산출물 손편집 금지"
+    gate:
+      - statement: "테스트 무회귀"
+        check: { type: exit_code, cmd: "cd backend && uv run pytest tests -q --no-header" }
+      - statement: "재추출 round-trip 일치 (드리프트 0)"
+        check: { type: exit_code, cmd: "{python} \"{harness}/scripts/engine/reverse.py\" --project . --verify" }
+      - statement: "순환 의존 0건"
+        check: { type: graph_query, query: "컴포넌트 순환 검출" }
+        checks: [component-diagram.md]
+    skills: [backend-python]

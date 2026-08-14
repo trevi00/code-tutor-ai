@@ -304,7 +304,9 @@ class SQLAlchemyUserProgressRepository(UserProgressRepository):
         """Convert path progress model to entity."""
         progress = UserPathProgress(
             id=UUID(model.id),
-            user_id=UUID(model.user_id),
+            user_id=UUID(model.user_id)
+            if isinstance(model.user_id, str)
+            else model.user_id,
             path_id=UUID(model.path_id),
             status=ProgressStatus(model.status),
             started_at=model.started_at,
@@ -322,7 +324,9 @@ class SQLAlchemyUserProgressRepository(UserProgressRepository):
         """Convert lesson progress model to entity."""
         progress = UserLessonProgress(
             id=UUID(model.id),
-            user_id=UUID(model.user_id),
+            user_id=UUID(model.user_id)
+            if isinstance(model.user_id, str)
+            else model.user_id,
             lesson_id=UUID(model.lesson_id),
             status=ProgressStatus(model.status),
             started_at=model.started_at,
@@ -340,7 +344,7 @@ class SQLAlchemyUserProgressRepository(UserProgressRepository):
         """Get user's progress on a path."""
         result = await self.session.execute(
             select(UserPathProgressModel).where(
-                UserPathProgressModel.user_id == str(user_id),
+                UserPathProgressModel.user_id == user_id,
                 UserPathProgressModel.path_id == str(path_id),
             )
         )
@@ -351,7 +355,7 @@ class SQLAlchemyUserProgressRepository(UserProgressRepository):
         """Get user's progress on all paths."""
         result = await self.session.execute(
             select(UserPathProgressModel).where(
-                UserPathProgressModel.user_id == str(user_id)
+                UserPathProgressModel.user_id == user_id
             )
         )
         return [self._path_progress_to_entity(m) for m in result.scalars().all()]
@@ -361,7 +365,7 @@ class SQLAlchemyUserProgressRepository(UserProgressRepository):
         # Check if exists
         result = await self.session.execute(
             select(UserPathProgressModel).where(
-                UserPathProgressModel.user_id == str(progress.user_id),
+                UserPathProgressModel.user_id == progress.user_id,
                 UserPathProgressModel.path_id == str(progress.path_id),
             )
         )
@@ -378,7 +382,7 @@ class SQLAlchemyUserProgressRepository(UserProgressRepository):
             # Create new
             model = UserPathProgressModel(
                 id=str(progress.id),
-                user_id=str(progress.user_id),
+                user_id=progress.user_id,
                 path_id=str(progress.path_id),
                 status=progress.status.value,
                 started_at=progress.started_at,
@@ -397,7 +401,7 @@ class SQLAlchemyUserProgressRepository(UserProgressRepository):
         """Get user's progress on a lesson."""
         result = await self.session.execute(
             select(UserLessonProgressModel).where(
-                UserLessonProgressModel.user_id == str(user_id),
+                UserLessonProgressModel.user_id == user_id,
                 UserLessonProgressModel.lesson_id == str(lesson_id),
             )
         )
@@ -412,7 +416,7 @@ class SQLAlchemyUserProgressRepository(UserProgressRepository):
             select(UserLessonProgressModel)
             .join(LessonModel)
             .where(
-                UserLessonProgressModel.user_id == str(user_id),
+                UserLessonProgressModel.user_id == user_id,
                 LessonModel.module_id == str(module_id),
             )
         )
@@ -427,7 +431,7 @@ class SQLAlchemyUserProgressRepository(UserProgressRepository):
             .join(LessonModel)
             .join(ModuleModel)
             .where(
-                UserLessonProgressModel.user_id == str(user_id),
+                UserLessonProgressModel.user_id == user_id,
                 ModuleModel.path_id == str(path_id),
             )
         )
@@ -440,7 +444,7 @@ class SQLAlchemyUserProgressRepository(UserProgressRepository):
         # Check if exists
         result = await self.session.execute(
             select(UserLessonProgressModel).where(
-                UserLessonProgressModel.user_id == str(progress.user_id),
+                UserLessonProgressModel.user_id == progress.user_id,
                 UserLessonProgressModel.lesson_id == str(progress.lesson_id),
             )
         )
@@ -457,7 +461,7 @@ class SQLAlchemyUserProgressRepository(UserProgressRepository):
             # Create new
             model = UserLessonProgressModel(
                 id=str(progress.id),
-                user_id=str(progress.user_id),
+                user_id=progress.user_id,
                 lesson_id=str(progress.lesson_id),
                 status=progress.status.value,
                 started_at=progress.started_at,
@@ -477,7 +481,7 @@ class SQLAlchemyUserProgressRepository(UserProgressRepository):
             .join(LessonModel)
             .join(ModuleModel)
             .where(
-                UserLessonProgressModel.user_id == str(user_id),
+                UserLessonProgressModel.user_id == user_id,
                 ModuleModel.path_id == str(path_id),
                 UserLessonProgressModel.status == ProgressStatus.COMPLETED.value,
             )
@@ -490,7 +494,7 @@ class SQLAlchemyUserProgressRepository(UserProgressRepository):
         """Get the next incomplete lesson for user."""
         # Get completed lesson IDs
         completed_query = select(UserLessonProgressModel.lesson_id).where(
-            UserLessonProgressModel.user_id == str(user_id),
+            UserLessonProgressModel.user_id == user_id,
             UserLessonProgressModel.status == ProgressStatus.COMPLETED.value,
         )
 

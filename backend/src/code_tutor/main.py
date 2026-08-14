@@ -40,6 +40,7 @@ from code_tutor.gamification.interface import router as gamification_router
 # Import routers
 from code_tutor.identity.interface.routes import router as auth_router
 from code_tutor.learning.interface.routes import router as learning_router
+from code_tutor.ml.interface.routes import router as ml_router
 from code_tutor.performance.interface import router as performance_router
 from code_tutor.playground.infrastructure.template_seeder import seed_templates
 from code_tutor.playground.interface import router as playground_router
@@ -241,6 +242,10 @@ API 요청은 분당 60회로 제한됩니다.
     # Register routers
     app.include_router(auth_router, prefix="/api/v1")
     app.include_router(learning_router, prefix="/api/v1")
+    # ML router mounted right after learning: it carries endpoints extracted
+    # from the learning router, same "/api/v1" prefix so URL paths are
+    # unchanged (and route matching order relative to learning is preserved).
+    app.include_router(ml_router, prefix="/api/v1")
     app.include_router(tutor_router, prefix="/api/v1")
     app.include_router(execution_router, prefix="/api/v1")
     app.include_router(collaboration_router, prefix="/api/v1")

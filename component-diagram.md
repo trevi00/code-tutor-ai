@@ -2,7 +2,7 @@
 origin: extracted
 extractor: python_imports v0
 confidence: 0.9
-source_commit: 370caeaf1141
+source_commit: b68c615d9d24
 evidence_spans: 32
 trust: proposed
 ---
@@ -31,7 +31,6 @@ graph LR
   collaboration --> shared
   debugger --> shared
   execution --> identity
-  execution --> learning
   execution --> shared
   gamification --> identity
   gamification --> shared
@@ -39,8 +38,9 @@ graph LR
   learning --> execution
   learning --> gamification
   learning --> identity
-  learning --> ml
   learning --> shared
+  ml --> gamification
+  ml --> identity
   ml --> learning
   ml --> shared
   performance --> shared
@@ -67,16 +67,16 @@ graph LR
 - `collaboration → shared` — backend/src/code_tutor/collaboration/application/services.py:32
 - `debugger → shared` — backend/src/code_tutor/debugger/interface/routes.py:9
 - `execution → identity` — backend/src/code_tutor/execution/interface/routes.py:10
-- `execution → learning` — backend/src/code_tutor/execution/application/services.py:13
-- `execution → shared` — backend/src/code_tutor/execution/application/services.py:16
+- `execution → shared` — backend/src/code_tutor/execution/application/services.py:7
 - `gamification → identity` — backend/src/code_tutor/gamification/infrastructure/repository.py:310
 - `gamification → shared` — backend/src/code_tutor/gamification/infrastructure/models.py:27
 - `identity → shared` — backend/src/code_tutor/identity/application/services.py:20
-- `learning → execution` — backend/src/code_tutor/learning/interface/routes.py:9
-- `learning → gamification` — backend/src/code_tutor/learning/interface/routes.py:11
-- `learning → identity` — backend/src/code_tutor/learning/interface/routes.py:17
-- `learning → ml` — backend/src/code_tutor/learning/interface/routes.py:749
+- `learning → execution` — backend/src/code_tutor/learning/application/submission_evaluator.py:12
+- `learning → gamification` — backend/src/code_tutor/learning/interface/routes.py:10
+- `learning → identity` — backend/src/code_tutor/learning/interface/routes.py:16
 - `learning → shared` — backend/src/code_tutor/learning/application/dashboard_service.py:27
+- `ml → gamification` — backend/src/code_tutor/ml/interface/routes.py:18
+- `ml → identity` — backend/src/code_tutor/ml/interface/routes.py:20
 - `ml → learning` — backend/src/code_tutor/ml/analysis/quality_recommender.py:12
 - `ml → shared` — backend/src/code_tutor/ml/analysis/quality_recommender.py:14
 - `performance → shared` — backend/src/code_tutor/performance/interface/routes.py:5

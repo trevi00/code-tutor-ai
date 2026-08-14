@@ -168,7 +168,7 @@ class SQLAlchemyTypingAttemptRepository(TypingAttemptRepository):
         stmt = (
             select(TypingAttemptModel)
             .where(
-                TypingAttemptModel.user_id == str(user_id),
+                TypingAttemptModel.user_id == user_id,
                 TypingAttemptModel.exercise_id == str(exercise_id),
             )
             .order_by(TypingAttemptModel.attempt_number)
@@ -187,7 +187,7 @@ class SQLAlchemyTypingAttemptRepository(TypingAttemptRepository):
         """List all attempts by user."""
         stmt = (
             select(TypingAttemptModel)
-            .where(TypingAttemptModel.user_id == str(user_id))
+            .where(TypingAttemptModel.user_id == user_id)
             .order_by(TypingAttemptModel.started_at.desc())
             .limit(limit)
             .offset(offset)
@@ -214,10 +214,11 @@ class SQLAlchemyTypingAttemptRepository(TypingAttemptRepository):
             existing.status = attempt.status.value
             existing.completed_at = attempt.completed_at
         else:
-            # Insert - convert UUIDs to strings for SQLite
+            # Insert - id/exercise_id are String(36) columns (str),
+            # user_id is a UUID column (bind the UUID object directly)
             model = TypingAttemptModel(
                 id=str(attempt.id),
-                user_id=str(attempt.user_id),
+                user_id=attempt.user_id,
                 exercise_id=str(attempt.exercise_id),
                 attempt_number=attempt.attempt_number,
                 user_code=attempt.user_code,
@@ -263,7 +264,7 @@ class SQLAlchemyTypingAttemptRepository(TypingAttemptRepository):
         """Get user's overall typing statistics."""
         # Get all completed attempts
         stmt = select(TypingAttemptModel).where(
-            TypingAttemptModel.user_id == str(user_id),
+            TypingAttemptModel.user_id == user_id,
             TypingAttemptModel.status == AttemptStatus.COMPLETED.value,
         )
         result = await self.session.execute(stmt)
@@ -318,7 +319,7 @@ class SQLAlchemyTypingAttemptRepository(TypingAttemptRepository):
                 func.count(TypingAttemptModel.id).label("completion_count"),
             )
             .where(
-                TypingAttemptModel.user_id == str(user_id),
+                TypingAttemptModel.user_id == user_id,
                 TypingAttemptModel.status == AttemptStatus.COMPLETED.value,
             )
             .group_by(TypingAttemptModel.exercise_id)

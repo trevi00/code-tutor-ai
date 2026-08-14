@@ -897,7 +897,7 @@ class TestLearningRoutesUnit:
 
     def test_get_recommendation_reason_kr(self):
         """Test Korean recommendation reason translation."""
-        from code_tutor.learning.interface.routes import _get_recommendation_reason_kr
+        from code_tutor.ml.interface.routes import _get_recommendation_reason_kr
 
         assert "비슷한" in _get_recommendation_reason_kr("similar_users")
         assert "학습 패턴" in _get_recommendation_reason_kr("content_match")

@@ -2,7 +2,7 @@
 origin: extracted
 extractor: python_api v0
 confidence: 0.9
-source_commit: 370caeaf1141
+source_commit: b68c615d9d24
 evidence_spans: 120
 trust: proposed
 ---
@@ -58,40 +58,42 @@ response 는 response_model → 반환 어노테이션 폴백(미상=판정 불�
 - EP-033 `PUT /api/v1/auth/me/password` → MessageResponse — 비밀번호 변경  <!-- ev: backend/src/code_tutor/identity/interface/routes.py:206 -->
 ## backend/src/code_tutor/learning/interface/routes.py
 
-- EP-034 `GET /api/v1/problems` → ProblemListResponse — List problems  <!-- ev: backend/src/code_tutor/learning/interface/routes.py:140 -->
-- EP-035 `GET /api/v1/problems/{problem_id}` → ProblemResponse — Get problem details  <!-- ev: backend/src/code_tutor/learning/interface/routes.py:164 -->
-- EP-036 `POST /api/v1/problems` → ProblemResponse — Create a new problem (Admin only)  <!-- ev: backend/src/code_tutor/learning/interface/routes.py:180 -->
-- EP-037 `GET /api/v1/problems/recommended` → list[RecommendedProblemResponse] — Get recommended problems for user  <!-- ev: backend/src/code_tutor/learning/interface/routes.py:195 -->
-- EP-038 `GET /api/v1/problems/skill-gaps` → list[dict] — Get skill gaps for user  <!-- ev: backend/src/code_tutor/learning/interface/routes.py:252 -->
-- EP-039 `GET /api/v1/problems/next-challenge` → dict | None — Get next challenge problem  <!-- ev: backend/src/code_tutor/learning/interface/routes.py:267 -->
-- EP-040 `GET /api/v1/problems/{problem_id}/hints` → HintsResponse — Get hints for a problem  <!-- ev: backend/src/code_tutor/learning/interface/routes.py:282 -->
-- EP-041 `POST /api/v1/problems/{problem_id}/publish` → ProblemResponse — Publish a problem (Admin only)  <!-- ev: backend/src/code_tutor/learning/interface/routes.py:302 -->
-- EP-042 `POST /api/v1/submissions` → SubmissionResponse — Submit code solution  <!-- ev: backend/src/code_tutor/learning/interface/routes.py:320 -->
-- EP-043 `POST /api/v1/submit` → SubmissionResponse — Submit and evaluate code  <!-- ev: backend/src/code_tutor/learning/interface/routes.py:338 -->
-- EP-044 `GET /api/v1/submissions/{submission_id}` → SubmissionResponse — Get submission details  <!-- ev: backend/src/code_tutor/learning/interface/routes.py:434 -->
-- EP-045 `POST /api/v1/submissions/{submission_id}/evaluate` → SubmissionResponse — Evaluate a submission  <!-- ev: backend/src/code_tutor/learning/interface/routes.py:458 -->
-- EP-046 `GET /api/v1/submissions` → list[SubmissionSummaryResponse] — List my submissions  <!-- ev: backend/src/code_tutor/learning/interface/routes.py:494 -->
-- EP-047 `GET /api/v1/problems/{problem_id}/submissions` → list[SubmissionSummaryResponse] — List my submissions for a problem  <!-- ev: backend/src/code_tutor/learning/interface/routes.py:509 -->
-- EP-048 `GET /api/v1/dashboard` → dict[str, Any] — Get user dashboard  <!-- ev: backend/src/code_tutor/learning/interface/routes.py:533 -->
-- EP-049 `GET /api/v1/dashboard/prediction` → dict[str, Any] — Get learning predictions  <!-- ev: backend/src/code_tutor/learning/interface/routes.py:554 -->
-- EP-050 `POST /api/v1/code/analyze` → dict[str, Any] — Analyze code with AI  <!-- ev: backend/src/code_tutor/learning/interface/routes.py:576 -->
-- EP-051 `POST /api/v1/code/classify` → dict[str, Any] — Classify code quality (Transformer)  <!-- ev: backend/src/code_tutor/learning/interface/routes.py:613 -->
-- EP-052 `GET /api/v1/patterns` → dict[str, Any] — List algorithm patterns  <!-- ev: backend/src/code_tutor/learning/interface/routes.py:662 -->
-- EP-053 `GET /api/v1/patterns/{pattern_id}` → dict[str, Any] — Get pattern details  <!-- ev: backend/src/code_tutor/learning/interface/routes.py:696 -->
-- EP-054 `POST /api/v1/patterns/search` → dict[str, Any] — Search patterns by query  <!-- ev: backend/src/code_tutor/learning/interface/routes.py:730 -->
-- EP-055 `GET /api/v1/dashboard/insights` → dict[str, Any] — Get learning insights  <!-- ev: backend/src/code_tutor/learning/interface/routes.py:764 -->
-- EP-056 `GET /api/v1/submissions/{submission_id}/quality` → dict[str, Any] — Get code quality analysis for submission  <!-- ev: backend/src/code_tutor/learning/interface/routes.py:800 -->
-- EP-057 `GET /api/v1/dashboard/quality` → dict[str, Any] — Get user quality statistics  <!-- ev: backend/src/code_tutor/learning/interface/routes.py:853 -->
-- EP-058 `GET /api/v1/dashboard/quality/trends` → dict[str, Any] — Get quality trends over time  <!-- ev: backend/src/code_tutor/learning/interface/routes.py:873 -->
-- EP-059 `GET /api/v1/dashboard/quality/recent` → dict[str, Any] — Get recent quality analyses  <!-- ev: backend/src/code_tutor/learning/interface/routes.py:895 -->
-- EP-060 `GET /api/v1/dashboard/quality/profile` → dict[str, Any] — Get user quality profile  <!-- ev: backend/src/code_tutor/learning/interface/routes.py:932 -->
-- EP-061 `GET /api/v1/dashboard/quality/recommendations` → dict[str, Any] — Get quality-based problem recommendations  <!-- ev: backend/src/code_tutor/learning/interface/routes.py:955 -->
-- EP-062 `GET /api/v1/dashboard/quality/suggestions` → dict[str, Any] — Get improvement suggestions  <!-- ev: backend/src/code_tutor/learning/interface/routes.py:982 -->
+- EP-034 `GET /api/v1/problems` → ProblemListResponse — List problems  <!-- ev: backend/src/code_tutor/learning/interface/routes.py:112 -->
+- EP-035 `GET /api/v1/problems/{problem_id}` → ProblemResponse — Get problem details  <!-- ev: backend/src/code_tutor/learning/interface/routes.py:136 -->
+- EP-036 `POST /api/v1/problems` → ProblemResponse — Create a new problem (Admin only)  <!-- ev: backend/src/code_tutor/learning/interface/routes.py:152 -->
+- EP-037 `GET /api/v1/problems/{problem_id}/hints` → HintsResponse — Get hints for a problem  <!-- ev: backend/src/code_tutor/learning/interface/routes.py:167 -->
+- EP-038 `POST /api/v1/problems/{problem_id}/publish` → ProblemResponse — Publish a problem (Admin only)  <!-- ev: backend/src/code_tutor/learning/interface/routes.py:187 -->
+- EP-039 `POST /api/v1/submissions` → SubmissionResponse — Submit code solution  <!-- ev: backend/src/code_tutor/learning/interface/routes.py:205 -->
+- EP-040 `GET /api/v1/submissions/{submission_id}` → SubmissionResponse — Get submission details  <!-- ev: backend/src/code_tutor/learning/interface/routes.py:223 -->
+- EP-041 `POST /api/v1/submissions/{submission_id}/evaluate` → SubmissionResponse — Evaluate a submission  <!-- ev: backend/src/code_tutor/learning/interface/routes.py:247 -->
+- EP-042 `GET /api/v1/submissions` → list[SubmissionSummaryResponse] — List my submissions  <!-- ev: backend/src/code_tutor/learning/interface/routes.py:283 -->
+- EP-043 `GET /api/v1/problems/{problem_id}/submissions` → list[SubmissionSummaryResponse] — List my submissions for a problem  <!-- ev: backend/src/code_tutor/learning/interface/routes.py:298 -->
+- EP-044 `GET /api/v1/dashboard` → dict[str, Any] — Get user dashboard  <!-- ev: backend/src/code_tutor/learning/interface/routes.py:322 -->
+- EP-045 `GET /api/v1/dashboard/prediction` → dict[str, Any] — Get learning predictions  <!-- ev: backend/src/code_tutor/learning/interface/routes.py:343 -->
 ## backend/src/code_tutor/main.py
 
-- EP-063 `GET /api/health` → dict  <!-- ev: backend/src/code_tutor/main.py:257 -->
-- EP-064 `GET /` → dict  <!-- ev: backend/src/code_tutor/main.py:269 -->
-- EP-065 `GET /metrics` → 미상  <!-- ev: backend/src/code_tutor/main.py:287 -->
+- EP-046 `GET /api/health` → dict  <!-- ev: backend/src/code_tutor/main.py:262 -->
+- EP-047 `GET /` → dict  <!-- ev: backend/src/code_tutor/main.py:274 -->
+- EP-048 `GET /metrics` → 미상  <!-- ev: backend/src/code_tutor/main.py:292 -->
+## backend/src/code_tutor/ml/interface/routes.py
+
+- EP-049 `GET /api/v1/problems/recommended` → list[RecommendedProblemResponse] — Get recommended problems for user  <!-- ev: backend/src/code_tutor/ml/interface/routes.py:71 -->
+- EP-050 `GET /api/v1/problems/skill-gaps` → list[dict] — Get skill gaps for user  <!-- ev: backend/src/code_tutor/ml/interface/routes.py:128 -->
+- EP-051 `GET /api/v1/problems/next-challenge` → dict | None — Get next challenge problem  <!-- ev: backend/src/code_tutor/ml/interface/routes.py:143 -->
+- EP-052 `POST /api/v1/submit` → SubmissionResponse — Submit and evaluate code  <!-- ev: backend/src/code_tutor/ml/interface/routes.py:158 -->
+- EP-053 `POST /api/v1/code/analyze` → dict[str, Any] — Analyze code with AI  <!-- ev: backend/src/code_tutor/ml/interface/routes.py:255 -->
+- EP-054 `POST /api/v1/code/classify` → dict[str, Any] — Classify code quality (Transformer)  <!-- ev: backend/src/code_tutor/ml/interface/routes.py:292 -->
+- EP-055 `GET /api/v1/patterns` → dict[str, Any] — List algorithm patterns  <!-- ev: backend/src/code_tutor/ml/interface/routes.py:341 -->
+- EP-056 `GET /api/v1/patterns/{pattern_id}` → dict[str, Any] — Get pattern details  <!-- ev: backend/src/code_tutor/ml/interface/routes.py:375 -->
+- EP-057 `POST /api/v1/patterns/search` → dict[str, Any] — Search patterns by query  <!-- ev: backend/src/code_tutor/ml/interface/routes.py:409 -->
+- EP-058 `GET /api/v1/dashboard/insights` → dict[str, Any] — Get learning insights  <!-- ev: backend/src/code_tutor/ml/interface/routes.py:443 -->
+- EP-059 `GET /api/v1/submissions/{submission_id}/quality` → dict[str, Any] — Get code quality analysis for submission  <!-- ev: backend/src/code_tutor/ml/interface/routes.py:479 -->
+- EP-060 `GET /api/v1/dashboard/quality` → dict[str, Any] — Get user quality statistics  <!-- ev: backend/src/code_tutor/ml/interface/routes.py:532 -->
+- EP-061 `GET /api/v1/dashboard/quality/trends` → dict[str, Any] — Get quality trends over time  <!-- ev: backend/src/code_tutor/ml/interface/routes.py:552 -->
+- EP-062 `GET /api/v1/dashboard/quality/recent` → dict[str, Any] — Get recent quality analyses  <!-- ev: backend/src/code_tutor/ml/interface/routes.py:574 -->
+- EP-063 `GET /api/v1/dashboard/quality/profile` → dict[str, Any] — Get user quality profile  <!-- ev: backend/src/code_tutor/ml/interface/routes.py:611 -->
+- EP-064 `GET /api/v1/dashboard/quality/recommendations` → dict[str, Any] — Get quality-based problem recommendations  <!-- ev: backend/src/code_tutor/ml/interface/routes.py:634 -->
+- EP-065 `GET /api/v1/dashboard/quality/suggestions` → dict[str, Any] — Get improvement suggestions  <!-- ev: backend/src/code_tutor/ml/interface/routes.py:661 -->
 ## backend/src/code_tutor/performance/interface/routes.py
 
 - EP-066 `POST /api/v1/performance` → dict — 전체 성능 분석  <!-- ev: backend/src/code_tutor/performance/interface/routes.py:16 -->
