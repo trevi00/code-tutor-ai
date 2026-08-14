@@ -108,3 +108,18 @@
 {"v":1,"id":"p2.12","ts":"2026-08-14T08:16:14.555+00:00","event":"gate_check","payload":{"stage":"p2-verify","statement":"리포트 존재","check_type":"file_content","verdict":"PASS","evidence":{"target":"p2-report.md","expect":"RESULT","hit":true},"verdict_mode":"machine"}}
 {"v":1,"id":"p2.13","ts":"2026-08-14T08:16:14.574+00:00","event":"gate_verdict","payload":{"stage":"p2-verify","verdict":"PASS"}}
 {"v":1,"id":"p2.14","ts":"2026-08-14T08:16:14.595+00:00","event":"stage_finished","payload":{"stage":"p2-verify","status":"passed"}}
+{"v":1,"id":"r5-arm.0","ts":"2026-08-14T09:07:32.813+00:00","event":"pipeline_started","payload":{"pipeline":"pipeline-p1.yaml","pipeline_sha":"3a608edc327bcdf6","profiles":[],"optional_selected":[]}}
+{"v":1,"id":"r5.0","ts":"2026-08-14T09:07:33.009+00:00","event":"dispatch","payload":{"stage":"monitoring-up"}}
+{"v":1,"id":"r5.1","ts":"2026-08-14T09:07:33.038+00:00","event":"stage_started","payload":{"stage":"monitoring-up"}}
+{"v":1,"id":"r5.2","ts":"2026-08-14T09:07:33.257+00:00","event":"gate_check","payload":{"stage":"monitoring-up","statement":"Prometheus ready","check_type":"http_probe","verdict":"PASS","evidence":{"url":"http://localhost:9090/-/ready","status":200,"want":200},"verdict_mode":"machine"}}
+{"v":1,"id":"r5.3","ts":"2026-08-14T09:07:33.283+00:00","event":"gate_check","payload":{"stage":"monitoring-up","statement":"Grafana 헬스 200","check_type":"http_probe","verdict":"PASS","evidence":{"url":"http://localhost:3001/api/health","status":200,"want":200},"verdict_mode":"machine"}}
+{"v":1,"id":"r5.4","ts":"2026-08-14T09:07:33.292+00:00","event":"gate_check","payload":{"stage":"monitoring-up","statement":"관측 리포트 존재","check_type":"file_content","verdict":"PASS","evidence":{"target":"monitoring-report.md","expect":"RESULT","hit":true},"verdict_mode":"machine"}}
+{"v":1,"id":"r5.5","ts":"2026-08-14T09:07:33.301+00:00","event":"gate_verdict","payload":{"stage":"monitoring-up","verdict":"PASS"}}
+{"v":1,"id":"r5.6","ts":"2026-08-14T09:07:33.309+00:00","event":"stage_finished","payload":{"stage":"monitoring-up","status":"passed"}}
+{"v":1,"id":"r5.7","ts":"2026-08-14T09:07:33.480+00:00","event":"dispatch","payload":{"stage":"hardening-review"}}
+{"v":1,"id":"r5.8","ts":"2026-08-14T09:07:33.506+00:00","event":"stage_started","payload":{"stage":"hardening-review"}}
+{"v":1,"id":"r5.9","ts":"2026-08-14T09:07:33.694+00:00","event":"gate_check","payload":{"stage":"hardening-review","statement":"하드닝 리포트 존재 (OPEN 목록 포함)","check_type":"file_content","verdict":"PASS","evidence":{"target":"hardening-report.md","expect":"RESULT","hit":true},"verdict_mode":"machine"}}
+{"v":1,"id":"operator.4","ts":"2026-08-14T14:35:23.235+00:00","event":"gate_check","payload":{"stage":"hardening-review","statement":"사용자가 데모 수위 하드닝 판정을 승인함","verdict":"PASS","verdict_mode":"human","actor":"operator"}}
+{"v":1,"id":"residual-close.0","ts":"2026-08-14T14:35:23.292+00:00","event":"gate_check","payload":{"stage":"hardening-review","statement":"하드닝 리포트 존재 (OPEN 목록 포함)","check_type":"file_content","verdict":"PASS","evidence":{"target":"hardening-report.md","expect":"RESULT","hit":true},"verdict_mode":"machine"}}
+{"v":1,"id":"residual-close.1","ts":"2026-08-14T14:35:23.314+00:00","event":"gate_verdict","payload":{"stage":"hardening-review","verdict":"PASS"}}
+{"v":1,"id":"residual-close.2","ts":"2026-08-14T14:35:23.345+00:00","event":"stage_finished","payload":{"stage":"hardening-review","status":"passed"}}

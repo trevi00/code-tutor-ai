@@ -127,3 +127,35 @@ stages:
       - statement: "리포트 존재"
         check: { type: file_content, target: p2-report.md, expect: "RESULT" }
     skills: [verification]
+
+  # ── 5차 루프: 잔여 정리 (monitoring + 하드닝 라이트)
+
+  - id: monitoring-up
+    seq: 8
+    name: monitoring 프로필 기동 (REQ-033 잔여)
+    dge: evaluator
+    input: ["ops-up 결과물"]
+    output: monitoring-report.md
+    artifact: "compose --profile monitoring 기동 관측 — prometheus 수집 준비·grafana 헬스 (RESULT 마커)"
+    gate:
+      - statement: "Prometheus ready"
+        check: { type: http_probe, url: "http://localhost:9090/-/ready" }
+      - statement: "Grafana 헬스 200"
+        check: { type: http_probe, url: "http://localhost:3001/api/health" }
+      - statement: "관측 리포트 존재"
+        check: { type: file_content, target: monitoring-report.md, expect: "RESULT" }
+    skills: [devops]
+
+  - id: hardening-review
+    seq: 9
+    name: 하드닝 라이트 패스 (REQ-003 데모 수위 선별)
+    dge: evaluator
+    input: ["monitoring-up 결과물"]
+    output: hardening-report.md
+    artifact: "시크릿 기본값·CORS·인증 가드 점검 — 데모 수위 허용/조치 필요를 구분, 사람 결정 항목은 OPEN- 으로 (RESULT 마커)"
+    gate:
+      - statement: "하드닝 리포트 존재 (OPEN 목록 포함)"
+        check: { type: file_content, target: hardening-report.md, expect: "RESULT" }
+      - statement: "사용자가 데모 수위 하드닝 판정을 승인함"
+        verdict_mode: human
+    skills: [verification]
